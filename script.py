@@ -55,14 +55,14 @@ def open_new_window():
         widget.destroy()
 
     # Configure the main window background to #04c5cf
-    root.configure(bg="#04cf5c")
+    root.configure(bg="#79ff7d")
 
     # Create a frame to center the buttons
-    frame = tk.Frame(root, bg="#04cf5c")
+    frame = tk.Frame(root, bg="#79ff7d")
     frame.pack(expand=True)
 
     # Set button color to be slightly darker than #04cf5c
-    button_bg_color = "#79ff7d"  # A darker shade
+    button_bg_color = "#04cf5c"  # A darker shade
 
     # Create the buttons with additional styling
     btn_print_qr = tk.Button(frame, text="Print QR", font=("Arial", 28, "bold"), bg=button_bg_color, fg="white", padx=20, pady=10, borderwidth=0, highlightthickness=0)
