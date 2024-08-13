@@ -65,10 +65,10 @@ def open_new_window():
     button_bg_color = "#79ff7d"  # A darker shade
 
     # Create the buttons with additional styling
-    btn_print_qr = tk.Button(frame, text="Print QR", font=("Helvetica", 28, "bold"), bg=button_bg_color, fg="black", padx=20, pady=10, borderwidth=0, highlightthickness=0)
+    btn_print_qr = tk.Button(frame, text="Print QR", font=("Arial", 28, "bold"), bg=button_bg_color, fg="white", padx=20, pady=10, borderwidth=0, highlightthickness=0)
     btn_print_qr.grid(row=0, column=0, pady=20)
 
-    btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Helvetica", 28, "bold"), bg=button_bg_color, fg="black", padx=20, pady=10, borderwidth=0, highlightthickness=0)
+    btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Arial", 28, "bold"), bg=button_bg_color, fg="white", padx=20, pady=10, borderwidth=0, highlightthickness=0)
     btn_choose_qr.grid(row=1, column=0, pady=20)
 
     # Center the buttons in the frame
