@@ -97,17 +97,17 @@ def open_new_window():
     frame.grid_columnconfigure(0, weight=1)
 
     # Define the status dot color (choose from "green", "red", or "yellow")
-    status_color = "green"  # Example color
+    status_color = "red"  # Example color
 
     # Create a canvas for the status dot
     status_dot = tk.Canvas(root, width=12, height=12, bg="#79ff7d", highlightthickness=0)
     dot_id = status_dot.create_oval(2, 2, 10, 10, fill=status_color, outline=status_color)
 
     # Create the status text label
-    status_text = tk.Label(root, text=" Maprova: PrinterA2:H8", font=("Arial", 12), bg="#79ff7d", fg="black")
+    status_text = tk.Label(root, text=" Maprova: PrinterA2", font=("Arial", 12, "bold"), bg="#79ff7d", fg="black")
 
     # Place the status dot and label together as a status bar
-    status_dot.place(relx=0.0, rely=1.0, x=5, y=-10, anchor="sw")
+    status_dot.place(relx=0.0, rely=1.0, x=10, y=-17, anchor="sw")
     status_text.place(relx=0.0, rely=1.0, x=20, y=-10, anchor="sw")
 
 
