@@ -58,7 +58,7 @@ def open_new_window():
     root.configure(bg="#04c5cf")
 
     # Create a frame to center the buttons
-    frame = tk.Frame(root, bg="#04c5cf")
+    frame = tk.Frame(root, bg="#04cf5c")
     frame.pack(expand=True)
 
     # Set button color to be slightly darker than #04c5cf
