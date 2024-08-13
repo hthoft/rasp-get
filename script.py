@@ -63,6 +63,44 @@ def reset_timer(event=None):
     root.after_cancel(root.after_id)
     root.after_id = root.after(10000, reset_to_initial)
 
+def open_print_window():
+    # Stop the current timer
+    reset_timer()
+
+    # Create a small top-level window for the print options
+    print_window = tk.Toplevel(root)
+    print_window.title("Print QR Codes")
+    print_window.geometry("300x200")
+    print_window.configure(bg="#79ff7d")
+
+    # Function to update the count label
+    def update_count(delta):
+        new_value = int(count_label['text']) + delta
+        if 1 <= new_value <= 4:
+            count_label.config(text=str(new_value))
+
+    # Function to handle the print action
+    def handle_print():
+        print(f"Printing {count_label['text']} QR codes")
+        print_window.destroy()
+        reset_timer()  # Start the timer again after closing the print window
+
+    # Create the minus button
+    minus_button = tk.Button(print_window, text="-", font=("Arial", 18), command=lambda: update_count(-1), bg="#04cf5c", fg="white", padx=20, pady=10, borderwidth=0)
+    minus_button.pack(side="left", padx=10, pady=20)
+
+    # Create the count label
+    count_label = tk.Label(print_window, text="1", font=("Arial", 18), bg="#79ff7d", fg="black")
+    count_label.pack(side="left", padx=10)
+
+    # Create the plus button
+    plus_button = tk.Button(print_window, text="+", font=("Arial", 18), command=lambda: update_count(1), bg="#04cf5c", fg="white", padx=20, pady=10, borderwidth=0)
+    plus_button.pack(side="left", padx=10, pady=20)
+
+    # Create the wide green print button
+    print_button = tk.Button(print_window, text="Print", font=("Arial", 18), command=handle_print, bg="green", fg="white", padx=40, pady=10, borderwidth=0)
+    print_button.pack(fill="x", pady=20)
+
 def open_new_window():
     # Clear existing widgets in the root window
     for widget in root.winfo_children():
@@ -85,7 +123,7 @@ def open_new_window():
     label_2.grid(row=1, column=0, columnspan=2, pady=(0, 20))
 
     # Create the buttons with additional styling
-    btn_print_qr = tk.Button(frame, text="Print QR", font=("Arial", 30, "bold"), bg=button_bg_color, fg="white", padx=70, pady=40, borderwidth=0, highlightthickness=0)
+    btn_print_qr = tk.Button(frame, text="Print QR", font=("Arial", 30, "bold"), bg=button_bg_color, fg="white", padx=70, pady=40, borderwidth=0, highlightthickness=0, command=open_print_window)
     btn_print_qr.grid(row=2, column=0, pady=20, padx=10)
 
     btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Arial", 30, "bold"), bg=button_bg_color, fg="white", padx=70, pady=40, borderwidth=0, highlightthickness=0)
@@ -109,8 +147,6 @@ def open_new_window():
     # Place the status dot and label together as a status bar
     status_dot.place(relx=0.0, rely=1.0, x=10, y=-17, anchor="sw")
     status_text.place(relx=0.0, rely=1.0, x=20, y=-10, anchor="sw")
-
-
 
     cog_button = tk.Button(root, image=cog_photo, bg="#79ff7d", borderwidth=0, highlightthickness=0)
     cog_button.image = cog_photo  # Keep a reference to prevent garbage collection
