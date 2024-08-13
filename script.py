@@ -145,9 +145,13 @@ def open_print_window():
         print_window.destroy()
         reset_timer()  # Start the timer again after closing the print window
 
+    # Vertical padding to center the content within the 480px height
+    content_height = 280  # Approximate combined height of label, counter frame, and button frame
+    padding_top = (480 - content_height) // 2
+
     # Add a label above the buttons
     instruction_label = tk.Label(print_window, text="Vælg antal:", font=("Arial", 28, "bold"), bg="#86f08a", fg="black")
-    instruction_label.pack(pady=20)
+    instruction_label.pack(pady=(padding_top, 20))
 
     # Create a frame for the counter and buttons
     counter_frame = tk.Frame(print_window, bg="#86f08a")
