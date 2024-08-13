@@ -78,17 +78,22 @@ def open_new_window():
     # Set button color to be slightly darker than #04cf5c
     button_bg_color = "#04cf5c"  # A darker shade
 
+    # Add labels above the buttons
+    label_1 = tk.Label(frame, text="CPH Village", font=("Arial", 18, "bold"), bg="#79ff7d", fg="black")
+    label_1.grid(row=0, column=0, pady=(20, 0))
+
+    label_2 = tk.Label(frame, text="ME_01.02.04", font=("Arial", 32, "bold"), bg="#79ff7d", fg="black")
+    label_2.grid(row=1, column=0, pady=(0, 20))
+
     # Create the buttons with additional styling
     btn_print_qr = tk.Button(frame, text="Print QR", font=("Arial", 30, "bold"), bg=button_bg_color, fg="white", padx=70, pady=40, borderwidth=0, highlightthickness=0)
-    btn_print_qr.grid(row=0, column=0, pady=20)
+    btn_print_qr.grid(row=2, column=0, pady=20)
 
     btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Arial", 30, "bold"), bg=button_bg_color, fg="white", padx=70, pady=40, borderwidth=0, highlightthickness=0)
-    btn_choose_qr.grid(row=1, column=0, pady=20)
+    btn_choose_qr.grid(row=3, column=0, pady=20)
 
     # Center the buttons in the frame
     frame.grid_columnconfigure(0, weight=1)
-    frame.grid_rowconfigure(0, weight=1)
-    frame.grid_rowconfigure(1, weight=1)
 
     # Add the cog button to the bottom right corner
     cog_button = tk.Button(root, image=cog_photo, bg="#79ff7d", borderwidth=0, highlightthickness=0)
