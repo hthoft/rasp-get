@@ -6,7 +6,6 @@ root.title("Test ImageTk")
 
 # Set the window size to 800x480
 root.geometry("800x480")
-root.attributes('-fullscreen', True)
 
 
 # Path to the image
