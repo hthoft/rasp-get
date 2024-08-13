@@ -6,7 +6,7 @@ root = tk.Tk()
 root.title("Test ImageTk")
 root.geometry("800x480")
 
-#root.attributes("-fullscreen", True)   
+root.attributes("-fullscreen", True)   
 
 # Path to the images
 image_path = "splash.png"
