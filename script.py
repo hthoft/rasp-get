@@ -158,7 +158,7 @@ def open_print_window():
     counter_frame.pack(pady=20)
 
     # Create the minus button
-    minus_button = tk.Button(counter_frame, text="-", font=("Arial", 36), command=lambda: update_count(-1), bg="#04cf5c", fg="white", padx=30, pady=20, borderwidth=0)
+    minus_button = tk.Button(counter_frame, text="-", font=("Arial", 42, "bold"), command=lambda: update_count(-1), bg="green", width=4, height=1, fg="white", padx=30, pady=20, borderwidth=0)
     minus_button.grid(row=0, column=1, padx=20)
 
     # Create the count label
@@ -166,7 +166,7 @@ def open_print_window():
     count_label.grid(row=0, column=2, padx=20)
 
     # Create the plus button
-    plus_button = tk.Button(counter_frame, text="+", font=("Arial", 36), command=lambda: update_count(1), bg="#04cf5c", fg="white", padx=30, pady=20, borderwidth=0)
+    plus_button = tk.Button(counter_frame, text="+", font=("Arial", 42, "bold"), command=lambda: update_count(1), bg="green", width=4, height=1, fg="white", padx=30, pady=20, borderwidth=0)
     plus_button.grid(row=0, column=3, padx=20)
 
     # Configure grid to center the elements
