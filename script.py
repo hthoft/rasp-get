@@ -108,6 +108,51 @@ def open_print_window():
     counter_frame = tk.Frame(print_window, bg="#86f08a")
     counter_frame.pack(pady=20)
 
+def open_print_window():
+    # Stop the current timer
+    reset_timer()
+
+    # Create a top-level window for the print options
+    print_window = tk.Toplevel(root)
+    print_window.title("Print QR Codes")
+    print_window.geometry("800x480")
+    print_window.configure(bg="#86f08a")  # A slightly darker green background
+
+    # Remove the window title bar and center the window
+    print_window.overrideredirect(True)
+    print_window.update_idletasks()
+    width = print_window.winfo_width()
+    height = print_window.winfo_height()
+    x = (print_window.winfo_screenwidth() // 2) - (width // 2)
+    y = (print_window.winfo_screenheight() // 2) - (height // 2)
+    print_window.geometry(f'{width}x{height}+{x}+{y}')
+
+    # Function to update the count label and reset the timer
+    def update_count(delta):
+        reset_timer()  # Reset the timer when plus or minus is clicked
+        new_value = int(count_label['text']) + delta
+        if 1 <= new_value <= 4:
+            count_label.config(text=str(new_value))
+
+    # Function to handle the print action
+    def handle_print():
+        print(f"Printing {count_label['text']} QR codes")
+        print_window.destroy()
+        reset_timer()  # Start the timer again after closing the print window
+
+    # Function to handle the close action
+    def close_window():
+        print_window.destroy()
+        reset_timer()  # Start the timer again after closing the print window
+
+    # Add a label above the buttons
+    instruction_label = tk.Label(print_window, text="Vælg antal:", font=("Arial", 28, "bold"), bg="#86f08a", fg="black")
+    instruction_label.pack(pady=20)
+
+    # Create a frame for the counter and buttons
+    counter_frame = tk.Frame(print_window, bg="#86f08a")
+    counter_frame.pack(pady=20)
+
     # Create the minus button
     minus_button = tk.Button(counter_frame, text="-", font=("Arial", 36), command=lambda: update_count(-1), bg="#04cf5c", fg="white", padx=30, pady=20, borderwidth=0)
     minus_button.grid(row=0, column=1, padx=20)
@@ -129,16 +174,22 @@ def open_print_window():
     button_frame.pack(pady=20)
 
     # Create the red X button to close the window
-    close_button = tk.Button(button_frame, text="X", font=("Arial", 36), command=close_window, bg="red", fg="white", padx=20, pady=20, borderwidth=0)
-    close_button.grid(row=0, column=0, padx=10)
+    close_button = tk.Button(button_frame, text="X", font=("Arial", 36), command=close_window, bg="red", fg="white", padx=20, pady=20, borderwidth=0, width=3)
+    close_button.grid(row=0, column=0, padx=10, sticky="ew")
 
-    # Create the green print button, spanning columns 1 through 3
-    print_button = tk.Button(button_frame, text="Print", font=("Arial", 36), command=handle_print, bg="green", fg="white", padx=50, pady=20, borderwidth=0)
-    print_button.grid(row=0, column=1, padx=10)
+    # Create the green print button
+    print_button = tk.Button(button_frame, text="Print", font=("Arial", 36), command=handle_print, bg="green", fg="white", padx=20, pady=20, borderwidth=0)
+    print_button.grid(row=0, column=1, padx=10, sticky="ew")
 
-    # Configure grid to center the elements in the button frame
-    button_frame.grid_columnconfigure(0, weight=1)
-    button_frame.grid_columnconfigure(2, weight=1)
+    # Configure grid to set the 20:80 width ratio
+    button_frame.grid_columnconfigure(0, weight=2)  # 20% width for the close button
+    button_frame.grid_columnconfigure(1, weight=8)  # 80% width for the print button
+
+    # Set a fixed height for the button frame to ensure the buttons have height
+    button_frame.update_idletasks()
+    button_frame_height = close_button.winfo_reqheight()
+    button_frame.config(height=button_frame_height)
+
 
 def open_new_window():
     # Clear existing widgets in the root window
