@@ -26,7 +26,7 @@ image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 # Convert the image to a format Tkinter can use
 photo = ImageTk.PhotoImage(image)
 
-# Create a canvas to hold the image and button
+# Create a canvas to hold the image
 canvas = tk.Canvas(root, width=800, height=480, bg="black", highlightthickness=0)
 canvas.pack(fill="both", expand=True)
 
@@ -46,9 +46,8 @@ def open_new_window():
     btn_choose_qr = tk.Button(new_window, text="Vælg QR", font=("Helvetica", 28), bg="white", fg="black")
     btn_choose_qr.pack(pady=20)
 
-# Create the "Start printer" button and place it on the canvas
-start_button = tk.Button(root, text="Start printer", font=("Helvetica", 28), bg="white", fg="black", command=open_new_window)
-start_button_window = canvas.create_window(400, 360, window=start_button)  # Position at 75% of height
+# Bind the canvas (image) to the click event
+canvas.bind("<Button-1>", lambda e: open_new_window())
 
 # Start the Tkinter main loop
 root.mainloop()
