@@ -71,7 +71,7 @@ def open_print_window():
     print_window = tk.Toplevel(root)
     print_window.title("Print QR Codes")
     print_window.geometry("400x250")
-    print_window.configure(bg="#66cc66")  # A slightly darker green background
+    print_window.configure(bg="#86f08a")  # A slightly darker green background
 
     # Remove the window title bar and center the window
     print_window.overrideredirect(True)
@@ -82,8 +82,9 @@ def open_print_window():
     y = (print_window.winfo_screenheight() // 2) - (height // 2)
     print_window.geometry(f'{width}x{height}+{x}+{y}')
 
-    # Function to update the count label
+    # Function to update the count label and reset the timer
     def update_count(delta):
+        reset_timer()  # Reset the timer when plus or minus is clicked
         new_value = int(count_label['text']) + delta
         if 1 <= new_value <= 4:
             count_label.config(text=str(new_value))
@@ -94,25 +95,29 @@ def open_print_window():
         print_window.destroy()
         reset_timer()  # Start the timer again after closing the print window
 
-    # Create a frame to hold the minus button, counter, and plus button
-    counter_frame = tk.Frame(print_window, bg="#66cc66")
+    # Create a frame for the counter and buttons
+    counter_frame = tk.Frame(print_window, bg="#86f08a")
     counter_frame.pack(pady=20)
 
     # Create the minus button
     minus_button = tk.Button(counter_frame, text="-", font=("Arial", 24), command=lambda: update_count(-1), bg="#04cf5c", fg="white", padx=20, pady=10, borderwidth=0)
-    minus_button.pack(side="left", padx=10)
+    minus_button.grid(row=0, column=1, padx=10)
 
     # Create the count label
-    count_label = tk.Label(counter_frame, text="1", font=("Arial", 24), bg="#66cc66", fg="black")
-    count_label.pack(side="left", padx=10)
+    count_label = tk.Label(counter_frame, text="1", font=("Arial", 24), bg="white", fg="black", width=4, height=2)
+    count_label.grid(row=0, column=2, padx=10)
 
     # Create the plus button
     plus_button = tk.Button(counter_frame, text="+", font=("Arial", 24), command=lambda: update_count(1), bg="#04cf5c", fg="white", padx=20, pady=10, borderwidth=0)
-    plus_button.pack(side="left", padx=10)
+    plus_button.grid(row=0, column=3, padx=10)
 
-    # Create the wide green print button
-    print_button = tk.Button(print_window, text="Print", font=("Arial", 24), command=handle_print, bg="green", fg="white", padx=40, pady=20, borderwidth=0)
-    print_button.pack(fill="x", pady=20)
+    # Configure grid to center the elements
+    counter_frame.grid_columnconfigure(0, weight=1)
+    counter_frame.grid_columnconfigure(4, weight=1)
+
+    # Create the wide green print button, spanning columns 1 through 3
+    print_button = tk.Button(print_window, text="Print", font=("Arial", 24), command=handle_print, bg="green", fg="white", pady=20, borderwidth=0)
+    print_button.pack(fill="x", padx=20, pady=20)
 
 def open_new_window():
     # Clear existing widgets in the root window
