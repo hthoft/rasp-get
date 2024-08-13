@@ -49,24 +49,26 @@ def reset_to_initial():
     # Rebind the click event
     canvas.bind("<Button-1>", lambda e: open_new_window())
 
-# Function to clear the current window and display the buttons
 def open_new_window():
     # Clear existing widgets in the root window
     for widget in root.winfo_children():
         widget.destroy()
 
-    # Configure the main window background
-    root.configure(bg="black")
+    # Configure the main window background to #04c5cf
+    root.configure(bg="#04c5cf")
 
     # Create a frame to center the buttons
-    frame = tk.Frame(root, bg="black")
+    frame = tk.Frame(root, bg="#04c5cf")
     frame.pack(expand=True)
 
+    # Set button color to be slightly darker than #04c5cf
+    button_bg_color = "#039b9e"  # A darker shade
+
     # Create the buttons with additional styling
-    btn_print_qr = tk.Button(frame, text="Print QR", font=("Helvetica", 28, "bold"), bg="white", fg="black", padx=20, pady=10, borderwidth=0, highlightthickness=0)
+    btn_print_qr = tk.Button(frame, text="Print QR", font=("Helvetica", 28, "bold"), bg=button_bg_color, fg="black", padx=20, pady=10, borderwidth=0, highlightthickness=0)
     btn_print_qr.grid(row=0, column=0, pady=20)
 
-    btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Helvetica", 28, "bold"), bg="white", fg="black", padx=20, pady=10, borderwidth=0, highlightthickness=0)
+    btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Helvetica", 28, "bold"), bg=button_bg_color, fg="black", padx=20, pady=10, borderwidth=0, highlightthickness=0)
     btn_choose_qr.grid(row=1, column=0, pady=20)
 
     # Center the buttons in the frame
