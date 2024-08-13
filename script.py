@@ -4,8 +4,8 @@ from PIL import Image, ImageTk
 root = tk.Tk()
 root.title("Test ImageTk")
 
-# Set the window size to 800x480
-root.geometry("800x480")
+# Set the window to fullscreen
+root.attributes('-fullscreen', True)
 
 # Path to the image
 image_path = "splash.png"
@@ -13,8 +13,12 @@ image_path = "splash.png"
 # Open the image
 image = Image.open(image_path)
 
+# Get the screen width and height
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+
 # Calculate the appropriate size to maintain aspect ratio
-max_width, max_height = 800, 480
+max_width, max_height = screen_width, screen_height
 image_ratio = image.width / image.height
 window_ratio = max_width / max_height
 
