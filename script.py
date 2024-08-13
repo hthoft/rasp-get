@@ -33,18 +33,47 @@ canvas.pack(fill="both", expand=True)
 # Place the image on the canvas
 canvas.create_image(0, 0, anchor="nw", image=photo)
 
-# Function to open a new window with two buttons
+# Function to reset to the initial state
+def reset_to_initial():
+    # Clear existing widgets in the root window
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    # Recreate the canvas and place the image again
+    canvas = tk.Canvas(root, width=800, height=480, bg="black", highlightthickness=0)
+    canvas.pack(fill="both", expand=True)
+    canvas.create_image(0, 0, anchor="nw", image=photo)
+
+    # Rebind the click event
+    canvas.bind("<Button-1>", lambda e: open_new_window())
+
+# Function to clear the current window and display the buttons
 def open_new_window():
-    new_window = tk.Toplevel(root)
-    new_window.title("New Window")
-    new_window.geometry("800x480")
-    new_window.configure(bg="black")
+    # Clear existing widgets in the root window
+    for widget in root.winfo_children():
+        widget.destroy()
 
-    btn_print_qr = tk.Button(new_window, text="Print QR", font=("Helvetica", 28), bg="white", fg="black")
-    btn_print_qr.pack(pady=20)
+    # Configure the main window background
+    root.configure(bg="black")
 
-    btn_choose_qr = tk.Button(new_window, text="Vælg QR", font=("Helvetica", 28), bg="white", fg="black")
-    btn_choose_qr.pack(pady=20)
+    # Create a frame to center the buttons
+    frame = tk.Frame(root, bg="black")
+    frame.pack(expand=True)
+
+    # Create the buttons with additional styling
+    btn_print_qr = tk.Button(frame, text="Print QR", font=("Helvetica", 28, "bold"), bg="white", fg="black", padx=20, pady=10, borderwidth=0, highlightthickness=0)
+    btn_print_qr.grid(row=0, column=0, pady=20)
+
+    btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Helvetica", 28, "bold"), bg="white", fg="black", padx=20, pady=10, borderwidth=0, highlightthickness=0)
+    btn_choose_qr.grid(row=1, column=0, pady=20)
+
+    # Center the buttons in the frame
+    frame.grid_columnconfigure(0, weight=1)
+    frame.grid_rowconfigure(0, weight=1)
+    frame.grid_rowconfigure(1, weight=1)
+
+    # Set a timer to reset to the initial state after 10 seconds
+    root.after(10000, reset_to_initial)
 
 # Bind the canvas (image) to the click event
 canvas.bind("<Button-1>", lambda e: open_new_window())
