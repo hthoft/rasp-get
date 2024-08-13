@@ -55,6 +55,19 @@ def reset_to_initial():
     # Rebind the click event
     canvas.bind("<Button-1>", lambda e: open_new_window())
 
+    # Add the cog button to the bottom right corner
+    cog_button = tk.Button(root, image=cog_photo, bg="#04cf5c", borderwidth=0, highlightthickness=0)
+    cog_button.image = cog_photo  # Keep a reference to prevent garbage collection
+    cog_button.place(relx=1.0, rely=1.0, x=-1, y=-1, anchor="se")
+
+    # Bind all clicks to reset the timer
+    root.bind("<Button-1>", reset_timer)
+
+def reset_timer(event=None):
+    # Cancel the current timer and start a new 10-second timer
+    root.after_cancel(root.after_id)
+    root.after_id = root.after(10000, reset_to_initial)
+
 def open_new_window():
     # Clear existing widgets in the root window
     for widget in root.winfo_children():
@@ -82,16 +95,22 @@ def open_new_window():
     frame.grid_rowconfigure(0, weight=1)
     frame.grid_rowconfigure(1, weight=1)
 
-    # Set a timer to reset to the initial state after 10 seconds
-    root.after(10000, reset_to_initial)
-
     # Add the cog button to the bottom right corner
     cog_button = tk.Button(root, image=cog_photo, bg="#79ff7d", borderwidth=0, highlightthickness=0)
     cog_button.image = cog_photo  # Keep a reference to prevent garbage collection
     cog_button.place(relx=1.0, rely=1.0, x=-1, y=-1, anchor="se")
 
+    # Bind all clicks to reset the timer
+    root.bind("<Button-1>", reset_timer)
+
+    # Set the initial 10-second timer
+    reset_timer()
+
 # Bind the canvas (image) to the click event
 canvas.bind("<Button-1>", lambda e: open_new_window())
+
+# Set the initial 10-second timer
+root.after_id = root.after(10000, reset_to_initial)
 
 # Start the Tkinter main loop
 root.mainloop()
