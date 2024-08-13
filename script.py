@@ -6,12 +6,13 @@ root = tk.Tk()
 root.title("Test ImageTk")
 root.geometry("800x480")
 
-root.attributes("-fullscreen", True)   
+#root.attributes("-fullscreen", True)   
 
-# Path to the image
+# Path to the images
 image_path = "splash.png"
+cog_image_path = "cog.png"
 
-# Open the image
+# Open the main image
 image = Image.open(image_path)
 
 # Set the target height to at least 480 pixels
@@ -22,7 +23,7 @@ image_ratio = image.width / image.height
 new_height = target_height
 new_width = int(target_height * image_ratio)
 
-# Resize the image
+# Resize the main image
 image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
 # Convert the image to a format Tkinter can use
@@ -34,6 +35,11 @@ canvas.pack(fill="both", expand=True)
 
 # Place the image on the canvas
 canvas.create_image(0, 0, anchor="nw", image=photo)
+
+# Load and resize the cog image
+cog_image = Image.open(cog_image_path)
+cog_image = cog_image.resize((50, 50), Image.Resampling.LANCZOS)
+cog_photo = ImageTk.PhotoImage(cog_image)
 
 # Function to reset to the initial state
 def reset_to_initial():
@@ -54,7 +60,7 @@ def open_new_window():
     for widget in root.winfo_children():
         widget.destroy()
 
-    # Configure the main window background to #04c5cf
+    # Configure the main window background to #79ff7d
     root.configure(bg="#79ff7d")
 
     # Create a frame to center the buttons
@@ -78,6 +84,11 @@ def open_new_window():
 
     # Set a timer to reset to the initial state after 10 seconds
     root.after(10000, reset_to_initial)
+
+    # Add the cog button to the bottom right corner
+    cog_button = tk.Button(root, image=cog_photo, bg="#79ff7d", borderwidth=0, highlightthickness=0)
+    cog_button.image = cog_photo  # Keep a reference to prevent garbage collection
+    cog_button.place(relx=1.0, rely=1.0, x=-1, y=-1, anchor="se")
 
 # Bind the canvas (image) to the click event
 canvas.bind("<Button-1>", lambda e: open_new_window())
