@@ -55,11 +55,6 @@ def reset_to_initial():
     # Rebind the click event
     canvas.bind("<Button-1>", lambda e: open_new_window())
 
-    # Add the cog button to the bottom right corner
-    cog_button = tk.Button(root, image=cog_photo, bg="#04cf5c", borderwidth=0, highlightthickness=0)
-    cog_button.image = cog_photo  # Keep a reference to prevent garbage collection
-    cog_button.place(relx=1.0, rely=1.0, x=-1, y=-1, anchor="se")
-
     # Bind all clicks to reset the timer
     root.bind("<Button-1>", reset_timer)
 
