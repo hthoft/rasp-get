@@ -140,7 +140,7 @@ def open_print_window():
         from brother_ql.backends.helpers import send
         from brother_ql.backends import backend_factory
         from brother_ql.raster import BrotherQLRaster
-        from PIL import Image  # Import the PIL Image module
+        from PIL import Image
 
         # Set up the printer using USB
         usb_path = 'usb://0x04f9:0x2042'  # This is the default USB identifier for Brother QL-710W
@@ -149,7 +149,11 @@ def open_print_window():
 
         # Load the image using PIL
         image_path = "splash.png"  # Replace with your image path
-        image = Image.open(image_path)  # Open the image with PIL
+        image = Image.open(image_path)
+
+        # Resize the image with the desired resampling filter (e.g., LANCZOS)
+        new_width, new_height = 696, 1122  # Example dimensions, adjust as necessary
+        image = image.resize((new_width, new_height), resample=Image.LANCZOS)
 
         # Prepare the backend for USB
         backend = backend_factory('pyusb')
@@ -158,7 +162,7 @@ def open_print_window():
         # Generate the command to print the label
         instructions = convert(
             qlr=qlr,
-            images=[image],  # Pass the opened PIL image
+            images=[image],  # Pass the resized PIL image
             label="62",  # 62mm continuous roll
             rotate="90",  # Rotate to fit the label
             threshold=70.0,
@@ -175,7 +179,6 @@ def open_print_window():
         # Close the print window and reset the timer
         print_window.destroy()
         reset_timer()  # Start the timer again after closing the print window
-
 
 
     # Function to handle the close action
