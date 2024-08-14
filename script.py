@@ -99,17 +99,26 @@ def open_print_window():
         temp_image_path = "/tmp/temp_image.png"
         image.save(temp_image_path)
 
-        # Command to print the image using `brother_ql` with `sudo`
-        print_command = (
-            "sudo BROTHER_QL_PRINTER=usb://0x04f9:0x2043 BROTHER_QL_MODEL=QL-710W "
-            f"brother_ql print -l 62 {temp_image_path}"
-        )
-
+        # Get the count of how many times to print
         try:
-            subprocess.run(print_command, shell=True, check=True)
-            print(f"Printing {count_label['text']} QR codes")
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to print: {e}")
+            print_count = int(count_label['text'])  # Assuming count_label contains the desired print count
+        except ValueError:
+            print("Invalid print count. Using default value of 1.")
+            print_count = 1
+
+        # Loop to print the specified number of times
+        for i in range(print_count):
+            print_command = (
+                "sudo BROTHER_QL_PRINTER=usb://0x04f9:0x2043 BROTHER_QL_MODEL=QL-710W "
+                f"brother_ql print -l 62 {temp_image_path}"
+            )
+
+            try:
+                subprocess.run(print_command, shell=True, check=True)
+                print(f"Printing {i+1}/{print_count} QR codes")
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to print on iteration {i+1}: {e}")
+                break  # Exit loop on failure
 
         # Close the print window and reset the timer
         print_window.destroy()
