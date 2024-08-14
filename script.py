@@ -64,6 +64,7 @@ def reset_timer(event=None):
     root.after_cancel(root.after_id)
     root.after_id = root.after(10000, reset_to_initial)
 
+
 def open_print_window():
     # Stop the current timer
     reset_timer()
@@ -83,14 +84,27 @@ def open_print_window():
     y = (print_window.winfo_screenheight() // 2) - (height // 2)
     print_window.geometry(f'{width}x{height}+{x}+{y}')
 
-    # Function to update the count label and reset the timer
-    def update_count(delta):
-        reset_timer()  # Reset the timer when plus or minus is clicked
-        new_value = int(count_label['text']) + delta
-        if 1 <= new_value <= 4:
-            count_label.config(text=str(new_value))
+    # Spinner images
+    spinner_images = []
+    for angle in range(0, 360, 30):
+        spinner_image = Image.open("spinner.png").rotate(angle)
+        spinner_images.append(ImageTk.PhotoImage(spinner_image))
+
+    def animate_spinner(current_frame=0):
+        spinner_label.config(image=spinner_images[current_frame])
+        next_frame = (current_frame + 1) % len(spinner_images)
+        print_window.after(100, animate_spinner, next_frame)
 
     def handle_print():
+        # Disable buttons and show spinner
+        print_button.config(state=tk.DISABLED)
+        close_button.config(state=tk.DISABLED)
+        minus_button.config(state=tk.DISABLED)
+        plus_button.config(state=tk.DISABLED)
+
+        # Start spinner animation
+        animate_spinner()
+
         # Load the image using PIL
         image_path = "qrcode_with_logo.png"  # Replace with your image path
         image = Image.open(image_path)
@@ -120,10 +134,16 @@ def open_print_window():
                 print(f"Failed to print on iteration {i+1}: {e}")
                 break  # Exit loop on failure
 
+        # Stop spinner animation, re-enable buttons, and hide spinner
+        spinner_label.config(image="")
+        print_button.config(state=tk.NORMAL)
+        close_button.config(state=tk.NORMAL)
+        minus_button.config(state=tk.NORMAL)
+        plus_button.config(state=tk.NORMAL)
+
         # Close the print window and reset the timer
         print_window.destroy()
         reset_timer()
-
 
     # Function to handle the close action
     def close_window():
@@ -179,6 +199,9 @@ def open_print_window():
     button_frame_height = close_button.winfo_reqheight()
     button_frame.config(height=button_frame_height)
 
+    # Add a spinner label for showing "Printing..."
+    spinner_label = tk.Label(print_window, image="", bg="#86f08a")
+    spinner_label.pack(pady=(20, 0))
 
 def open_new_window():
     # Clear existing widgets in the root window
