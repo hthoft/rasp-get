@@ -64,7 +64,6 @@ def reset_timer(event=None):
     root.after_cancel(root.after_id)
     root.after_id = root.after(10000, reset_to_initial)
 
-
 def open_print_window():
     # Stop the current timer
     reset_timer()
@@ -84,29 +83,100 @@ def open_print_window():
     y = (print_window.winfo_screenheight() // 2) - (height // 2)
     print_window.geometry(f'{width}x{height}+{x}+{y}')
 
-    # Spinner images
-    spinner_images = []
-    for angle in range(0, 360, 30):
-        spinner_image = Image.open("spinner.png").rotate(angle)
-        spinner_images.append(ImageTk.PhotoImage(spinner_image))
-
-    def animate_spinner(current_frame=0):
-        spinner_label.config(image=spinner_images[current_frame])
-        next_frame = (current_frame + 1) % len(spinner_images)
-        print_window.after(100, animate_spinner, next_frame)
+    # Function to update the count label and reset the timer
+    def update_count(delta):
+        reset_timer()  # Reset the timer when plus or minus is clicked
+        new_value = int(count_label['text']) + delta
+        if 1 <= new_value <= 4:
+            count_label.config(text=str(new_value))
+            
+    import qrcode
+    from datetime import datetime
 
     def handle_print():
-        # Disable buttons and show spinner
-        print_button.config(state=tk.DISABLED)
-        close_button.config(state=tk.DISABLED)
-        minus_button.config(state=tk.DISABLED)
-        plus_button.config(state=tk.DISABLED)
+        def generate_qr_code(data, logo_path, output_path, author, max_width_mm):
+            # Generate QR code
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_H,
+                box_size=10,
+                border=1,
+            )
+            qr.add_data(data)
+            qr.make(fit=True)
 
-        # Start spinner animation
-        animate_spinner()
+            qr_img = qr.make_image(fill='black', back_color='white').convert('RGB')
 
-        # Load the image using PIL
-        image_path = "qrcode_with_logo.png"  # Replace with your image path
+            # Open the logo image
+            logo = Image.open(logo_path)
+            max_width_pixels = int(max_width_mm * 300 / 25.4)
+            logo_width = max_width_pixels
+            logo_height = int(logo.size[1] * (logo_width / logo.size[0]))
+            logo = logo.resize((logo_width, logo_height), Image.LANCZOS)
+
+            # Calculate the height based on the contents
+            text_space = 50  # Space for the text
+            qr_size = max_width_pixels  # QR code should fill the entire width
+            total_height = logo_height + qr_size + text_space
+
+            # Create a new image with the calculated dimensions
+            img = Image.new('RGB', (max_width_pixels, total_height), 'white')
+
+            # Paste the logo and QR code onto the new image
+            logo_pos = (-15, 0)
+            img.paste(logo, logo_pos)
+
+            qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
+            qr_pos = (-15, logo_height)
+            img.paste(qr_img, qr_pos)
+
+            # Add timestamp and author
+            draw = ImageDraw.Draw(img)
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            font_size = 24
+            font = ImageFont.truetype("arial.ttf", font_size)
+            bold_font = ImageFont.truetype("arialbd.ttf", font_size)  # Assuming "arialbd.ttf" is the bold version of Arial
+
+            # Construct the text with bold sections
+            text_author = "Udskrevet af:  "
+            text_time = "Udskrevet d.:  "
+
+            # Measure text sizes
+            author_bbox = draw.textbbox((0, 0), text_author, font=bold_font)
+            author_width = author_bbox[2] - author_bbox[0]
+            time_bbox = draw.textbbox((0, 0), text_time, font=bold_font)
+            time_width = time_bbox[2] - time_bbox[0]
+
+            author_text = f"{text_author} {author}"
+            time_text = f"{text_time} {timestamp}"
+
+            # Calculate total text width and height
+            total_text_width = max(author_width + draw.textbbox((0, 0), author, font=font)[2] - draw.textbbox((0, 0), author, font=font)[0],
+                                time_width + draw.textbbox((0, 0), timestamp, font=font)[2] - draw.textbbox((0, 0), timestamp, font=font)[0])
+            total_text_height = author_bbox[3] - author_bbox[1] + time_bbox[3] - time_bbox[1]
+
+            # Calculate text position
+            text_pos_y = logo_height + qr_size - 10
+
+            # Draw the bold and normal text parts
+            draw.text(((max_width_pixels - total_text_width) // 2, text_pos_y), text_author, fill='black', font=bold_font)
+            draw.text(((max_width_pixels - total_text_width) // 2 + author_width, text_pos_y), author, fill='black', font=font)
+            draw.text(((max_width_pixels - total_text_width) // 2, text_pos_y + author_bbox[3] +5), text_time, fill='black', font=bold_font)
+            draw.text(((max_width_pixels - total_text_width) // 2 + time_width, text_pos_y + author_bbox[3] +5), timestamp, fill='black', font=font)
+
+            # Save the image with the correct DPI
+            img.save(output_path, dpi=(300, 300))
+
+        # Generate QR code with logo and timestamp
+        data = "306573616c74"  # Your QR data here
+        logo_path = "dark-logo-white.png"  # Replace with the path to your logo image
+        output_path = "qrcode_with_logo.png"
+        author = "Hans Thoft"  # Replace with the actual author's name
+        max_width_mm = 62  # Maximum width of the roll in mm
+        generate_qr_code(data, logo_path, output_path, author, max_width_mm)
+
+        # Load the generated image
+        image_path = output_path  # Use the generated image path
         image = Image.open(image_path)
 
         # Save the image as a temporary file (if needed)
@@ -134,16 +204,11 @@ def open_print_window():
                 print(f"Failed to print on iteration {i+1}: {e}")
                 break  # Exit loop on failure
 
-        # Stop spinner animation, re-enable buttons, and hide spinner
-        spinner_label.config(image="")
-        print_button.config(state=tk.NORMAL)
-        close_button.config(state=tk.NORMAL)
-        minus_button.config(state=tk.NORMAL)
-        plus_button.config(state=tk.NORMAL)
-
         # Close the print window and reset the timer
         print_window.destroy()
         reset_timer()
+
+
 
     # Function to handle the close action
     def close_window():
@@ -199,9 +264,6 @@ def open_print_window():
     button_frame_height = close_button.winfo_reqheight()
     button_frame.config(height=button_frame_height)
 
-    # Add a spinner label for showing "Printing..."
-    spinner_label = tk.Label(print_window, image="", bg="#86f08a")
-    spinner_label.pack(pady=(20, 0))
 
 def open_new_window():
     # Clear existing widgets in the root window
