@@ -1,6 +1,9 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 
+import subprocess
+
+
 # Create the main window
 root = tk.Tk()
 root.title("Test ImageTk")
@@ -89,97 +92,27 @@ def open_print_window():
         if 1 <= new_value <= 4:
             count_label.config(text=str(new_value))
 
-    # Function to handle the print action
     def handle_print():
-        print(f"Printing {count_label['text']} QR codes")
-        print_window.destroy()
-        reset_timer()  # Start the timer again after closing the print window
-
-    # Function to handle the close action
-    def close_window():
-        print_window.destroy()
-        reset_timer()  # Start the timer again after closing the print window
-
-    # Add a label above the buttons
-    instruction_label = tk.Label(print_window, text="Vælg antal:", font=("Arial", 28, "bold"), bg="#86f08a", fg="black")
-    instruction_label.pack(pady=20)
-
-    # Create a frame for the counter and buttons
-    counter_frame = tk.Frame(print_window, bg="#86f08a")
-    counter_frame.pack(pady=20)
-
-def open_print_window():
-    # Stop the current timer
-    reset_timer()
-
-    # Create a top-level window for the print options
-    print_window = tk.Toplevel(root)
-    print_window.title("Print QR Codes")
-    print_window.geometry("800x480")
-    print_window.configure(bg="#86f08a")  # A slightly darker green background
-
-    # Remove the window title bar and center the window
-    print_window.overrideredirect(True)
-    print_window.update_idletasks()
-    width = print_window.winfo_width()
-    height = print_window.winfo_height()
-    x = (print_window.winfo_screenwidth() // 2) - (width // 2)
-    y = (print_window.winfo_screenheight() // 2) - (height // 2)
-    print_window.geometry(f'{width}x{height}+{x}+{y}')
-
-    # Function to update the count label and reset the timer
-    def update_count(delta):
-        reset_timer()  # Reset the timer when plus or minus is clicked
-        new_value = int(count_label['text']) + delta
-        if 1 <= new_value <= 4:
-            count_label.config(text=str(new_value))
-
-    def handle_print():
-        # Import necessary modules from brother_ql and PIL
-        from brother_ql.conversion import convert
-        from brother_ql.backends.helpers import send
-        from brother_ql.backends import backend_factory
-        from brother_ql.raster import BrotherQLRaster
-        from PIL import Image
-
-        # Set up the printer using USB
-        usb_path = '/dev/usb/lp0'  # This is an example path; adjust based on your system
-        qlr = BrotherQLRaster('QL-710W')
-        qlr.exception_on_warning = True
-
         # Load the image using PIL
-        image_path = "splash.png"  # Replace with your image path
+        from PIL import Image
+        image_path = "path_to_image_or_generate_image"  # Replace with your image path
         image = Image.open(image_path)
 
-        # Resize the image with the desired resampling filter (e.g., LANCZOS)
-        new_width, new_height = 696, 1122  # Example dimensions, adjust as necessary
-        image = image.resize((new_width, new_height), resample=Image.LANCZOS)
+        # Save the image as a temporary file
+        temp_image_path = "/tmp/temp_image.png"
+        image.save(temp_image_path)
 
-        # Prepare the backend for USB using pyserial
-        backend = backend_factory('pyserial')
-        print(f"Connected to printer via USB at {usb_path}")
-
-        # Generate the command to print the label
-        instructions = convert(
-            qlr=qlr,
-            images=[image],  # Pass the resized PIL image
-            label="62",  # 62mm continuous roll
-            rotate="90",  # Rotate to fit the label
-            threshold=70.0,
-            cut=True
-        )
-
-        # Send the print job to the printer
+        # Send the image to the printer using CUPS command
+        print_command = f"lp -d Brother_QL_710W {temp_image_path}"
         try:
-            send(instructions=instructions, printer_identifier=usb_path, backend_identifier=backend)
+            subprocess.run(print_command, shell=True, check=True)
             print(f"Printing {count_label['text']} QR codes")
-        except Exception as e:
+        except subprocess.CalledProcessError as e:
             print(f"Failed to print: {e}")
 
         # Close the print window and reset the timer
         print_window.destroy()
         reset_timer()  # Start the timer again after closing the print window
-
 
     # Function to handle the close action
     def close_window():
