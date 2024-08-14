@@ -92,7 +92,7 @@ def open_print_window():
 
     def handle_print():
         # Load the image using PIL
-        image_path = "splash.png"  # Replace with your image path
+        image_path = "qrcode_with_logo.png"  # Replace with your image path
         image = Image.open(image_path)
 
         # Save the image as a temporary file (if needed)
