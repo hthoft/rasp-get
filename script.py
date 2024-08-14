@@ -92,16 +92,19 @@ def open_print_window():
 
     def handle_print():
         # Load the image using PIL
-        from PIL import Image
         image_path = "splash.png"  # Replace with your image path
         image = Image.open(image_path)
 
-        # Save the image as a temporary file
+        # Save the image as a temporary file (if needed)
         temp_image_path = "/tmp/temp_image.png"
         image.save(temp_image_path)
 
-        # Send the image to the printer using CUPS command
-        print_command = f"lp -d Brother_QL_710W {temp_image_path}"
+        # Command to print the image using `brother_ql` with `sudo`
+        print_command = (
+            "sudo BROTHER_QL_PRINTER=usb://0x04f9:0x2043 BROTHER_QL_MODEL=QL-710W "
+            f"brother_ql print -l 62 {temp_image_path}"
+        )
+
         try:
             subprocess.run(print_command, shell=True, check=True)
             print(f"Printing {count_label['text']} QR codes")
@@ -110,7 +113,7 @@ def open_print_window():
 
         # Close the print window and reset the timer
         print_window.destroy()
-        reset_timer() 
+        reset_timer()
 
 
     # Function to handle the close action
