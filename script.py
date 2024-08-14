@@ -95,7 +95,7 @@ def open_print_window():
     def handle_print():
         # Load the image using PIL
         from PIL import Image
-        image_path = "path_to_image_or_generate_image"  # Replace with your image path
+        image_path = "splash.png"  # Replace with your image path
         image = Image.open(image_path)
 
         # Save the image as a temporary file
