@@ -169,7 +169,7 @@ def open_print_window():
             img.save(output_path, dpi=(300, 300))
 
         # Generate QR code with logo and timestamp
-        data = "306573616c74"  # Your QR data here
+        data = "616573616c74"  # Your QR data here
         logo_path = "dark-logo-white.png"  # Replace with the path to your logo image
         output_path = "qrcode_with_logo.png"
         author = "Jens Haldrup"  # Replace with the actual author's name
