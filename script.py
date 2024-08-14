@@ -156,7 +156,7 @@ def open_print_window():
         image = image.resize((new_width, new_height), resample=Image.LANCZOS)
 
         # Prepare the backend for USB
-        backend = backend_factory('pyusb')
+        backend = backend_factory('linux_kernel')
         print(f"Connected to printer via USB at {usb_path}")
 
         # Generate the command to print the label
