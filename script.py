@@ -101,7 +101,7 @@ def open_print_window():
         image.save(temp_image_path)
 
         # Send the image to the printer using CUPS command
-        print_command = f"lp -d Brother_QL_710W {temp_image_path}"
+        print_command = f"lpstat -p"
         try:
             subprocess.run(print_command, shell=True, check=True)
             print(f"Printing {count_label['text']} QR codes")
