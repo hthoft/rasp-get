@@ -134,27 +134,31 @@ def open_print_window():
         if 1 <= new_value <= 4:
             count_label.config(text=str(new_value))
 
-    # Function to handle the print action
     def handle_print():
-        # Import necessary modules from brother_ql
+        # Import necessary modules from brother_ql and PIL
         from brother_ql.conversion import convert
         from brother_ql.backends.helpers import send
         from brother_ql.backends import backend_factory
         from brother_ql.raster import BrotherQLRaster
+        from PIL import Image  # Import the PIL Image module
 
         # Set up the printer using USB
         usb_path = 'usb://0x04f9:0x2042'  # This is the default USB identifier for Brother QL-710W
         qlr = BrotherQLRaster('QL-710W')
         qlr.exception_on_warning = True
 
+        # Load the image using PIL
+        image_path = "path_to_image_or_generate_image"  # Replace with your image path
+        image = Image.open(image_path)  # Open the image with PIL
+
         # Prepare the backend for USB
         backend = backend_factory('pyusb')
         print(f"Connected to printer via USB at {usb_path}")
 
-        # Generate the command to print a simple text label
+        # Generate the command to print the label
         instructions = convert(
             qlr=qlr,
-            images=["path_to_image_or_generate_image"],  # Replace with your image path or generation method
+            images=[image],  # Pass the opened PIL image
             label="62",  # 62mm continuous roll
             rotate="90",  # Rotate to fit the label
             threshold=70.0,
@@ -171,6 +175,7 @@ def open_print_window():
         # Close the print window and reset the timer
         print_window.destroy()
         reset_timer()  # Start the timer again after closing the print window
+
 
 
     # Function to handle the close action
