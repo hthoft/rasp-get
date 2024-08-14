@@ -148,7 +148,7 @@ def open_print_window():
         qlr.exception_on_warning = True
 
         # Load the image using PIL
-        image_path = "path_to_image_or_generate_image"  # Replace with your image path
+        image_path = "splash.pnga"  # Replace with your image path
         image = Image.open(image_path)  # Open the image with PIL
 
         # Prepare the backend for USB
