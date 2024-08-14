@@ -143,7 +143,7 @@ def open_print_window():
         from PIL import Image
 
         # Set up the printer using USB
-        usb_path = 'usb://0x04f9:0x2042'  # This is the default USB identifier for Brother QL-710W
+        usb_path = '/dev/usb/lp0'  # This is an example path; adjust based on your system
         qlr = BrotherQLRaster('QL-710W')
         qlr.exception_on_warning = True
 
@@ -155,8 +155,8 @@ def open_print_window():
         new_width, new_height = 696, 1122  # Example dimensions, adjust as necessary
         image = image.resize((new_width, new_height), resample=Image.LANCZOS)
 
-        # Prepare the backend for USB
-        backend = backend_factory('linux_kernel')
+        # Prepare the backend for USB using pyserial
+        backend = backend_factory('pyserial')
         print(f"Connected to printer via USB at {usb_path}")
 
         # Generate the command to print the label
