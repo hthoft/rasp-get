@@ -6,7 +6,7 @@ from PIL import Image
 
 def handle_print():
     # Path to your image file
-    image_path = "path_to_image_or_generate_image"  # Replace with your image path
+    image_path = "splash.png"  # Replace with your image path
 
     # Load the image using PIL
     image = Image.open(image_path)
