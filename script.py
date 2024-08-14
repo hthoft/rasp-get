@@ -89,9 +89,10 @@ def open_print_window():
         new_value = int(count_label['text']) + delta
         if 1 <= new_value <= 4:
             count_label.config(text=str(new_value))
-            
+
     import qrcode
     from datetime import datetime
+    from PIL import Image, ImageDraw, ImageFont
 
     def handle_print():
         def generate_qr_code(data, logo_path, output_path, author, max_width_mm):
@@ -171,7 +172,7 @@ def open_print_window():
         data = "306573616c74"  # Your QR data here
         logo_path = "dark-logo-white.png"  # Replace with the path to your logo image
         output_path = "qrcode_with_logo.png"
-        author = "Hans Thoft"  # Replace with the actual author's name
+        author = "Jens Haldrup"  # Replace with the actual author's name
         max_width_mm = 62  # Maximum width of the roll in mm
         generate_qr_code(data, logo_path, output_path, author, max_width_mm)
 
