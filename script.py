@@ -64,6 +64,54 @@ def reset_timer(event=None):
     root.after_cancel(root.after_id)
     root.after_id = root.after(10000, reset_to_initial)
 
+def open_select_project_window():
+    # Stop the current timer
+    reset_timer()
+
+    # Create a top-level window for selecting projects
+    project_window = tk.Toplevel(root)
+    project_window.title("Vælg Projekt")
+    project_window.geometry("800x480")
+    project_window.configure(bg="#86f08a")  # Slightly darker green background
+
+    # Remove the window title bar and center the window
+    project_window.overrideredirect(True)
+    project_window.update_idletasks()
+    width = project_window.winfo_width()
+    height = project_window.winfo_height()
+    x = (project_window.winfo_screenwidth() // 2) - (width // 2)
+    y = (project_window.winfo_screenheight() // 2) - (height // 2)
+    project_window.geometry(f'{width}x{height}+{x}+{y}')
+
+    # Add a label above the list
+    instruction_label = tk.Label(project_window, text="Vælg et projekt:", font=("Arial", 28, "bold"), bg="#86f08a", fg="black")
+    instruction_label.pack(pady=20)
+
+    # List of demo projects
+    projects = ["Projekt A", "Projekt B", "Projekt C", "Projekt D", "Projekt E"]
+
+    # Create a frame to hold the project list
+    project_frame = tk.Frame(project_window, bg="#86f08a")
+    project_frame.pack(pady=20, padx=20, fill="both", expand=True)
+
+    # Add buttons for each project
+    for project in projects:
+        project_button = tk.Button(project_frame, text=project, font=("Arial", 24), bg="white", fg="black", pady=10, padx=20)
+        project_button.pack(fill="x", pady=5)
+
+    # Create a frame for the close button
+    button_frame = tk.Frame(project_window, bg="#86f08a")
+    button_frame.pack(pady=20)
+
+    # Create the red X button to close the window
+    close_button = tk.Button(button_frame, text="Luk", font=("Arial", 28), command=project_window.destroy, bg="red", fg="white", padx=20, pady=20, borderwidth=0, width=5)
+    close_button.pack()
+
+    # Set a fixed height for the button frame to ensure the button has height
+    button_frame.update_idletasks()
+    button_frame.config(height=close_button.winfo_reqheight())
+
+
 def open_print_window():
     # Stop the current timer
     reset_timer()
@@ -291,7 +339,8 @@ def open_new_window():
     btn_print_qr = tk.Button(frame, text="Print QR", font=("Arial", 30, "bold"), bg=button_bg_color, fg="white", padx=70, pady=40, borderwidth=0, highlightthickness=0, command=open_print_window)
     btn_print_qr.grid(row=2, column=0, pady=20, padx=10)
 
-    btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Arial", 30, "bold"), bg=button_bg_color, fg="white", padx=70, pady=40, borderwidth=0, highlightthickness=0)
+    btn_choose_qr = tk.Button(frame, text="Vælg QR", font=("Arial", 30, "bold"), bg=button_bg_color, fg="white", padx=70, pady=40, borderwidth=0, highlightthickness=0, command=open_select_project_window)
+
     btn_choose_qr.grid(row=2, column=1, pady=20, padx=10)
 
     # Center the buttons in the frame
