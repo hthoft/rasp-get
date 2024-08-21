@@ -10,6 +10,6 @@ if __name__ == '__main__':
     html_file = os.path.join(current_dir, 'index.html')
 
     # Create a webview window to open the local HTML file
-    webview.create_window('Local Webview Example', html_file)
+    webview.create_window('Local Webview Example', html_file, fullscreen=True)
     webview.start()
 
