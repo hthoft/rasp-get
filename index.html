@@ -6,32 +6,74 @@
     <title>My Website</title>
     <!-- Link Bootstrap CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #splashContainer {
+            position: relative;
+            display: inline-block;
+        }
+        #overlayText {
+            position: absolute;
+            top: 75%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        #spinnerContainer {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background-color: lightgreen;
+            height: 480px;
+            width: 800px;
+        }
+        #buttonContainer {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <a id="splashLink" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        <img id="splashImage" src="splash.png" alt="Splash Image" width="800" height="480">
-    </a>
+    <div id="splashContainer">
+        <a id="splashLink" href="#">
+            <img id="splashImage" src="splash.png" alt="Splash Image" width="800" height="480">
+            <div id="overlayText">START</div>
+        </a>
+    </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Modal body text goes here.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div>
-            </div>
+    <div id="spinnerContainer">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
+    </div>
+
+    <div id="buttonContainer">
+        <button type="button" class="btn btn-success">Print QR</button>
+        <button type="button" class="btn btn-light">Vælg QR</button>
     </div>
 
     <!-- Optional: Include Bootstrap JS (if needed) -->
     <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('splashLink').addEventListener('click', function(event) {
+            event.preventDefault();
+
+            // Hide the image
+            document.getElementById('splashImage').style.display = 'none';
+            document.getElementById('overlayText').style.display = 'none';
+
+            // Show spinner with background
+            var spinnerContainer = document.getElementById('spinnerContainer');
+            spinnerContainer.style.display = 'flex';
+
+            // After 2 seconds, hide spinner and show buttons
+            setTimeout(function() {
+                spinnerContainer.style.display = 'none';
+                document.getElementById('buttonContainer').style.display = 'block';
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
