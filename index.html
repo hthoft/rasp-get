@@ -24,20 +24,42 @@
             color: white;
             font-size: 3rem;
             font-weight: bold;
+            z-index: 2;
         }
-        #spinnerContainer {
+        #nextContainer {
             display: none;
-            justify-content: center;
-            align-items: center;
-            background-color: lightgreen;
-            height: 480px;
+            position: relative;
+            background-image: url('maprova-bg.png');
             width: 800px;
-            margin-top: -24px; /* Ensure no margin on top */
+            height: 480px;
+            background-size: cover;
+            background-position: center;
+            text-align: center;
+            padding-top: 20px;
+            margin-top: -24px;
         }
         #buttonContainer {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .btn-large {
+            width: 300px;
+            height: 200px;
+            font-size: 1.5rem;
+        }
+        #settingsIcon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+        }
+        h2, h1 {
+            margin: 10px 0;
+            color: white;
         }
     </style>
 </head>
@@ -49,15 +71,15 @@
         </a>
     </div>
 
-    <div id="spinnerContainer">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
+    <div id="nextContainer">
+        <img id="settingsIcon" src="cog.png" alt="Settings">
+        <h2>Maprova Label</h2>
+        <div id="buttonContainer">
+            <button type="button" class="btn btn-success btn-large">Print QR</button>
+            <button type="button" class="btn btn-light btn-large">Vælg QR</button>
         </div>
-    </div>
-
-    <div id="buttonContainer">
-        <button type="button" class="btn btn-success">Print QR</button>
-        <button type="button" class="btn btn-light">Vælg QR</button>
+        <h2>Projekt</h2>
+        <h1>Modul</h1>
     </div>
 
     <!-- Optional: Include Bootstrap JS (if needed) -->
@@ -66,19 +88,22 @@
         document.getElementById('splashLink').addEventListener('click', function(event) {
             event.preventDefault();
 
-            // Hide the image
-            document.getElementById('splashImage').style.display = 'none';
-            document.getElementById('overlayText').style.display = 'none';
+            // Fade out the image and overlay text
+            const splashImage = document.getElementById('splashImage');
+            const overlayText = document.getElementById('overlayText');
 
-            // Show spinner with background
-            var spinnerContainer = document.getElementById('spinnerContainer');
-            spinnerContainer.style.display = 'flex';
+            splashImage.style.transition = 'opacity 0.5s';
+            overlayText.style.transition = 'opacity 0.5s';
 
-            // After 2 seconds, hide spinner and show buttons
+            splashImage.style.opacity = '0';
+            overlayText.style.opacity = '0';
+
+            // After fade out, hide splash and show next container
             setTimeout(function() {
-                spinnerContainer.style.display = 'none';
-                document.getElementById('buttonContainer').style.display = 'block';
-            }, 2000);
+                splashImage.style.display = 'none';
+                overlayText.style.display = 'none';
+                document.getElementById('nextContainer').style.display = 'block';
+            }, 500);
         });
     </script>
 </body>
