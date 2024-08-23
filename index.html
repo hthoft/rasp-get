@@ -84,22 +84,30 @@
         <img src="dark-logo.png" alt="MAPROVA Logo" class="mt-5" width="250" style="filter: invert(1);">
 
         <div id="buttonContainer">
-            <button type="button" class="btn btn-danger btn-large fs-1 fw-bolder shadow" style="border-radius: 1.5rem; background-color: #04cf5c; border-color: #04cf5c;">Print QR</button>
-            <button type="button" class="btn btn-light btn-large fs-1 fw-bolder shadow" style="border-radius: 1.5rem; ">Vælg QR</button>
+            <button type="button" id="printQR" class="btn btn-danger btn-large fs-1 fw-bolder shadow" style="border-radius: 1.5rem; background-color: #04cf5c; border-color: #04cf5c;">Print QR</button>
+            <button type="button" id="selectQR" class="btn btn-light btn-large fs-1 fw-bolder shadow" style="border-radius: 1.5rem; ">Vælg QR</button>
         </div>
         <h2 class="mt-4 fw-light">23024 - CPH Village</h2>
         <h1 class="fw-bolder">ME.01.02.03</h1>
     </div>
         <!-- New containers for additional windows -->
-        <div id="vaegQRContainer" style="display: none;">
+        <div id="printQRContainer" style="display: none;">
             <h2 class="mt-3 fw-light mb-0">23024 - CPH Village</h2>
             <h1 class="fw-bolder mt-0 mb-3">ME.01.02.03</h1>
             <div id="countContainer" class="d-flex justify-content-center align-items-center">
                 <button id="minusBtn" class="btn btn-lg btn-light px-5 py-3 shadow">
                     <img src="qrcode-remove.svg" alt="Minus" width="100" height="100">
                 </button>
-                <input id="countInput" type="number" min="1" max="5" value="1" class="form-control text-center mx-4 fw-bold shadow" style="width: 110px; font-size: 80px;">
-                <button id="plusBtn" class="btn btn-lg btn-light px-5 py-3 shadow">
+                <input id="countInput" 
+                type="number" 
+                min="1" 
+                max="5" 
+                value="1" 
+                class="form-control text-center mx-4 fw-bold shadow" 
+                style="width: 110px; font-size: 80px; pointer-events: none;" 
+                readonly 
+                tabindex="-1">
+                         <button id="plusBtn" class="btn btn-lg btn-light px-5 py-3 shadow">
                     <img src="qrcode-plus.svg" alt="Plus" width="100" height="100">
                 </button>
             </div>
@@ -173,8 +181,8 @@
                 }, countdownTime);
             }
     
-            document.querySelector('#nextContainer .btn-light').addEventListener('click', function() {
-                document.getElementById('vaegQRContainer').style.display = 'block';
+            document.querySelector('#printQR').addEventListener('click', function() {
+                document.getElementById('printQRContainer').style.display = 'block';
                 document.getElementById('nextContainer').style.display = 'none';
                 resetTimer(); // Reset timer on button click
 
@@ -200,10 +208,21 @@
                     document.getElementById('countInput').value = count;
                     resetTimer(); // Reset timer on count change
                 }
+
+                // Bind cancel button to go back to nextContainer
+                document.getElementById('cancelBtn').addEventListener('click', function() {
+                    document.getElementById('printQRContainer').style.display = 'none';
+                    document.getElementById('nextContainer').style.display = 'block';
+                });
             });
 
+            function resetTimer() {
+                // Reset timer logic
+            }
+
+
     
-            document.querySelector('#nextContainer .btn-light').addEventListener('click', function() {
+            document.querySelector('#selectQR').addEventListener('click', function() {
                 document.getElementById('vaegQRContainer').style.display = 'block';
                 document.getElementById('nextContainer').style.display = 'none';
                 resetTimer(); // Reset timer on button click
