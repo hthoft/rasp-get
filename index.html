@@ -82,30 +82,84 @@
         <h2 class="mt-4 fw-light">23024 - CPH Village</h2>
         <h1 class="fw-bolder">ME.01.02.03</h1>
     </div>
+        <!-- New containers for additional windows -->
+        <div id="printQRContainer">
+            <h1>Print QR Window</h1>
+            <!-- Content for Print QR Window -->
+        </div>
+    
+        <div id="vaegQRContainer">
+            <h1>Vælg QR Window</h1>
+            <!-- Content for Vælg QR Window -->
+        </div>
+    
+        <div id="settingsContainer">
+            <h1>Indstillinger Window</h1>
+            <!-- Content for Indstillinger Window -->
+        </div>
+    
+        <!-- Optional: Include Bootstrap JS (if needed) -->
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.getElementById('splashLink').addEventListener('click', function(event) {
+                event.preventDefault();
+    
+                // Fade out the image and overlay text
+                const splashImage = document.getElementById('splashImage');
+                const overlayText = document.getElementById('overlayText');
 
-    <!-- Optional: Include Bootstrap JS (if needed) -->
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById('splashLink').addEventListener('click', function(event) {
-            event.preventDefault();
-
-            // Fade out the image and overlay text
-            const splashImage = document.getElementById('splashImage');
-            const overlayText = document.getElementById('overlayText');
-
-            splashImage.style.transition = 'opacity 0.5s';
-            overlayText.style.transition = 'opacity 0.5s';
-
-            splashImage.style.opacity = '0';
-            overlayText.style.opacity = '0';
-
-            // After fade out, hide splash and show next container
-            setTimeout(function() {
                 splashImage.style.display = 'none';
                 overlayText.style.display = 'none';
+                    
                 document.getElementById('nextContainer').style.display = 'block';
-            }, 500);
-        });
-    </script>
-</body>
-</html>
+    
+                // Reset countdown on user action
+                resetTimer();
+            });
+    
+            // Countdown timer variables
+            let countdownTimer;
+            const countdownTime = 10000; // 10 seconds in milliseconds
+    
+            function resetTimer() {
+                clearTimeout(countdownTimer);
+                countdownTimer = setTimeout(function() {
+                    // Reset to splash page
+                    document.getElementById('nextContainer').style.display = 'none';
+                    document.getElementById('printQRContainer').style.display = 'none';
+                    document.getElementById('vaegQRContainer').style.display = 'none';
+                    document.getElementById('settingsContainer').style.display = 'none';
+                    document.getElementById('splashContainer').style.display = 'block';
+
+                    const splashImage = document.getElementById('splashImage');
+                    const overlayText = document.getElementById('overlayText');
+
+                    splashImage.style.display = 'block';
+                    overlayText.style.display = 'block';
+    
+                    // Optionally show a message or take other actions
+                    console.log('Tilbage til startside på grund af inaktivitet.');
+                }, countdownTime);
+            }
+    
+            // Event listeners for buttons triggering windows
+            document.querySelector('#nextContainer .btn-danger').addEventListener('click', function() {
+                document.getElementById('printQRContainer').style.display = 'block';
+                document.getElementById('nextContainer').style.display = 'none';
+                resetTimer(); // Reset timer on button click
+            });
+    
+            document.querySelector('#nextContainer .btn-light').addEventListener('click', function() {
+                document.getElementById('vaegQRContainer').style.display = 'block';
+                document.getElementById('nextContainer').style.display = 'none';
+                resetTimer(); // Reset timer on button click
+            });
+    
+            document.getElementById('settingsIcon').addEventListener('click', function() {
+                document.getElementById('settingsContainer').style.display = 'block';
+                document.getElementById('nextContainer').style.display = 'none';
+                resetTimer(); // Reset timer on icon click
+            });
+        </script>
+    </body>
+    </html>
