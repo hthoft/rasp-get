@@ -26,17 +26,26 @@
             font-weight: bold;
             z-index: 2;
         }
-        #nextContainer {
-            display: none;
-            position: relative;
-            background-image: url('maprova-bg.png');
-            width: 800px;
-            height: 480px;
-            background-size: cover;
-            background-position: center;
-            text-align: center;
-            padding-top: 20px;
-        }
+#nextContainer,
+#printQRContainer,
+#vaegQRContainer,
+#settingsContainer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 800px;
+    height: 480px;
+    background-image: url('maprova-bg.png');
+    width: 800px;
+    height: 480px;
+    background-size: cover;
+    background-position: center;
+    text-align: center;
+    padding-top: 20px;
+    z-index: 1; /* Ensure it appears above other elements */
+}
+
         #buttonContainer {
             margin-top: 20px;
             display: flex;
