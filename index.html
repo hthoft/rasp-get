@@ -2,330 +2,139 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website</title>
-    <!-- Link Bootstrap CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=800, height=480">
+    <title>Event Stats</title>
     <style>
-        /* Remove margin and padding from body */
         body {
             margin: 0;
             padding: 0;
-        }
-        #splashContainer {
-            position: relative;
-            display: inline-block;
-        }
-        #overlayText {
-            position: absolute;
-            top: 75%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 3rem;
-            font-weight: bold;
-            z-index: 2;
-        }
-#nextContainer,
-#printQRContainer,
-#vaegQRContainer,
-#settingsContainer {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 800px;
-    height: 480px;
-    background-image: url('maprova-bg.png');
-    width: 800px;
-    height: 480px;
-    background-size: cover;
-    background-position: center;
-    text-align: center;
-    padding-top: 20px;
-    z-index: 1; /* Ensure it appears above other elements */
-}
-
-        #buttonContainer {
-            margin-top: 20px;
+            background-color: black;
             display: flex;
+            flex-wrap: wrap;
+            width: 800px;
+            height: 480px;
+        }
+        .block {
+            width: 400px;
+            height: 240px;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
-            gap: 20px;
-        }
-        .btn-large {
-            width: 300px;
-            height: 200px;
-            font-size: 1.5rem;
-        }
-        #settingsIcon {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 50px;
-            height: 50px;
-            cursor: pointer;
-        }
-        h2, h1 {
-            margin: 10px 0;
+            align-items: center;
             color: white;
+            font-family: Arial, sans-serif;
+        }
+        #billetter {
+            color: #FF5733; /* Vibrant red */
+        }
+        #medlemsskaber {
+            color: #33FF57; /* Vibrant green */
+        }
+        #tutorer {
+            color: #3357FF; /* Vibrant blue */
+        }
+        #total {
+            color: #FF33A8; /* Vibrant pink */
+        }
+        h1 {
+            margin: 0;
+            font-size: 4rem;
+        }
+        p {
+            margin: 10px 0 0;
+            font-size: 1.5rem;
         }
     </style>
 </head>
 <body>
-    <div id="splashContainer">
-        <a id="splashLink" href="#">
-            <img id="splashImage" src="splash.png" alt="Splash Image" width="800" height="480">
-            <div id="overlayText">START</div>
-        </a>
+    <div id="billetter" class="block">
+        <h1 id="billetterCount">0</h1>
+        <p>Billetter</p>
+    </div>
+    <div id="medlemsskaber" class="block">
+        <h1 id="medlemsskaberCount">0</h1>
+        <p>Medlemsskaber</p>
+    </div>
+    <div id="tutorer" class="block">
+        <h1 id="tutorerCount">0</h1>
+        <p>Tutorer</p>
+    </div>
+    <div id="total" class="block">
+        <h1 id="totalCount">0</h1>
+        <p>Total</p>
     </div>
 
-    <div id="nextContainer">
-        <img id="settingsIcon" src="cog.png" alt="Settings">
-        <img src="dark-logo.png" alt="MAPROVA Logo" class="mt-5" width="250" style="filter: invert(1);">
-
-        <div id="buttonContainer">
-            <button type="button" id="printQR" class="btn btn-danger btn-large fs-1 fw-bolder shadow" style="border-radius: 1.5rem; background-color: #04cf5c; border-color: #04cf5c;">Print QR</button>
-            <button type="button" id="selectQR" class="btn btn-light btn-large fs-1 fw-bolder shadow" style="border-radius: 1.5rem; ">Vælg QR</button>
-        </div>
-        <h2 class="mt-4 fw-light">23024 - CPH Village</h2>
-        <h1 class="fw-bolder">ME.01.02.03</h1>
-    </div>
-        <!-- New containers for additional windows -->
-        <div id="printQRContainer" style="display: none;">
-            <h2 class="mt-3 fw-light mb-0">23024 - CPH Village</h2>
-            <h1 class="fw-bolder mt-0 mb-3">ME.01.02.03</h1>
-            <div id="countContainer" class="d-flex justify-content-center align-items-center">
-                <button id="minusBtn" class="btn btn-lg btn-light px-5 py-3 shadow">
-                    <img src="qrcode-remove.svg" alt="Minus" width="100" height="100">
-                </button>
-                <div id="countDisplay" 
-                    class="form-control text-center mx-4 fw-bold shadow" 
-                    style="width: 110px; font-size: 80px; pointer-events: none;">
-                    1
-                </div>
-                <button id="plusBtn" class="btn btn-lg btn-light px-5 py-3 shadow">
-                    <img src="qrcode-plus.svg" alt="Plus" width="100" height="100">
-                </button>
-            </div>
-            
-            <div id="actionButtons" class="mt-3 text-center">
-                <button id="cancelBtn" class="btn btn-danger btn-lg mx-2 fw-bolder text-black shadow">
-                    <img src="printer-pos-cancel-outline.svg" alt="Plus" width="100" height="100"><br>
-                    Afbryd
-                </button>
-                <button id="printBtn" class="btn btn-success btn-lg mx-2 fw-bolder text-black shadow w-50">
-                    <img src="printer-pos-check-outline.svg" alt="Plus" width="100" height="100"><br>
-                    Print QR
-                </button>
-            </div>
-        </div>
-        
-        
-        
-    
-        <div id="vaegQRContainer" style="display: none;">
-            <h2 class="mt-3 fw-light mb-0">23024 - CPH Village</h2>
-            <h1 class="fw-bolder mt-0 mb-3">Vælg QR Code</h1>
-            
-            <div class="form-group mt-4">
-                <label for="projectSelect" class="form-label">Vælg Projekt</label>
-                <select id="projectSelect" class="form-control form-control-lg"></select>
-            </div>
-            
-            <div class="form-group mt-4">
-                <label for="jobSelect" class="form-label">Vælg Opgave</label>
-                <select id="jobSelect" class="form-control form-control-lg"></select>
-            </div>
-            
-            <div class="mt-5">
-                <button id="selectJobBtn" class="btn btn-success btn-lg mx-2 fw-bolder shadow">Vælg Opgave</button>
-                <button id="cancelJobBtn" class="btn btn-danger btn-lg mx-2 fw-bolder shadow">Afbryd</button>
-            </div>
-        </div>
-        
-    
-        <div id="settingsContainer" style="display: none;">
-            <h1>Indstillinger Window</h1>
-            <!-- Content for Indstillinger Window -->
-        </div>
-    
-        <!-- Optional: Include Bootstrap JS (if needed) -->
-        <script src="js/bootstrap.bundle.min.js"></script>
-        <script src="js/jquery-3.6.0.min.js"></script>
-        <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const splashLink = document.getElementById('splashLink');
-    const splashImage = document.getElementById('splashImage');
-    const overlayText = document.getElementById('overlayText');
-    const nextContainer = document.getElementById('nextContainer');
-    const printQRContainer = document.getElementById('printQRContainer');
-    const vaegQRContainer = document.getElementById('vaegQRContainer');
-    const settingsContainer = document.getElementById('settingsContainer');
-
-    let countdownTimer;
-    const countdownTime = 10000; // 10 seconds in milliseconds
-
-    function resetTimer() {
-        clearTimeout(countdownTimer);
-        console.log('Timer reset');
-        countdownTimer = setTimeout(function() {
-            // Reset to splash page
-            nextContainer.style.display = 'none';
-            printQRContainer.style.display = 'none';
-            vaegQRContainer.style.display = 'none';
-            settingsContainer.style.display = 'none';
-            splashContainer.style.display = 'block';
-
-            splashImage.style.display = 'block';
-            overlayText.style.display = 'block';
-
-            console.log('Tilbage til startside på grund af inaktivitet.');
-        }, countdownTime);
-    }
-
-    splashLink.addEventListener('click', function(event) {
-        event.preventDefault();
-        splashImage.style.display = 'none';
-        overlayText.style.display = 'none';
-        nextContainer.style.display = 'block';
-        resetTimer();
-    });
-
-    document.querySelector('#printQR').addEventListener('click', function() {
-        printQRContainer.style.display = 'block';
-        nextContainer.style.display = 'none';
-        resetTimer();
-
-        let count = 1;
-        updateCountDisplay();
-
-        document.getElementById('plusBtn').addEventListener('click', function() {
-            if (count < 5) {
-                count++;
-                updateCountDisplay();
-            }
-        });
-
-        document.getElementById('minusBtn').addEventListener('click', function() {
-            if (count > 1) {
-                count--;
-                updateCountDisplay();
-            }
-        });
-
-        function updateCountDisplay() {
-            document.getElementById('countDisplay').textContent = count;
-            resetTimer();
-        }
-
-        document.getElementById('cancelBtn').addEventListener('click', function() {
-            printQRContainer.style.display = 'none';
-            nextContainer.style.display = 'block';
-            resetTimer();
-        });
-    });
-
-    document.querySelector('#selectQR').addEventListener('click', function() {
-        vaegQRContainer.style.display = 'block';
-        nextContainer.style.display = 'none';
-        resetTimer();
-        getAllProjects(); // Fetch projects when the window is opened
-    });
-
-    document.getElementById('settingsIcon').addEventListener('click', function() {
-        settingsContainer.style.display = 'block';
-        nextContainer.style.display = 'none';
-        resetTimer();
-    });
-
-    document.getElementById('cancelJobBtn').addEventListener('click', function() {
-        vaegQRContainer.style.display = 'none';
-        nextContainer.style.display = 'block';
-        resetTimer();
-    });
-
-    function getAllProjects() {
-        $.ajax({
-            url: "https://portal.maprova.dk/api/getAllProjects.php?api_key=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
-            type: "GET",
-            dataType: "json",
-            headers: {
-                "X-User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            },
-            success: function (projects) {
-                let projectSelect = $("#projectSelect");
-                projectSelect.empty();
-
-                if (projects.length > 0) {
-                    projects.forEach(function (project, index) {
-                        const displayText = project.project_id
-                            ? `${project.project_id} - ${project.project_title}`
-                            : project.project_title;
-                        projectSelect.append(
-                            `<option value="${project.id}">${displayText}</option>`
-                        );
-                        // Automatically load jobs for the first project
-                        if (index === 0) {
-                            fetchJobsForProject(project.id);
-                        }
-                    });
-                } else {
-                    projectSelect.append(`<option>Vælg et projekt</option>`);
-                    $("#jobSelect").empty().hide();
-                    $("#selectJobBtn").hide();
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("Error fetching projects:", error);
-            }
-        });
-
-        $("#projectSelect").change(function () {
-            let selectedProjectId = $(this).val();
-            fetchJobsForProject(selectedProjectId);
-        });
-
-        $("#selectJobBtn").click(function () {
-            let selectedJobId = $("#jobSelect").val();
-            if (selectedJobId) {
-                // Store selected job ID in a cookie
-                document.cookie = `selectedJob=${selectedJobId}; path=/`;
-                // Redirect or handle the selected job
-                console.log('Selected Job ID:', selectedJobId);
-            }
-        });
-    }
-
-    function fetchJobsForProject(projectId) {
-        if (projectId) {
-            $.ajax({
-                url: `https://portal.maprova.dk/api/getJobsByProjectID.php?project_id=${projectId}&api_key=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92`,
-                type: "GET",
-                dataType: "json",
-                success: function (jobs) {
-                    let jobSelect = $("#jobSelect");
-                    jobSelect.empty().show();
-                    $("#selectJobBtn").show();
-                    if (jobs.length > 0) {
-                        jobs.forEach(function (job) {
-                            if (job.job_status === "active") {
-                                jobSelect.append(
-                                    `<option value="${job.id}">${job.job_title}</option>`
-                                );
-                            }
-                        });
-                    } else {
-                        jobSelect.append(`<option>No jobs found</option>`);
-                    }
-                },
+    <script>
+        function generateHash(string) {
+            return crypto.subtle.digest('SHA-256', new TextEncoder().encode(string)).then(hashBuffer => {
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                return hashHex;
             });
-        } else {
-            $("#jobSelect").empty().hide();
-            $("#selectJobBtn").hide();
         }
-    }
-});
 
-        </script>
-    </body>
-    </html>
+        async function getEventData(eventUrl) {
+    try {
+        const proxyUrl = 'https://api.allorigins.win/get?url=';
+        const encodedUrl = encodeURIComponent(eventUrl);
+        const response = await fetch(proxyUrl + encodedUrl);
+        const data = await response.json();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+
+        if (xmlDoc.getElementsByTagName('error').length > 0) {
+            return 0; // invalid event id or XML error
+        }
+
+        let totalCount = 0;
+        const tickets = xmlDoc.getElementsByTagName("ticket");
+        for (const ticket of tickets) {
+            const prices = ticket.getElementsByTagName("price");
+            for (const price of prices) {
+                totalCount += parseInt(price.getElementsByTagName("count")[0].textContent);
+            }
+        }
+        return totalCount;
+    } catch (error) {
+        console.error("Error fetching event data:", error);
+        return 0;
+    }
+}
+
+async function fetchEventStats() {
+    const eventIds = ["100534", "100541", "100963"];
+    const totalTickets = 6000;
+    let totalCount = 0;
+
+    const host = "https://studentersamfundet.safeticket.dk/api/";
+    const params = {
+        version: 1,
+        user: "ssf_sales",
+        secret: "91a03fad61159e49c99f63dc944ab04d36c5640a5354ef4266b2d39329d25fd3",
+        cash: 1
+    };
+    const endpoints = "stats/";
+
+    const counts = await Promise.all(eventIds.map(async (eventId) => {
+        const hashString = `${params.version}:${params.user}:${eventId}:${params.cash}:${params.secret}`;
+        const hash = await generateHash(hashString);
+        const url = `${host}${endpoints}${eventId}?version=${params.version}&user=${params.user}&cash=${params.cash}&event=${eventId}&sha=${hash}`;
+        const count = await getEventData(url);
+        totalCount += count;
+        return count;
+    }));
+
+    document.getElementById('billetterCount').textContent = counts[0];
+    document.getElementById('medlemsskaberCount').textContent = counts[1];
+    document.getElementById('tutorerCount').textContent = counts[2];
+    document.getElementById('totalCount').textContent = totalCount;
+
+    console.log(`Total sold: ${(totalCount / totalTickets) * 100}%`);
+}
+
+fetchEventStats();
+setInterval(fetchEventStats, 60000); // Update every minute
+
+    </script>
+</body>
+</html>
