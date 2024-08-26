@@ -124,9 +124,25 @@
         
     
         <div id="vaegQRContainer" style="display: none;">
-            <h1>Vælg QR Window</h1>
-            <!-- Content for Vælg QR Window -->
+            <h2 class="mt-3 fw-light mb-0">23024 - CPH Village</h2>
+            <h1 class="fw-bolder mt-0 mb-3">Vælg QR Code</h1>
+            
+            <div class="form-group mt-4">
+                <label for="projectSelect" class="form-label">Vælg Projekt</label>
+                <select id="projectSelect" class="form-control form-control-lg"></select>
+            </div>
+            
+            <div class="form-group mt-4">
+                <label for="jobSelect" class="form-label">Vælg Opgave</label>
+                <select id="jobSelect" class="form-control form-control-lg"></select>
+            </div>
+            
+            <div class="mt-5">
+                <button id="selectJobBtn" class="btn btn-success btn-lg mx-2 fw-bolder shadow">Vælg Opgave</button>
+                <button id="cancelJobBtn" class="btn btn-danger btn-lg mx-2 fw-bolder shadow">Afbryd</button>
+            </div>
         </div>
+        
     
         <div id="settingsContainer" style="display: none;">
             <h1>Indstillinger Window</h1>
@@ -136,7 +152,7 @@
         <!-- Optional: Include Bootstrap JS (if needed) -->
         <script src="js/bootstrap.bundle.min.js"></script>
         <script>
-  document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
     const splashLink = document.getElementById('splashLink');
     const splashImage = document.getElementById('splashImage');
     const overlayText = document.getElementById('overlayText');
@@ -212,6 +228,7 @@
         vaegQRContainer.style.display = 'block';
         nextContainer.style.display = 'none';
         resetTimer();
+        getAllProjects(); // Fetch projects when the window is opened
     });
 
     document.getElementById('settingsIcon').addEventListener('click', function() {
@@ -219,6 +236,87 @@
         nextContainer.style.display = 'none';
         resetTimer();
     });
+
+    document.getElementById('cancelJobBtn').addEventListener('click', function() {
+        vaegQRContainer.style.display = 'none';
+        nextContainer.style.display = 'block';
+        resetTimer();
+    });
+
+    function getAllProjects() {
+        $.ajax({
+            url: "../../api/getAllProjects.php",
+            type: "GET",
+            dataType: "json",
+            success: function (projects) {
+                let projectSelect = $("#projectSelect");
+                projectSelect.empty();
+
+                if (projects.length > 0) {
+                    projects.forEach(function (project, index) {
+                        const displayText = project.project_id
+                            ? `${project.project_id} - ${project.project_title}`
+                            : project.project_title;
+                        projectSelect.append(
+                            `<option value="${project.id}">${displayText}</option>`
+                        );
+                        // Automatically load jobs for the first project
+                        if (index === 0) {
+                            fetchJobsForProject(project.id);
+                        }
+                    });
+                } else {
+                    projectSelect.append(`<option>Vælg et projekt</option>`);
+                    $("#jobSelect").empty().hide();
+                    $("#selectJobBtn").hide();
+                }
+            },
+        });
+
+        $("#projectSelect").change(function () {
+            let selectedProjectId = $(this).val();
+            fetchJobsForProject(selectedProjectId);
+        });
+
+        $("#selectJobBtn").click(function () {
+            let selectedJobId = $("#jobSelect").val();
+            if (selectedJobId) {
+                // Store selected job ID in a cookie
+                document.cookie = `selectedJob=${selectedJobId}; path=/`;
+                // Redirect or handle the selected job
+                console.log('Selected Job ID:', selectedJobId);
+            }
+        });
+    }
+
+    function fetchJobsForProject(projectId) {
+        if (projectId) {
+            $.ajax({
+                url: `../../api/getJobsByProjectID.php?project_id=${projectId}`,
+                type: "GET",
+                dataType: "json",
+                success: function (jobs) {
+                    let jobSelect = $("#jobSelect");
+                    jobSelect.empty().show();
+                    $("#selectJobBtn").show();
+                    if (jobs.length > 0) {
+                        jobs.forEach(function (job) {
+                            if (job.job_status === "active") {
+                                jobSelect.append(
+                                    `<option value="${job.id}">${job.job_title}</option>`
+                                );
+                            }
+                        });
+                    } else {
+                        jobSelect.append(`<option>No jobs found</option>`);
+                    }
+                },
+            });
+        } else {
+            $("#jobSelect").empty().hide();
+            $("#selectJobBtn").hide();
+        }
+    }
 });
 
         </script>
