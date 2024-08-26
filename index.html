@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function getAllProjects() {
         $.ajax({
-            url: "../../api/getAllProjects.php",
+            url: "https://portal.maprova.dk/api/api/getAllProjects.php?api_key=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
             type: "GET",
             dataType: "json",
             success: function (projects) {
@@ -292,7 +292,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function fetchJobsForProject(projectId) {
         if (projectId) {
             $.ajax({
-                url: `../../api/getJobsByProjectID.php?project_id=${projectId}`,
+                url: `https://portal.maprova.dk/api/getJobsByProjectID.php?project_id=${projectId}&api_key=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92`,
                 type: "GET",
                 dataType: "json",
                 success: function (jobs) {
