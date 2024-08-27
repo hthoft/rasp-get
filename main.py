@@ -3,7 +3,6 @@ import requests
 import xml.etree.ElementTree as ET
 import threading
 import os
-import webview
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -72,18 +71,20 @@ def fetch_stats():
 def start_flask():
     app.run(debug=True, host='0.0.0.0', use_reloader=False)
 
+# Testing function to call the Flask route and log the result
+def test_fetch_stats():
+    url = "http://127.0.0.1:5000/fetch_event_stats"
+    response = requests.get(url)
+    print("Test fetch stats response:", response.json())
+
 if __name__ == '__main__':
     # Start Flask in a separate thread
     flask_thread = threading.Thread(target=start_flask)
     flask_thread.daemon = True
     flask_thread.start()
 
-    # Get the current directory
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Specify the path to your index.html file
-    html_file = os.path.join(current_dir, 'index.html')
+    # Allow some time for the Flask server to start
+    threading.Event().wait(2)
 
-    # Create a webview window to open the local HTML file
-    webview.create_window('Event Stats', html_file, fullscreen=True)
-    webview.start()
+    # Call the test function to fetch stats and log to console
+    test_fetch_stats()
