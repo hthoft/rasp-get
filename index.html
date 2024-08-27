@@ -94,23 +94,28 @@
     </div>
 
     <script>
-        let previousData = { billetter: 0, medlemsskaber: 0, tutorer: 0, total: 0 };
-
+        let previousData = null;  // Initialize as null to detect the first fetch
+    
         function resetIndicator(indicatorId) {
             document.getElementById(indicatorId).classList.remove('active');
         }
-
+    
         function showIndicator(indicatorId, addedCount) {
             const indicator = document.getElementById(indicatorId);
             indicator.textContent = `+${addedCount}`;
             indicator.classList.add('active');
             setTimeout(() => resetIndicator(indicatorId), 300000); // Reset after 5 minutes
         }
-
+    
         async function fetchEventStats() {
             try {
                 const response = await fetch('http://127.0.0.1:5000/fetch_event_stats');
                 const data = await response.json();
+    
+                // Set initial values if this is the first fetch
+                if (previousData === null) {
+                    previousData = data;  // Initialize previousData with the first fetched data
+                }
     
                 // Update the counts and check for increases
                 if (data.billetter > previousData.billetter) {
@@ -129,7 +134,7 @@
                     const addedTotal = data.total - previousData.total;
                     showIndicator('totalIndicator', addedTotal);
                 }
-
+    
                 // Update the display
                 document.getElementById('billetterCount').textContent = data.billetter;
                 document.getElementById('medlemsskaberCount').textContent = data.medlemsskaber;
@@ -147,6 +152,7 @@
         fetchEventStats();
         setInterval(fetchEventStats, 60000); // Update every minute
     </script>
+    
     
 </body>
 </html>
