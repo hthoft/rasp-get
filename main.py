@@ -1,6 +1,9 @@
 import hashlib
 import subprocess
 import xml.etree.ElementTree as ET
+import threading
+import os
+import webview
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -44,21 +47,14 @@ def fetch_event_stats_with_curl():
             counts.append(0)
             continue
 
-        # Print the raw XML response for debugging
-        xml_data = result.stdout.decode('utf-8')
-        print(f"XML Data for event {event_id}:")
-        print(xml_data)
-
         # Parse the XML response
         try:
-            root = ET.fromstring(xml_data)
+            root = ET.fromstring(result.stdout.decode('utf-8'))
             count = 0
 
-            # Debugging: Print the structure of the XML
+            # Iterate over tickets and sum their counts
             for ticket in root.findall('.//ticket'):
-                print(f"Ticket ID: {ticket.attrib['id']}")
                 for price in ticket.findall('.//price'):
-                    print(f"Price Amount: {price.find('amount').text}, Count: {price.find('count').text}")
                     count += int(price.find('count').text)
 
             counts.append(count)
@@ -75,10 +71,28 @@ def fetch_event_stats_with_curl():
         "total": total_count
     }
 
+# Flask route to serve event stats
 @app.route('/fetch_event_stats')
 def fetch_stats():
     stats = fetch_event_stats_with_curl()
     return jsonify(stats)
 
+# Function to start Flask in a separate thread
+def start_flask():
+    app.run(debug=True, host='0.0.0.0', use_reloader=False)
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    # Start Flask in a separate thread
+    flask_thread = threading.Thread(target=start_flask)
+    flask_thread.daemon = True
+    flask_thread.start()
+
+    # Get the current directory
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Specify the path to your index.html file
+    html_file = os.path.join(current_dir, 'index.html')
+
+    # Create a webview window to open the local HTML file
+    webview.create_window('Event Stats', html_file, fullscreen=True)
+    webview.start()
