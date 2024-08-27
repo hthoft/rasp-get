@@ -5,6 +5,7 @@ import threading
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS
+import time
 
 app = Flask(__name__)
 CORS(app)  # Apply CORS to the entire app
@@ -71,11 +72,30 @@ def fetch_stats():
 def start_flask():
     app.run(debug=True, host='0.0.0.0', use_reloader=False)
 
+# Function to check if the Flask server is up and running
+def wait_for_server(url, timeout=10):
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                print("Server is up and running.")
+                return True
+        except requests.ConnectionError:
+            pass
+        time.sleep(1)
+    print("Server did not start within the timeout period.")
+    return False
+
 # Testing function to call the Flask route and log the result
 def test_fetch_stats():
     url = "http://127.0.0.1:5000/fetch_event_stats"
-    response = requests.get(url)
-    print("Test fetch stats response:", response.json())
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        print("Test fetch stats response:", response.json())
+    except requests.RequestException as e:
+        print(f"Error during test fetch stats: {e}")
 
 if __name__ == '__main__':
     # Start Flask in a separate thread
@@ -83,8 +103,9 @@ if __name__ == '__main__':
     flask_thread.daemon = True
     flask_thread.start()
 
-    # Allow some time for the Flask server to start
-    threading.Event().wait(2)
-
-    # Call the test function to fetch stats and log to console
-    test_fetch_stats()
+    # Wait for the server to be ready before testing
+    if wait_for_server("http://127.0.0.1:5000/fetch_event_stats"):
+        # Call the test function to fetch stats and log to console
+        test_fetch_stats()
+    else:
+        print("Failed to start Flask server.")
