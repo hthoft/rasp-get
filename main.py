@@ -26,14 +26,21 @@ def fetch_event_stats_with_curl():
             counts.append(0)
             continue
 
+        # Print the raw XML response for debugging
+        xml_data = result.stdout.decode('utf-8')
+        print(f"XML Data for event {event_id}:")
+        print(xml_data)
+
         # Parse the XML response
         try:
-            root = ET.fromstring(result.stdout.decode('utf-8'))
+            root = ET.fromstring(xml_data)
             count = 0
 
-            # Iterate over tickets and sum their counts
+            # Debugging: Print the structure of the XML
             for ticket in root.findall('.//ticket'):
+                print(f"Ticket ID: {ticket.attrib['id']}")
                 for price in ticket.findall('.//price'):
+                    print(f"Price Amount: {price.find('amount').text}, Count: {price.find('count').text}")
                     count += int(price.find('count').text)
 
             counts.append(count)
