@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=800, height=480">
     <title>Event Stats</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -12,12 +13,11 @@
             display: flex;
             flex-wrap: wrap;
             width: 800px;
-            height: 480px;
             font-family: Arial, sans-serif;
         }
         .block {
             width: 33.33%; /* One-third of the width */
-            height: 160px; /* Reduced height */
+            height: 90px; /* Reduced height */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -36,8 +36,8 @@
         }
         #total {
             width: 100%;
-            height: 160px;
-            color: #FF33A8; /* Vibrant pink */
+            height: 240px;
+            color: #ff0000; /* Vibrant pink */
             font-size: 4rem;
             text-align: center;
             display: flex;
@@ -72,8 +72,8 @@
 </head>
 <body>    
     <div id="total" class="block">
-        <h1 id="totalCount">0</h1>
-        <p>Total</p>
+        <h1 class="fw-bolder" id="totalCount">0</h1>
+        <p class="fw-bolder">Total</p>
         <div class="indicator" id="totalIndicator">+1</div>
     </div>
     <div class="block" id="billetter">
