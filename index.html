@@ -65,76 +65,25 @@
     </div>
 
     <script>
-        function generateHash(string) {
-            return crypto.subtle.digest('SHA-256', new TextEncoder().encode(string)).then(hashBuffer => {
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                return hashHex;
-            });
-        }
-
-        async function getEventData(eventUrl) {
-    try {
-        const proxyUrl = 'https://api.allorigins.win/get?url=';
-        const encodedUrl = encodeURIComponent(eventUrl);
-        const response = await fetch(proxyUrl + encodedUrl);
-        const data = await response.json();
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-
-        if (xmlDoc.getElementsByTagName('error').length > 0) {
-            return 0; // invalid event id or XML error
-        }
-
-        let totalCount = 0;
-        const tickets = xmlDoc.getElementsByTagName("ticket");
-        for (const ticket of tickets) {
-            const prices = ticket.getElementsByTagName("price");
-            for (const price of prices) {
-                totalCount += parseInt(price.getElementsByTagName("count")[0].textContent);
+        async function fetchEventStats() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/fetch_event_stats');
+                const data = await response.json();
+    
+                document.getElementById('billetterCount').textContent = data.billetter;
+                document.getElementById('medlemsskaberCount').textContent = data.medlemsskaber;
+                document.getElementById('tutorerCount').textContent = data.tutorer;
+                document.getElementById('totalCount').textContent = data.total;
+    
+                console.log(`Total sold: ${(data.total / 6000) * 100}%`);
+            } catch (error) {
+                console.error("Error fetching event stats:", error);
             }
         }
-        return totalCount;
-    } catch (error) {
-        console.error("Error fetching event data:", error);
-        return 0;
-    }
-}
-
-async function fetchEventStats() {
-    const eventIds = ["100534", "100541", "100963"];
-    const totalTickets = 6000;
-    let totalCount = 0;
-
-    const host = "https://studentersamfundet.safeticket.dk/api/";
-    const params = {
-        version: 1,
-        user: "ssf_sales",
-        secret: "91a03fad61159e49c99f63dc944ab04d36c5640a5354ef4266b2d39329d25fd3",
-        cash: 1
-    };
-    const endpoints = "stats/";
-
-    const counts = await Promise.all(eventIds.map(async (eventId) => {
-        const hashString = `${params.version}:${params.user}:${eventId}:${params.cash}:${params.secret}`;
-        const hash = await generateHash(hashString);
-        const url = `${host}${endpoints}${eventId}?version=${params.version}&user=${params.user}&cash=${params.cash}&event=${eventId}&sha=${hash}`;
-        const count = await getEventData(url);
-        totalCount += count;
-        return count;
-    }));
-
-    document.getElementById('billetterCount').textContent = counts[0];
-    document.getElementById('medlemsskaberCount').textContent = counts[1];
-    document.getElementById('tutorerCount').textContent = counts[2];
-    document.getElementById('totalCount').textContent = totalCount;
-
-    console.log(`Total sold: ${(totalCount / totalTickets) * 100}%`);
-}
-
-fetchEventStats();
-setInterval(fetchEventStats, 60000); // Update every minute
-
+    
+        fetchEventStats();
+        setInterval(fetchEventStats, 60000); // Update every minute
     </script>
+    
 </body>
 </html>
