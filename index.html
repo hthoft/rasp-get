@@ -13,16 +13,17 @@
             flex-wrap: wrap;
             width: 800px;
             height: 480px;
+            font-family: Arial, sans-serif;
         }
         .block {
-            width: 400px;
-            height: 240px;
+            width: 33.33%; /* One-third of the width */
+            height: 160px; /* Reduced height */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: white;
-            font-family: Arial, sans-serif;
+            position: relative; /* For indicator positioning */
         }
         #billetter {
             color: #FF5733; /* Vibrant red */
@@ -34,48 +35,104 @@
             color: #3357FF; /* Vibrant blue */
         }
         #total {
+            width: 100%;
+            height: 160px;
             color: #FF33A8; /* Vibrant pink */
+            font-size: 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #total h1 {
+            font-size: 5rem; /* Larger size for Total */
         }
         h1 {
             margin: 0;
-            font-size: 4rem;
+            font-size: 3rem; /* Smaller size for other counts */
         }
         p {
             margin: 10px 0 0;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
+        }
+        .indicator {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .indicator.active {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <div id="billetter" class="block">
+    <div class="block" id="billetter">
         <h1 id="billetterCount">0</h1>
         <p>Billetter</p>
+        <div class="indicator" id="billetterIndicator">+1</div>
     </div>
-    <div id="medlemsskaber" class="block">
+    <div class="block" id="medlemsskaber">
         <h1 id="medlemsskaberCount">0</h1>
         <p>Medlemsskaber</p>
+        <div class="indicator" id="medlemsskaberIndicator">+1</div>
     </div>
-    <div id="tutorer" class="block">
+    <div class="block" id="tutorer">
         <h1 id="tutorerCount">0</h1>
         <p>Tutorer</p>
+        <div class="indicator" id="tutorerIndicator">+1</div>
     </div>
     <div id="total" class="block">
         <h1 id="totalCount">0</h1>
         <p>Total</p>
+        <div class="indicator" id="totalIndicator">+1</div>
     </div>
 
     <script>
+        let previousData = { billetter: 0, medlemsskaber: 0, tutorer: 0, total: 0 };
+
+        function resetIndicator(indicatorId) {
+            document.getElementById(indicatorId).classList.remove('active');
+        }
+
+        function showIndicator(indicatorId) {
+            const indicator = document.getElementById(indicatorId);
+            indicator.classList.add('active');
+            setTimeout(() => resetIndicator(indicatorId), 300000); // Reset after 5 minutes
+        }
+
         async function fetchEventStats() {
             try {
                 const response = await fetch('http://127.0.0.1:5000/fetch_event_stats');
                 const data = await response.json();
     
+                // Update the counts and check for increases
+                if (data.billetter > previousData.billetter) {
+                    showIndicator('billetterIndicator');
+                }
+                if (data.medlemsskaber > previousData.medlemsskaber) {
+                    showIndicator('medlemsskaberIndicator');
+                }
+                if (data.tutorer > previousData.tutorer) {
+                    showIndicator('tutorerIndicator');
+                }
+                if (data.total > previousData.total) {
+                    showIndicator('totalIndicator');
+                }
+
+                // Update the display
                 document.getElementById('billetterCount').textContent = data.billetter;
                 document.getElementById('medlemsskaberCount').textContent = data.medlemsskaber;
                 document.getElementById('tutorerCount').textContent = data.tutorer;
                 document.getElementById('totalCount').textContent = data.total;
     
-                console.log(`Total sold: ${(data.total / 6000) * 100}%`);
+                // Update the previous data for the next comparison
+                previousData = data;
+    
             } catch (error) {
                 console.error("Error fetching event stats:", error);
             }
