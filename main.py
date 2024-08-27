@@ -62,11 +62,13 @@ def fetch_event_stats():
         "total": total_count
     }
 
-# Flask route to serve event stats
 @app.route('/fetch_event_stats')
 def fetch_stats():
+    print("Received request for /fetch_event_stats")  # Log when the route is hit
     stats = fetch_event_stats()
+    print("Returning stats:", stats)  # Log the stats being returned
     return jsonify(stats)
+
 
 # Function to start Flask in a separate thread
 def start_flask():
