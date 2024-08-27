@@ -26,19 +26,19 @@
             position: relative; /* For indicator positioning */
         }
         #billetter {
-            color: #FF5733; /* Vibrant red */
+            color: #ffffff; /* Vibrant red */
         }
         #medlemsskaber {
-            color: #33FF57; /* Vibrant green */
+            color: #ffffff; /* Vibrant green */
         }
         #tutorer {
-            color: #3357FF; /* Vibrant blue */
+            color: #ffffff; /* Vibrant blue */
         }
         #total {
             width: 100%;
             height: 160px;
             color: #FF33A8; /* Vibrant pink */
-            font-size: 2rem;
+            font-size: 4rem;
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -70,7 +70,12 @@
         }
     </style>
 </head>
-<body>
+<body>    
+    <div id="total" class="block">
+        <h1 id="totalCount">0</h1>
+        <p>Total</p>
+        <div class="indicator" id="totalIndicator">+1</div>
+    </div>
     <div class="block" id="billetter">
         <h1 id="billetterCount">0</h1>
         <p>Billetter</p>
@@ -86,11 +91,7 @@
         <p>Tutorer</p>
         <div class="indicator" id="tutorerIndicator">+1</div>
     </div>
-    <div id="total" class="block">
-        <h1 id="totalCount">0</h1>
-        <p>Total</p>
-        <div class="indicator" id="totalIndicator">+1</div>
-    </div>
+
 
     <script>
         let previousData = { billetter: 0, medlemsskaber: 0, tutorer: 0, total: 0 };
