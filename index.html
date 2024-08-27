@@ -27,18 +27,18 @@
             position: relative; /* For indicator positioning */
         }
         #billetter {
-            color: #ffffff; /* Vibrant red */
+            color: #ffffff;
         }
         #medlemsskaber {
-            color: #ffffff; /* Vibrant green */
+            color: #ffffff;
         }
         #tutorer {
-            color: #ffffff; /* Vibrant blue */
+            color: #ffffff;
         }
         #total {
             width: 100%;
             height: 240px;
-            color: #ff0000; /* Vibrant pink */
+            color: #ff0000;
             font-size: 6rem;
             text-align: center;
             display: flex;
@@ -47,11 +47,11 @@
             align-items: center;
         }
         #total h1 {
-            font-size: 5rem; /* Larger size for Total */
+            font-size: 5rem;
         }
         h1 {
             margin: 0;
-            font-size: 3rem; /* Smaller size for other counts */
+            font-size: 3rem;
         }
         p {
             margin: 10px 0 0;
@@ -72,27 +72,26 @@
     </style>
 </head>
 <body>    
-    <div id="total" class="block">
+    <div id="total" class="block mt-3">
         <h1 class="fw-bolder" style="font-size: 6rem;" id="totalCount">0</h1>
         <p class="fw-bolder">Total</p>
-        <div class="indicator" id="totalIndicator">+1</div>
+        <div class="indicator" id="totalIndicator">+0</div>
     </div>
     <div class="block" id="billetter">
         <h1 id="billetterCount">0</h1>
         <p>Billetter</p>
-        <div class="indicator" id="billetterIndicator">+1</div>
+        <div class="indicator" id="billetterIndicator">+0</div>
     </div>
     <div class="block" id="medlemsskaber">
         <h1 id="medlemsskaberCount">0</h1>
         <p>Medlemsskaber</p>
-        <div class="indicator" id="medlemsskaberIndicator">+1</div>
+        <div class="indicator" id="medlemsskaberIndicator">+0</div>
     </div>
     <div class="block" id="tutorer">
         <h1 id="tutorerCount">0</h1>
         <p>Tutorer</p>
-        <div class="indicator" id="tutorerIndicator">+1</div>
+        <div class="indicator" id="tutorerIndicator">+0</div>
     </div>
-
 
     <script>
         let previousData = { billetter: 0, medlemsskaber: 0, tutorer: 0, total: 0 };
@@ -101,8 +100,9 @@
             document.getElementById(indicatorId).classList.remove('active');
         }
 
-        function showIndicator(indicatorId) {
+        function showIndicator(indicatorId, addedCount) {
             const indicator = document.getElementById(indicatorId);
+            indicator.textContent = `+${addedCount}`;
             indicator.classList.add('active');
             setTimeout(() => resetIndicator(indicatorId), 300000); // Reset after 5 minutes
         }
@@ -114,16 +114,20 @@
     
                 // Update the counts and check for increases
                 if (data.billetter > previousData.billetter) {
-                    showIndicator('billetterIndicator');
+                    const addedBilletter = data.billetter - previousData.billetter;
+                    showIndicator('billetterIndicator', addedBilletter);
                 }
                 if (data.medlemsskaber > previousData.medlemsskaber) {
-                    showIndicator('medlemsskaberIndicator');
+                    const addedMedlemsskaber = data.medlemsskaber - previousData.medlemsskaber;
+                    showIndicator('medlemsskaberIndicator', addedMedlemsskaber);
                 }
                 if (data.tutorer > previousData.tutorer) {
-                    showIndicator('tutorerIndicator');
+                    const addedTutorer = data.tutorer - previousData.tutorer;
+                    showIndicator('tutorerIndicator', addedTutorer);
                 }
                 if (data.total > previousData.total) {
-                    showIndicator('totalIndicator');
+                    const addedTotal = data.total - previousData.total;
+                    showIndicator('totalIndicator', addedTotal);
                 }
 
                 // Update the display
