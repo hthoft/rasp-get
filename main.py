@@ -70,9 +70,10 @@ def fetch_stats():
     return jsonify(stats)
 
 
-# Function to start Flask in a separate thread
-def start_flask():
-    app.run(debug=True, host='0.0.0.0', use_reloader=False)
+if __name__ == '__main__':
+    # Run Flask directly without threading
+    app.run(debug=True, host='0.0.0.0')
+
 
 # Function to check if the Flask server is up and running
 def wait_for_server(url, timeout=10):
@@ -98,16 +99,3 @@ def test_fetch_stats():
         print("Test fetch stats response:", response.json())
     except requests.RequestException as e:
         print(f"Error during test fetch stats: {e}")
-
-if __name__ == '__main__':
-    # Start Flask in a separate thread
-    flask_thread = threading.Thread(target=start_flask)
-    flask_thread.daemon = True
-    flask_thread.start()
-
-    # Wait for the server to be ready before testing
-    if wait_for_server("http://127.0.0.1:5000/fetch_event_stats"):
-        # Call the test function to fetch stats and log to console
-        test_fetch_stats()
-    else:
-        print("Failed to start Flask server.")
