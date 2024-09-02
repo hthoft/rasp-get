@@ -74,7 +74,7 @@
 <body>    
     <div id="total" class="block mt-3">
         <h1 class="fw-bolder" style="font-size: 6rem;" id="totalCount">0</h1>
-        <p class="fw-bolder">Total</p>
+        <p class="fw-bolder" id="totalPercentage">Total</p>
         <div class="indicator" id="totalIndicator">+0</div>
     </div>
     <div class="block" id="billetter">
@@ -139,8 +139,16 @@
                 document.getElementById('billetterCount').textContent = data.billetter;
                 document.getElementById('medlemsskaberCount').textContent = data.medlemsskaber;
                 document.getElementById('tutorerCount').textContent = data.tutorer;
-                document.getElementById('totalCount').textContent = data.total;
-    
+                
+                const totalElement = document.getElementById('totalCount');
+                const percentageElement = document.getElementById('totalPercentage');
+                
+                totalElement.textContent = data.total;
+
+                // Calculate the percentage
+                const percentage = ((data.total / 6000) * 100).toFixed(2);
+                percentageElement.textContent = `Total / ${percentage}%`;
+
                 // Update the previous data for the next comparison
                 previousData = data;
     
