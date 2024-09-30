@@ -123,9 +123,9 @@
         
         
     
-        <div id="vaegQRContainer" style="display: none;">
-            <h2 class="mt-3 fw-light mb-0">23024 - CPH Village</h2>
-            <h1 class="fw-bolder mt-0 mb-3">Vælg QR Code</h1>
+        <div id="vaegQRContainer">
+            <h2 class="fw-light">23024 - CPH Village</h2>
+            <h1 class="fw-bolder">Vælg QR Code</h1>
             
             <div class="form-group mt-4">
                 <label for="projectSelect" class="form-label">Vælg Projekt</label>
@@ -138,8 +138,14 @@
             </div>
             
             <div class="mt-5">
-                <button id="selectJobBtn" class="btn btn-success btn-lg mx-2 fw-bolder shadow">Vælg Opgave</button>
-                <button id="cancelJobBtn" class="btn btn-danger btn-lg mx-2 fw-bolder shadow">Afbryd</button>
+                <!-- Button to select the job -->
+                <button id="selectJobBtn" class="btn btn-success btn-lg fw-bolder shadow">
+                    <i class="mdi mdi-check-circle"></i> Vælg Opgave
+                </button>
+                <!-- Button to cancel -->
+                <button id="cancelJobBtn" class="btn btn-danger btn-lg fw-bolder shadow">
+                    <i class="mdi mdi-cancel"></i> Afbryd
+                </button>
             </div>
         </div>
         
@@ -153,175 +159,141 @@
         <script src="js/bootstrap.bundle.min.js"></script>
         <script src="js/jquery-3.6.0.min.js"></script>
         <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const splashLink = document.getElementById('splashLink');
-    const splashImage = document.getElementById('splashImage');
-    const overlayText = document.getElementById('overlayText');
-    const nextContainer = document.getElementById('nextContainer');
-    const printQRContainer = document.getElementById('printQRContainer');
-    const vaegQRContainer = document.getElementById('vaegQRContainer');
-    const settingsContainer = document.getElementById('settingsContainer');
-
-    let countdownTimer;
-    const countdownTime = 10000; // 10 seconds in milliseconds
-
-    function resetTimer() {
-        clearTimeout(countdownTimer);
-        console.log('Timer reset');
-        countdownTimer = setTimeout(function() {
-            // Reset to splash page
-            nextContainer.style.display = 'none';
-            printQRContainer.style.display = 'none';
-            vaegQRContainer.style.display = 'none';
-            settingsContainer.style.display = 'none';
-            splashContainer.style.display = 'block';
-
-            splashImage.style.display = 'block';
-            overlayText.style.display = 'block';
-
-            console.log('Tilbage til startside på grund af inaktivitet.');
-        }, countdownTime);
-    }
-
-    splashLink.addEventListener('click', function(event) {
-        event.preventDefault();
-        splashImage.style.display = 'none';
-        overlayText.style.display = 'none';
-        nextContainer.style.display = 'block';
-        resetTimer();
-    });
-
-    document.querySelector('#printQR').addEventListener('click', function() {
-        printQRContainer.style.display = 'block';
-        nextContainer.style.display = 'none';
-        resetTimer();
-
-        let count = 1;
-        updateCountDisplay();
-
-        document.getElementById('plusBtn').addEventListener('click', function() {
-            if (count < 5) {
-                count++;
-                updateCountDisplay();
-            }
-        });
-
-        document.getElementById('minusBtn').addEventListener('click', function() {
-            if (count > 1) {
-                count--;
-                updateCountDisplay();
-            }
-        });
-
-        function updateCountDisplay() {
-            document.getElementById('countDisplay').textContent = count;
-            resetTimer();
-        }
-
-        document.getElementById('cancelBtn').addEventListener('click', function() {
-            printQRContainer.style.display = 'none';
-            nextContainer.style.display = 'block';
-            resetTimer();
-        });
-    });
-
-    document.querySelector('#selectQR').addEventListener('click', function() {
-        vaegQRContainer.style.display = 'block';
-        nextContainer.style.display = 'none';
-        resetTimer();
-        getAllProjects(); // Fetch projects when the window is opened
-    });
-
-    document.getElementById('settingsIcon').addEventListener('click', function() {
-        settingsContainer.style.display = 'block';
-        nextContainer.style.display = 'none';
-        resetTimer();
-    });
-
-    document.getElementById('cancelJobBtn').addEventListener('click', function() {
-        vaegQRContainer.style.display = 'none';
-        nextContainer.style.display = 'block';
-        resetTimer();
-    });
-
-    function getAllProjects() {
-        $.ajax({
-            url: "http://127.0.0.1:5000/api/projects", // Fetch from local Flask API
-            type: "GET",
-            dataType: "json",
-            success: function (projects) {
-                let projectSelect = $("#projectSelect");
-                projectSelect.empty();
-
-                if (projects.length > 0) {
-                    projects.forEach(function (project, index) {
-                        const displayText = project.project_id
-                            ? `${project.project_id} - ${project.project_title}`
-                            : project.project_title;
-                        projectSelect.append(
-                            `<option value="${project.id}">${displayText}</option>`
-                        );
-                        // Automatically load jobs for the first project
-                        if (index === 0) {
-                            fetchJobsForProject(project.id);
+            document.addEventListener("DOMContentLoaded", function() {
+                const splashLink = document.getElementById('splashLink');
+                const splashImage = document.getElementById('splashImage');
+                const overlayText = document.getElementById('overlayText');
+                const nextContainer = document.getElementById('nextContainer');
+                const printQRContainer = document.getElementById('printQRContainer');
+                const vaegQRContainer = document.getElementById('vaegQRContainer');
+                const settingsContainer = document.getElementById('settingsContainer');
+            
+                let countdownTimer;
+                const countdownTime = 200000; // 10 seconds in milliseconds
+            
+                function resetTimer() {
+                    clearTimeout(countdownTimer);
+                    countdownTimer = setTimeout(function() {
+                        // Reset to splash page
+                        nextContainer.style.display = 'none';
+                        printQRContainer.style.display = 'none';
+                        vaegQRContainer.style.display = 'none';
+                        settingsContainer.style.display = 'none';
+                        splashContainer.style.display = 'block';
+            
+                        splashImage.style.display = 'block';
+                        overlayText.style.display = 'block';
+                    }, countdownTime);
+                }
+            
+                splashLink.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    splashImage.style.display = 'none';
+                    overlayText.style.display = 'none';
+                    nextContainer.style.display = 'block';
+                    resetTimer();
+                    getAllProjects(); // Fetch projects when the window is opened
+                });
+            
+                document.querySelector('#selectQR').addEventListener('click', function() {
+                    vaegQRContainer.style.display = 'block';
+                    nextContainer.style.display = 'none';
+                    resetTimer();
+                    getAllProjects(); // Fetch projects when the window is opened
+                });
+            
+                document.getElementById('settingsIcon').addEventListener('click', function() {
+                    settingsContainer.style.display = 'block';
+                    nextContainer.style.display = 'none';
+                    resetTimer();
+                });
+            
+                document.getElementById('cancelJobBtn').addEventListener('click', function() {
+                    vaegQRContainer.style.display = 'none';
+                    nextContainer.style.display = 'block';
+                    resetTimer();
+                });
+            
+                function getAllProjects() {
+                    $.ajax({
+                        url: "http://127.0.0.1:5000/api/projects", // Fetch from local Flask API
+                        type: "GET",
+                        dataType: "json",
+                        success: function (projects) {
+                            let projectSelect = $("#projectSelect");
+                            projectSelect.empty();
+            
+                            if (projects.length > 0) {
+                                projects.forEach(function (project, index) {
+                                    const displayText = project.project_id
+                                        ? `${project.project_id} - ${project.project_title}`
+                                        : project.project_title;
+                                    projectSelect.append(
+                                        `<option value="${project.id}">${displayText}</option>`
+                                    );
+                                    // Automatically load jobs for the first project
+                                    if (index === 0) {
+                                        fetchJobsForProject(project.id);
+                                    }
+                                });
+                            } else {
+                                projectSelect.append(`<option>Vælg et projekt</option>`);
+                                $("#jobSelect").empty().hide();
+                                $("#selectJobBtn").hide();
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error fetching projects:", error);
                         }
                     });
-                } else {
-                    projectSelect.append(`<option>Vælg et projekt</option>`);
-                    $("#jobSelect").empty().hide();
-                    $("#selectJobBtn").hide();
+            
+                    $("#projectSelect").change(function () {
+                        let selectedProjectId = $(this).val();
+                        fetchJobsForProject(selectedProjectId);
+                    });
+            
+                    $("#selectJobBtn").click(function () {
+                        let selectedJobId = $("#jobSelect").val();
+                        if (selectedJobId) {
+                            document.cookie = `selectedJob=${selectedJobId}; path=/`;
+                            console.log('Selected Job ID:', selectedJobId);
+                        }
+                    });
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error("Error fetching projects:", error);
-            }
-        });
-
-        $("#projectSelect").change(function () {
-            let selectedProjectId = $(this).val();
-            fetchJobsForProject(selectedProjectId);
-        });
-
-        $("#selectJobBtn").click(function () {
-            let selectedJobId = $("#jobSelect").val();
-            if (selectedJobId) {
-                document.cookie = `selectedJob=${selectedJobId}; path=/`;
-                console.log('Selected Job ID:', selectedJobId);
-            }
-        });
-    }
-
-
-    function fetchJobsForProject(projectId) {
-        if (projectId) {
-            $.ajax({
-                url: `https://portal.maprova.dk/api/getJobsByProjectID.php?project_id=${projectId}&apiKey=7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44&customerID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92`,
-                type: "GET",
-                dataType: "json",
-                success: function (jobs) {
-                    let jobSelect = $("#jobSelect");
-                    jobSelect.empty().show();
-                    $("#selectJobBtn").show();
-                    if (jobs.length > 0) {
-                        jobs.forEach(function (job) {
-                            if (job.job_status === "active") {
-                                jobSelect.append(
-                                    `<option value="${job.id}">${job.job_title}</option>`
-                                );
+            
+                function fetchJobsForProject(projectId) {
+                    if (projectId) {
+                        $.ajax({
+                            url: `http://127.0.0.1:5000/api/jobs/${projectId}`, // Fetch from local Flask API
+                            type: "GET",
+                            dataType: "json",
+                            success: function (jobs) {
+                                let jobSelect = $("#jobSelect");
+                                jobSelect.empty().show();
+                                $("#selectJobBtn").show();
+                                if (jobs.length > 0) {
+                                    jobs.forEach(function (job) {
+                                        if (job.job_status === "active") {
+                                            jobSelect.append(
+                                                `<option value="${job.id}">${job.job_title}</option>`
+                                            );
+                                        }
+                                    });
+                                } else {
+                                    jobSelect.append(`<option>No jobs found</option>`);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error("Error fetching jobs:", error);
                             }
                         });
                     } else {
-                        jobSelect.append(`<option>No jobs found</option>`);
+                        $("#jobSelect").empty().hide();
+                        $("#selectJobBtn").hide();
                     }
-                },
+                }
             });
-        } else {
-            $("#jobSelect").empty().hide();
-            $("#selectJobBtn").hide();
-        }
-    }
-});
-
-        </script>
+            </script>
+            
     </body>
     </html>
