@@ -314,8 +314,6 @@
         let projectsData = null;
         let jobsData = {};
 
-        let count = 1;
-
         let selectedProject = null;
         let selectedJob = null;
 
@@ -387,6 +385,7 @@
                 resetTimer();
               });
           });
+
         document
           .getElementById("printBtn")
           .addEventListener("click", function () {
@@ -429,10 +428,9 @@
 
         // Fetch projects and jobs data on splash click
         function fetchAllProjectsAndJobs() {
-          // Check if data already exists in localStorage
           if (projectsData && Object.keys(jobsData).length > 0) {
             console.log("Using cached project and job data.");
-            return; // If data is already loaded, skip fetching
+            return;
           }
 
           console.log("Fetching project and job data...");
@@ -447,9 +445,8 @@
               localStorage.setItem(
                 "projectsData",
                 JSON.stringify(projectsData)
-              ); // Store in localStorage
+              );
 
-              // Fetch all jobs for each project and store them
               projects.forEach((project) => {
                 fetchJobsForProject(project.id);
               });
@@ -468,7 +465,7 @@
             dataType: "json",
             success: function (jobs) {
               jobsData[projectId] = jobs;
-              localStorage.setItem("jobsData", JSON.stringify(jobsData)); // Store jobs for each project in localStorage
+              localStorage.setItem("jobsData", JSON.stringify(jobsData));
             },
             error: function (xhr, status, error) {
               console.error(
@@ -482,38 +479,28 @@
 
         // Display the pre-fetched projects in a scrollable list
         function displayProjects() {
-          projectList.innerHTML = ""; // Clear any previous list
+          projectList.innerHTML = "";
           if (projectsData && projectsData.length > 0) {
             projectsData.forEach((project) => {
               const projectItem = document.createElement("div");
               projectItem.classList.add("list-item");
+
+              // Set data attributes for the project id and title
+              projectItem.setAttribute("data-project-id", project.id);
+              projectItem.setAttribute(
+                "data-project-title",
+                project.project_title
+              );
+
               projectItem.textContent = `${project.project_id} - ${project.project_title}`;
-              projectItem.onclick = function () {
-                selectedProject = project;
-                localStorage.setItem(
-                  "selectedProject",
-                  JSON.stringify(selectedProject)
-                );
 
-                updateSelectedEntity();
-                // Clear the selected job when a project is selected
-                selectedJob = null;
-                console.log("Selected job:", selectedJob);
-                jobEntity.textContent = "Vælg Job"; // Reset job display
+              // Add both click and touchstart events
+              projectItem.addEventListener("click", handleProjectSelection);
+              projectItem.addEventListener(
+                "touchstart",
+                handleProjectSelection
+              );
 
-                // Update project display
-
-                projectListContainer.style.display = "none";
-                projectEntity.textContent = selectedProject.project_title;
-                projectEntity.style.backgroundColor =
-                  selectedProject.project_color || "#ffffff"; // Fallback to a default color
-                console.log("Selected color:", selectedProject.project_color);
-
-                selectJobBtn.disabled = false; // Enable the job button
-
-                // Display pre-fetched jobs for the selected project
-                displayJobsForProject(selectedProject.id);
-              };
               projectList.appendChild(projectItem);
             });
           } else {
@@ -521,28 +508,53 @@
           }
         }
 
+        function handleProjectSelection(event) {
+          // Get the data attributes from the clicked/touched project item
+          const projectId = event.target.getAttribute("data-project-id");
+          const projectTitle = event.target.getAttribute("data-project-title");
+
+          // Find the selected project in the projectsData array
+          selectedProject = projectsData.find(
+            (project) => project.id === projectId
+          );
+          localStorage.setItem(
+            "selectedProject",
+            JSON.stringify(selectedProject)
+          );
+
+          updateSelectedEntity();
+
+          selectedJob = null; // Clear the selected job when a new project is selected
+          jobEntity.textContent = "Vælg Job"; // Reset job display
+
+          projectListContainer.style.display = "none";
+          projectEntity.textContent = selectedProject.project_title;
+          projectEntity.style.backgroundColor =
+            selectedProject.project_color || "#ffffff"; // Fallback to a default color
+
+          selectJobBtn.disabled = false;
+
+          // Display pre-fetched jobs for the selected project
+          displayJobsForProject(selectedProject.id);
+        }
+
         // Display jobs for the selected project
         function displayJobsForProject(projectId) {
-          jobList.innerHTML = ""; // Clear previous job list
+          jobList.innerHTML = "";
           if (jobsData[projectId] && jobsData[projectId].length > 0) {
             jobsData[projectId].forEach((job) => {
               const jobItem = document.createElement("div");
               jobItem.classList.add("list-item");
+
+              // Set data attributes for the job id and title
+              jobItem.setAttribute("data-job-id", job.id);
+              jobItem.setAttribute("data-job-title", job.job_title);
+
               jobItem.textContent = job.job_title;
-              jobItem.onclick = function () {
-                selectedJob = job;
-                localStorage.setItem(
-                  "selectedEntity",
-                  JSON.stringify({
-                    project: selectedProject,
-                    job: selectedJob,
-                  })
-                );
-                console.log("Selected job:", selectedJob);
-                jobListContainer.style.display = "none";
-                jobEntity.textContent = selectedJob.job_title;
-                updateSelectedEntity();
-              };
+
+              // Add both click and touchstart events
+              jobItem.addEventListener("click", handleJobSelection);
+              jobItem.addEventListener("touchstart", handleJobSelection);
 
               jobList.appendChild(jobItem);
             });
@@ -550,12 +562,31 @@
             console.log(
               "No jobs found for this project or data not loaded yet."
             );
+            jobListContainer.style.display = "none";
           }
+        }
+
+        function handleJobSelection(event) {
+          const jobId = event.target.getAttribute("data-job-id");
+          const jobTitle = event.target.getAttribute("data-job-title");
+
+          selectedJob = jobsData[selectedProject.id].find(
+            (job) => job.id === jobId
+          );
+          localStorage.setItem(
+            "selectedEntity",
+            JSON.stringify({
+              project: selectedProject,
+              job: selectedJob,
+            })
+          );
+          jobListContainer.style.display = "none";
+          jobEntity.textContent = selectedJob.job_title;
+          updateSelectedEntity();
         }
 
         // Update the display to show the selected project and job
         function updateSelectedEntity() {
-          console.log("Updating");
           const entity =
             JSON.parse(localStorage.getItem("selectedEntity")) || {};
           const projectTitle =
