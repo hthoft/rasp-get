@@ -48,13 +48,13 @@ def handle_print(job_id, job_title, print_count):
         logo = logo.resize((logo_width, logo_height), Image.LANCZOS)
 
         # Font for the job title
-        job_title_font_size = 52
+        job_title_font_size = 64
         job_title_font = ImageFont.truetype("arial.ttf", job_title_font_size)
         job_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), job_title, font=job_title_font)
         job_title_height = job_title_bbox[3] - job_title_bbox[1]
 
         # Calculate the height based on the contents
-        text_space = 50  # Space for the author and timestamp text
+        text_space = 65  # Space for the author and timestamp text
         qr_size = max_width_pixels  # QR code should fill the entire width
         total_height = logo_height + job_title_height + qr_size + text_space
 
@@ -62,7 +62,7 @@ def handle_print(job_id, job_title, print_count):
         img = Image.new('RGB', (max_width_pixels, total_height), 'white')
 
         # Paste the logo and QR code onto the new image
-        logo_pos = (0, 0)
+        logo_pos = (0, -10)
         img.paste(logo, logo_pos)
 
         # Draw the job title below the logo
