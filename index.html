@@ -519,18 +519,20 @@
         function handleProjectSelection(event) {
           event.preventDefault();
           event.stopPropagation();
-          aler("Project selected");
+          alert("Project selected");
           const projectId = this.dataset.projectId;
           const projectTitle = this.dataset.projectTitle;
+
+          projectListContainer.style.display = "none"; // Hide the job list when a new project is selected
 
           // Find the selected project in the projectsData array
           selectedProject = projectsData.find(
             (project) => project.id == projectId
           ); // Use non-strict comparison for flexibility
-          //   localStorage.setItem(
-          //     "selectedProject",
-          //     JSON.stringify(selectedProject)
-          //   );
+          localStorage.setItem(
+            "selectedProject",
+            JSON.stringify(selectedProject)
+          );
 
           updateSelectedEntity();
 
