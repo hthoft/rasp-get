@@ -1,83 +1,52 @@
 #!/bin/bash
 
+# Script to set up Brother QL-700 without CUPS on a Raspberry Pi
 
-# Install Brother QL printer driver from a .deb file
-echo "Installing the Brother QL printer driver..."
-sudo dpkg -i --force-all ql710wpdrv-2.1.4-0.armhf.deb
-sudo apt --fix-broken install -y
-
-
-#!/bin/bash
-
-# Update the package list
-echo "Updating package list..."
-sudo apt update
-
-# Install required packages
-echo "Installing necessary packages..."
-sudo apt install -y python3-pip libusb-1.0-0-dev python3-pil git
-
-# Install the brother_ql Python library and dependencies
-echo "Installing brother_ql library..."
-pip3 install brother_ql pyusb qrcode[pil] pillow
-
-# Check if the printer is connected
-echo "Checking for connected Brother QL printer..."
-lsusb | grep '04f9:2043'
-
-if [ $? -eq 0 ]; then
-    echo "Brother QL-710W printer detected."
-else
-    echo "Brother QL-710W printer not detected. Please check your connection."
-    exit 1
+# Check if script is run as root
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root (use sudo)." 
+   exit 1
 fi
 
-# Define a test QR code image generation function
-generate_test_qr() {
-    echo "Generating test QR code..."
-    python3 - <<EOF
-import qrcode
-from PIL import Image
+# Update package list and install necessary system dependencies
+echo "Updating system and installing dependencies..."
+apt update && apt install -y python3-pip libusb-1.0-0-dev
 
-# Generate a test QR code
-qr_data = "Test QR Code for Brother QL-710W"
-qr = qrcode.QRCode(
-    version=1,
-    error_correction=qrcode.constants.ERROR_CORRECT_H,
-    box_size=10,
-    border=1,
-)
+# Install Python libraries required for Brother QL
+echo "Installing Python dependencies (brother_ql, pyusb)..."
+pip3 install brother_ql pyusb
 
-qr.add_data(qr_data)
-qr.make(fit=True)
-
-# Create an image from the QR code
-img = qr.make_image(fill='black', back_color='white')
-
-# Save the test image
-img.save("test_qr.png")
-
-print("Test QR code saved as 'test_qr.png'.")
-EOF
-}
-
-# Generate a test QR code
-generate_test_qr
-
-# Test print the QR code using the Brother QL printer
-echo "Printing test QR code..."
-sudo BROTHER_QL_PRINTER=usb://0x04f9:0x2043 BROTHER_QL_MODEL=QL-710W brother_ql print -l 62 test_qr.png
-
-# Confirm the test print
-if [ $? -eq 0 ]; then
-    echo "Test print successful. Check the printer for the output."
-else
-    echo "Test print failed. Please check the printer connection and settings."
+# Verify if the printer is connected
+echo "Checking if Brother QL-700 is detected..."
+lsusb | grep "04f9:2042" > /dev/null
+if [ $? -ne 0 ]; then
+    echo "Brother QL-700 printer not found. Please check the connection and try again."
     exit 1
+else
+    echo "Brother QL-700 printer detected!"
 fi
 
-# Cleanup
-echo "Cleaning up..."
-rm test_qr.png
+# Export necessary environment variables for Brother QL-700
+echo "Setting up environment variables for Brother QL-700..."
+echo "export BROTHER_QL_PRINTER=usb://0x04f9:0x2042" >> ~/.bashrc
+echo "export BROTHER_QL_MODEL=QL-700" >> ~/.bashrc
 
-echo "Setup complete. Your Brother QL-710W printer is ready to use!"
+# Source the updated .bashrc to apply changes
+source ~/.bashrc
+
+# Test print using a sample image (replace with your own test image if necessary)
+echo "Running a test print..."
+test_image_path="dark-logo-white.png"
+
+# Check if test image exists, and if not, create a placeholder test image
+if [ ! -f "$test_image_path" ]; then
+    echo "Creating a placeholder test image..."
+    convert -size 300x300 xc:white -gravity Center -pointsize 24 -annotate +0+0 "Test Print" $test_image_path
+fi
+
+# Run the test print command
+BROTHER_QL_PRINTER=usb://0x04f9:0x2042 BROTHER_QL_MODEL=QL-700 brother_ql print -l 62 $test_image_path
+
+echo "Test print initiated. Please check your printer for output."
+
+echo "Installation and setup completed successfully!"
