@@ -27,7 +27,7 @@ def custom_encode(number):
 
 
 def handle_print(job_id, job_title, print_count):
-    def generate_qr_code(data, logo_path, output_path, author, max_width_mm):
+    def generate_qr_code(data, logo_path, output_path, author, job_title, max_width_mm):
         # Generate QR code
         qr = qrcode.QRCode(
             version=1,
@@ -47,24 +47,35 @@ def handle_print(job_id, job_title, print_count):
         logo_height = int(logo.size[1] * (logo_width / logo.size[0]))
         logo = logo.resize((logo_width, logo_height), Image.LANCZOS)
 
+        # Font for the job title
+        job_title_font_size = 52
+        job_title_font = ImageFont.truetype("arial.ttf", job_title_font_size)
+        job_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), job_title, font=job_title_font)
+        job_title_height = job_title_bbox[3] - job_title_bbox[1]
+
         # Calculate the height based on the contents
-        text_space = 50  # Space for the text
+        text_space = 50  # Space for the author and timestamp text
         qr_size = max_width_pixels  # QR code should fill the entire width
-        total_height = logo_height + qr_size + text_space
+        total_height = logo_height + job_title_height + qr_size + text_space
 
         # Create a new image with the calculated dimensions
         img = Image.new('RGB', (max_width_pixels, total_height), 'white')
 
         # Paste the logo and QR code onto the new image
-        logo_pos = (-15, 0)
+        logo_pos = (0, 0)
         img.paste(logo, logo_pos)
 
+        # Draw the job title below the logo
+        draw = ImageDraw.Draw(img)
+        job_title_pos = ((max_width_pixels - job_title_bbox[2]) // 2, logo_height)
+        draw.text(job_title_pos, job_title, font=job_title_font, fill='black')
+
+        # Draw the QR code below the job title
         qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
-        qr_pos = (-15, logo_height)
+        qr_pos = (0, logo_height + job_title_height)
         img.paste(qr_img, qr_pos)
 
-        # Add timestamp and author
-        draw = ImageDraw.Draw(img)
+        # Add timestamp and author below the QR code
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         font_size = 24
         font = ImageFont.truetype("arial.ttf", font_size)
@@ -86,7 +97,7 @@ def handle_print(job_id, job_title, print_count):
             time_width + draw.textbbox((0, 0), timestamp, font=font)[2] - draw.textbbox((0, 0), timestamp, font=font)[0]
         )
 
-        text_pos_y = logo_height + qr_size - 10
+        text_pos_y = logo_height + job_title_height + qr_size + 10
 
         draw.text(((max_width_pixels - total_text_width) // 2, text_pos_y), text_author, fill='black', font=bold_font)
         draw.text(((max_width_pixels - total_text_width) // 2 + author_width, text_pos_y), author, fill='black', font=font)
@@ -97,12 +108,12 @@ def handle_print(job_id, job_title, print_count):
 
     obfuscated_job_id = custom_encode(int(job_id)) 
     # Generate QR code with job_id and job_title
-    data = f"{obfuscated_job_id}"  # Use job ID and title for the QR code data
+    data = f"{obfuscated_job_id}"  # Use job ID for the QR code data
     logo_path = "dark-logo-white.png"
     output_path = f"/tmp/qrcode_{job_id}.png"
-    author = "Jens Haldrup"
+    author = "Label Printer Hal 7"
     max_width_mm = 62  # Maximum width of the roll in mm
-    generate_qr_code(data, logo_path, output_path, author, max_width_mm)
+    generate_qr_code(data, logo_path, output_path, author, job_title, max_width_mm)
 
     # Print the QR code as many times as specified by print_count
     for i in range(print_count):
@@ -117,6 +128,7 @@ def handle_print(job_id, job_title, print_count):
         except subprocess.CalledProcessError as e:
             print(f"Failed to print on iteration {i + 1}: {e}")
             break
+
 
 
 # Function to fetch all projects
