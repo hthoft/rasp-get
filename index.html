@@ -344,7 +344,7 @@
         let selectedJob = null;
 
         let countdownTimer;
-        const countdownTime = 110000; // 10 seconds in milliseconds
+        const countdownTime = 10000; // 10 seconds in milliseconds
 
         function resetTimer() {
           clearTimeout(countdownTimer);
@@ -510,8 +510,11 @@
                 "list-item",
                 "btn",
                 "btn-light",
-                "my-2",
-                "w-100"
+                "rounded-0",
+                "w-100",
+                "border-0",
+                "fw-bolder",
+                "fs-1"
               );
 
               projectItem.setAttribute("data-project-id", project.id);
@@ -570,8 +573,11 @@
                 "list-item",
                 "btn",
                 "btn-light",
-                "my-2",
-                "w-100"
+                "rounded-0",
+                "w-100",
+                "border-0",
+                "fw-bolder",
+                "fs-1"
               );
 
               jobItem.setAttribute("data-job-id", job.id);
