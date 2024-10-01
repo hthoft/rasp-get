@@ -155,7 +155,7 @@ def get_jobs_by_project(project_id):
 
 @app.route('/api/print', methods=['POST'])
 def print_qr_code():
-    data = request.json
+    data = request.get_json()  # Use get_json to retrieve the request body
 
     # Get the job_id, job_title, and print_count from the request
     job_id = data.get('job_id')
