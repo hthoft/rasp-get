@@ -147,26 +147,26 @@ def get_projects():
     projects = fetch_all_projects()
     return jsonify(projects)
 
+
 # Flask route to fetch jobs by project ID
 @app.route('/api/jobs/<project_id>', methods=['GET'])
 def get_jobs_by_project(project_id):
     jobs = fetch_jobs_by_project(project_id)
     return jsonify(jobs)
 
+
+# Flask route to print QR codes
 @app.route('/api/print', methods=['POST'])
 def print_qr_code():
-    data = request.get_json()  # Use get_json to retrieve the request body
+    data = request.get_json()
 
-    # Get the job_id, job_title, and print_count from the request
     job_id = data.get('job_id')
     job_title = data.get('job_title')
     print_count = int(data.get('print_count', 1))  # Default to 1 if not provided
 
-    # Check if all necessary data is provided
     if not job_id or not job_title:
         return jsonify({"error": "Missing job_id or job_title"}), 400
 
-    # Call the print function
     handle_print(job_id, job_title, print_count)
 
     return jsonify({"status": "success", "message": "Print job started"}), 200
@@ -176,6 +176,7 @@ def print_qr_code():
 def start_flask():
     app.run(debug=True, host='0.0.0.0', use_reloader=False)
 
+
 if __name__ == '__main__':
     # Start Flask in a separate thread
     flask_thread = threading.Thread(target=start_flask)
@@ -184,7 +185,7 @@ if __name__ == '__main__':
 
     # Get the current directory
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    
+
     # Specify the path to your index.html file
     html_file = os.path.join(current_dir, 'index.html')
 
