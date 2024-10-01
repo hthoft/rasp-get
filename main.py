@@ -155,38 +155,21 @@ def get_jobs_by_project(project_id):
     return jsonify(jobs)
 
 
-# Flask route to print a test QR code
+# Flask route to print QR codes
 @app.route('/api/print', methods=['POST'])
 def print_qr_code():
-    # Define the function to handle the test print
-    def test_print():
-        # Generate a simple QR code or print message for testing purposes
-        data = "Test Print QR"  # Hardcoded test data for the QR code
-        logo_path = "dark-logo-white.png"  # Path to your logo
-        output_path = "/tmp/test_qrcode.png"  # Output path for the test image
-        author = "Test User"  # Hardcoded author name for the test
-        max_width_mm = 62  # Maximum width of the label in mm
-        
-        # Call the function to generate the QR code with the test data
-        handle_print(data, "Test Job", 1)  # Use handle_print with a simple test
+    data = request.get_json()
 
-        # Print the generated test QR code
-        print_command = (
-            f"sudo BROTHER_QL_PRINTER=usb://0x04f9:0x2042 "
-            f"BROTHER_QL_MODEL=QL-700 brother_ql print -l 62 {output_path}"
-        )
+    job_id = data.get('job_id')
+    job_title = data.get('job_title')
+    print_count = int(data.get('print_count', 1))  # Default to 1 if not provided
 
-        try:
-            subprocess.run(print_command, shell=True, check=True)
-            print("Test QR code printed successfully")
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to print test QR code: {e}")
-    
-    # Call the test print function
-    test_print()
+    if not job_id or not job_title:
+        return jsonify({"error": "Missing job_id or job_title"}), 400
 
-    return jsonify({"status": "success", "message": "Test print started"}), 200
+    handle_print(job_id, job_title, print_count)
 
+    return jsonify({"status": "success", "message": "Print job started"}), 200
 
 
 # Function to start Flask in a separate thread
