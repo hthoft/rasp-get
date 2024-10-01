@@ -516,7 +516,9 @@
         }
 
         // Handle project selection when clicked or touched
-        function handleProjectSelection() {
+        function handleProjectSelection(event) {
+          event.preventDefault();
+          event.stopPropagation();
           const projectId = this.dataset.projectId;
           const projectTitle = this.dataset.projectTitle;
 
