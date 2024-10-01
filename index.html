@@ -415,31 +415,56 @@
         document
           .getElementById("printBtn")
           .addEventListener("click", function () {
-            const selectedPrintJob = JSON.parse(getCookie("selectedEntity"));
-            const job_id = selectedPrintJob.job.id;
-            const job_title = selectedPrintJob.job.job_title;
-            const print_count =
-              document.getElementById("countDisplay").textContent;
+            // Get selected print job from cookies
+            const selectedPrintJob = getCookie("selectedEntity");
 
-            fetch("/api/print", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                job_id: job_id,
-                job_title: job_title,
-                print_count: print_count,
-              }),
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                console.log("Print response:", data);
-                printQRContainer.style.display = "none";
-                nextContainer.style.display = "block";
-                resetTimer();
+            if (!selectedPrintJob) {
+              console.error("Selected entity not found in cookies");
+              return;
+            }
+
+            try {
+              const selectedEntity = JSON.parse(selectedPrintJob);
+              const job_id = selectedEntity?.job?.id;
+              const job_title = selectedEntity?.job?.job_title;
+
+              // If job_id or job_title is missing, stop the process
+              if (!job_id || !job_title) {
+                console.error("Job ID or title is missing.");
+                return;
+              }
+
+              const print_count =
+                document.getElementById("countDisplay").textContent || 1;
+
+              // Send the print job to the server
+              fetch("http://127.0.0.1:5000/api/print", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  job_id: job_id,
+                  job_title: job_title,
+                  print_count: print_count,
+                }),
               })
-              .catch((error) => console.error("Error printing:", error));
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                  }
+                  return response.json();
+                })
+                .then((data) => {
+                  console.log("Print response:", data);
+                  printQRContainer.style.display = "none";
+                  nextContainer.style.display = "block";
+                  resetTimer();
+                })
+                .catch((error) => console.error("Error printing:", error));
+            } catch (error) {
+              console.error("Error parsing selected entity:", error);
+            }
           });
 
         document
