@@ -37,8 +37,6 @@
         width: 800px;
         height: 480px;
         background-image: url("maprova-bg.png");
-        width: 800px;
-        height: 480px;
         background-size: cover;
         background-position: center;
         text-align: center;
@@ -173,13 +171,12 @@
         <h1 class="fw-bolder">...</h1>
       </div>
     </div>
-    <!-- New containers for additional windows -->
+
     <div id="printQRContainer" style="display: none">
-      <h2 class="mt-3 fw-light mb-0">23024 - CPH Village</h2>
-      <h1 class="fw-bolder mt-0 mb-3">ME.01.02.03</h1>
       <div
         id="countContainer"
         class="d-flex justify-content-center align-items-center"
+        style="margin-top: 1.2rem"
       >
         <button id="minusBtn" class="btn btn-lg btn-light px-5 py-3 shadow">
           <img src="qrcode-remove.svg" alt="Minus" width="100" height="100" />
@@ -223,17 +220,30 @@
           Print QR
         </button>
       </div>
+      <span
+        class="mt-4 fw-light mb-0 badge fs-2"
+        id="printProjectEntity"
+      ></span>
+      <h1 class="fw-bolder" id="printJobEntity"></h1>
     </div>
 
     <div id="vaegQRContainer">
-      <h2 class="fw-light" id="projectEntity">Vælg projekt</h2>
-      <h1 class="fw-bolder" id="jobEntity">Vælg QR Code</h1>
+      <div class="mt-5">
+        <!-- Button to cancel -->
+        <button
+          id="cancelJobBtn"
+          class="btn btn-light btn-lg fw-bolder shadow p-2 px-4 border-0 mb-1"
+          style="border-radius: 1rem; background-color: lightcoral"
+        >
+          <i class="mdi mdi-cancel"></i> Gå tilbage
+        </button>
+      </div>
 
       <div id="buttonContainer" class="row">
         <button
           type="button"
           id="selectProjectBtn"
-          class="btn btn-large btn-info fs-1 fw-bolder shadow"
+          class="btn btn-large btn-light fs-1 fw-bolder shadow"
           style="border-radius: 1.5rem"
         >
           Vælg Sag
@@ -249,17 +259,11 @@
         </button>
       </div>
 
-      <div class="mt-5">
-        <!-- Button to select the job -->
-        <!-- Button to cancel -->
-        <button
-          id="cancelJobBtn"
-          class="btn btn-danger btn-lg fw-bolder shadow"
-          style="border-radius: 1.5rem"
-        >
-          <i class="mdi mdi-cancel"></i> Afbryd
-        </button>
-      </div>
+      <span class="badge fs-2 fw-light mb-0 mt-4" id="projectEntity">
+        Vælg projekt
+      </span>
+
+      <h1 class="fw-bolder" id="jobEntity">Vælg QR Code</h1>
     </div>
 
     <div id="projectListContainer" class="list-container">
@@ -275,10 +279,9 @@
 
     <div id="settingsContainer" style="display: none">
       <h1>Indstillinger Window</h1>
-      <!-- Content for Indstillinger Window -->
     </div>
 
-    <!-- Optional: Include Bootstrap JS (if needed) -->
+    <!-- Optional: Include Bootstrap JS and jQuery -->
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/jquery-3.6.0.min.js"></script>
     <script>
@@ -286,23 +289,49 @@
         const splashLink = document.getElementById("splashLink");
         const splashImage = document.getElementById("splashImage");
         const overlayText = document.getElementById("overlayText");
+        const splashContainer = document.getElementById("splashContainer");
         const nextContainer = document.getElementById("nextContainer");
         const printQRContainer = document.getElementById("printQRContainer");
         const vaegQRContainer = document.getElementById("vaegQRContainer");
         const settingsContainer = document.getElementById("settingsContainer");
 
+        const selectProjectBtn = document.getElementById("selectProjectBtn");
+        const selectJobBtn = document.getElementById("selectJobBtn");
+        const projectListContainer = document.getElementById(
+          "projectListContainer"
+        );
+        const projectList = document.getElementById("projectList");
+        const jobListContainer = document.getElementById("jobListContainer");
+        const jobList = document.getElementById("jobList");
+        const projectEntity = document.getElementById("projectEntity");
+        const jobEntity = document.getElementById("jobEntity");
+        const selectedEntity = document.getElementById("selectedEntity");
+
+        const printProjectEntity =
+          document.getElementById("printProjectEntity");
+        const printJobEntity = document.getElementById("printJobEntity");
+
+        let projectsData = null;
+        let jobsData = {};
+
+        let count = 1;
+
+        let selectedProject = null;
+        let selectedJob = null;
+
         let countdownTimer;
-        const countdownTime = 10000; // 10 seconds in milliseconds
+        const countdownTime = 110000; // 10 seconds in milliseconds
 
         function resetTimer() {
           clearTimeout(countdownTimer);
           countdownTimer = setTimeout(function () {
-            // Reset to splash page
             nextContainer.style.display = "none";
             printQRContainer.style.display = "none";
             vaegQRContainer.style.display = "none";
             settingsContainer.style.display = "none";
             splashContainer.style.display = "block";
+            projectListContainer.style.display = "none";
+            jobListContainer.style.display = "none";
 
             splashImage.style.display = "block";
             overlayText.style.display = "block";
@@ -315,8 +344,63 @@
           overlayText.style.display = "none";
           nextContainer.style.display = "block";
           resetTimer();
-          getAllProjects(); // Fetch projects when the window is opened
         });
+
+        document
+          .querySelector("#printQR")
+          .addEventListener("click", function () {
+            printQRContainer.style.display = "block";
+            nextContainer.style.display = "none";
+            resetTimer();
+
+            let count = 1;
+            updateCountDisplay();
+
+            document
+              .getElementById("plusBtn")
+              .addEventListener("click", function () {
+                if (count < 5) {
+                  count++;
+                  updateCountDisplay();
+                }
+              });
+
+            document
+              .getElementById("minusBtn")
+              .addEventListener("click", function () {
+                if (count > 1) {
+                  count--;
+                  updateCountDisplay();
+                }
+              });
+
+            function updateCountDisplay() {
+              document.getElementById("countDisplay").textContent = count;
+              resetTimer();
+            }
+
+            document
+              .getElementById("cancelBtn")
+              .addEventListener("click", function () {
+                printQRContainer.style.display = "none";
+                nextContainer.style.display = "block";
+                resetTimer();
+              });
+          });
+        document
+          .getElementById("printBtn")
+          .addEventListener("click", function () {
+            selectedPrintJob = localStorage.getItem("selectedEntity");
+            console.log(
+              "Printing QR " +
+                document.getElementById("countDisplay").textContent +
+                " times..."
+            );
+            console.log(selectedPrintJob);
+            printQRContainer.style.display = "none";
+            nextContainer.style.display = "block";
+            resetTimer();
+          });
 
         document
           .querySelector("#selectQR")
@@ -324,7 +408,7 @@
             vaegQRContainer.style.display = "block";
             nextContainer.style.display = "none";
             resetTimer();
-            getAllProjects(); // Fetch projects when the window is opened
+            fetchAllProjectsAndJobs(); // Fetch projects and jobs when splashContainer is clicked
           });
 
         document
@@ -342,59 +426,32 @@
             nextContainer.style.display = "block";
             resetTimer();
           });
-      });
-    </script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const selectProjectBtn = document.getElementById("selectProjectBtn");
-        const selectJobBtn = document.getElementById("selectJobBtn");
-        const projectListContainer = document.getElementById(
-          "projectListContainer"
-        );
-        const jobListContainer = document.getElementById("jobListContainer");
-        const projectList = document.getElementById("projectList");
-        const jobList = document.getElementById("jobList");
-        const selectedEntity = document.getElementById("selectedEntity");
-        const projectEntity = document.getElementById("projectEntity");
-        const jobEntity = document.getElementById("jobEntity");
 
-        let selectedProject = null;
-        let selectedJob = null;
+        // Fetch projects and jobs data on splash click
+        function fetchAllProjectsAndJobs() {
+          // Check if data already exists in localStorage
+          if (projectsData && Object.keys(jobsData).length > 0) {
+            console.log("Using cached project and job data.");
+            return; // If data is already loaded, skip fetching
+          }
 
-        // Function to reset display
-        function resetDisplay() {
-          projectListContainer.style.display = "none";
-          jobListContainer.style.display = "none";
-        }
+          console.log("Fetching project and job data...");
 
-        // Fetch and display all projects in a scrollable list
-        function getAllProjects() {
+          // Fetch all projects
           $.ajax({
-            url: "http://127.0.0.1:5000/api/projects", // Fetch from local Flask API
+            url: "http://127.0.0.1:5000/api/projects", // Replace with actual API URL
             type: "GET",
             dataType: "json",
             success: function (projects) {
-              projectList.innerHTML = "";
-              projects.forEach(function (project) {
-                const projectItem = document.createElement("div");
-                projectItem.classList.add("list-item");
-                projectItem.textContent = `${project.project_id} - ${project.project_title}`;
-                projectItem.onclick = function () {
-                  selectedProject = {
-                    id: project.id,
-                    title: project.project_title,
-                  };
-                  localStorage.setItem(
-                    "selectedProject",
-                    JSON.stringify(selectedProject)
-                  );
-                  console.log("Selected project:", selectedProject);
-                  updateSelectedEntity();
-                  projectEntity.textContent = project.project_title;
-                  selectJobBtn.disabled = false; // Enable the job button
-                  resetDisplay();
-                };
-                projectList.appendChild(projectItem);
+              projectsData = projects;
+              localStorage.setItem(
+                "projectsData",
+                JSON.stringify(projectsData)
+              ); // Store in localStorage
+
+              // Fetch all jobs for each project and store them
+              projects.forEach((project) => {
+                fetchJobsForProject(project.id);
               });
             },
             error: function (xhr, status, error) {
@@ -403,65 +460,134 @@
           });
         }
 
-        // Fetch and display jobs for the selected project
-        function getJobsForProject() {
-          const projectId = selectedProject.id;
+        // Fetch jobs for a given project and store them
+        function fetchJobsForProject(projectId) {
           $.ajax({
-            url: `http://127.0.0.1:5000/api/jobs/${projectId}`, // Fetch from local Flask API
+            url: `http://127.0.0.1:5000/api/jobs/${projectId}`, // Replace with actual API URL
             type: "GET",
             dataType: "json",
             success: function (jobs) {
-              jobList.innerHTML = "";
-              jobs.forEach(function (job) {
-                const jobItem = document.createElement("div");
-                jobItem.classList.add("list-item");
-                jobItem.textContent = job.job_title;
-                jobItem.onclick = function () {
-                  selectedJob = { id: job.id, title: job.job_title };
-                  localStorage.setItem(
-                    "selectedEntity",
-                    JSON.stringify({
-                      project: selectedProject,
-                      job: selectedJob,
-                    })
-                  );
-                  updateSelectedEntity();
-                  resetDisplay();
-                };
-                jobList.appendChild(jobItem);
-              });
+              jobsData[projectId] = jobs;
+              localStorage.setItem("jobsData", JSON.stringify(jobsData)); // Store jobs for each project in localStorage
             },
             error: function (xhr, status, error) {
-              console.error("Error fetching jobs:", error);
+              console.error(
+                "Error fetching jobs for project:",
+                projectId,
+                error
+              );
             },
           });
         }
 
+        // Display the pre-fetched projects in a scrollable list
+        function displayProjects() {
+          projectList.innerHTML = ""; // Clear any previous list
+          if (projectsData && projectsData.length > 0) {
+            projectsData.forEach((project) => {
+              const projectItem = document.createElement("div");
+              projectItem.classList.add("list-item");
+              projectItem.textContent = `${project.project_id} - ${project.project_title}`;
+              projectItem.onclick = function () {
+                selectedProject = project;
+                localStorage.setItem(
+                  "selectedProject",
+                  JSON.stringify(selectedProject)
+                );
+
+                updateSelectedEntity();
+                // Clear the selected job when a project is selected
+                selectedJob = null;
+                console.log("Selected job:", selectedJob);
+                jobEntity.textContent = "Vælg Job"; // Reset job display
+
+                // Update project display
+
+                projectListContainer.style.display = "none";
+                projectEntity.textContent = selectedProject.project_title;
+                projectEntity.style.backgroundColor =
+                  selectedProject.project_color || "#ffffff"; // Fallback to a default color
+                console.log("Selected color:", selectedProject.project_color);
+
+                selectJobBtn.disabled = false; // Enable the job button
+
+                // Display pre-fetched jobs for the selected project
+                displayJobsForProject(selectedProject.id);
+              };
+              projectList.appendChild(projectItem);
+            });
+          } else {
+            console.log("No projects found or data not loaded yet.");
+          }
+        }
+
+        // Display jobs for the selected project
+        function displayJobsForProject(projectId) {
+          jobList.innerHTML = ""; // Clear previous job list
+          if (jobsData[projectId] && jobsData[projectId].length > 0) {
+            jobsData[projectId].forEach((job) => {
+              const jobItem = document.createElement("div");
+              jobItem.classList.add("list-item");
+              jobItem.textContent = job.job_title;
+              jobItem.onclick = function () {
+                selectedJob = job;
+                localStorage.setItem(
+                  "selectedEntity",
+                  JSON.stringify({
+                    project: selectedProject,
+                    job: selectedJob,
+                  })
+                );
+                console.log("Selected job:", selectedJob);
+                jobListContainer.style.display = "none";
+                jobEntity.textContent = selectedJob.job_title;
+                updateSelectedEntity();
+              };
+
+              jobList.appendChild(jobItem);
+            });
+          } else {
+            console.log(
+              "No jobs found for this project or data not loaded yet."
+            );
+          }
+        }
+
         // Update the display to show the selected project and job
         function updateSelectedEntity() {
+          console.log("Updating");
           const entity =
             JSON.parse(localStorage.getItem("selectedEntity")) || {};
-          const projectTitle = entity.project?.title || "Ingen projekt valgt";
-          const jobTitle = entity.job?.title || "Ingen job valgt";
+          const projectTitle =
+            entity.project?.project_title || "Ingen projekt valgt";
+          const jobTitle = entity.job?.job_title || "Ingen job valgt";
+          const projectColor = entity.project?.project_color || "grey";
           selectedEntity.innerHTML = `
-                                <h2 class="mt-4 fw-light">${projectTitle}</h2>
-                                <h1 class="fw-bolder">${jobTitle}</h1>
-                            `;
+      <h2 class="badge mt-4 fs-2 mb-0 fw-light" style="background-color: ${projectColor}">${projectTitle}</h2>
+      <h1 class="fw-bolder">${jobTitle}</h1>
+    `;
           projectEntity.textContent = projectTitle;
+          projectEntity.style.backgroundColor =
+            entity.project?.project_color || "grey";
           jobEntity.textContent = jobTitle;
+          printProjectEntity.textContent = projectTitle;
+          printJobEntity.textContent = jobTitle;
+          printProjectEntity.style.backgroundColor = projectColor;
         }
 
         // Event listener for the project button
         selectProjectBtn.addEventListener("click", function () {
           projectListContainer.style.display = "block";
-          getAllProjects();
+          displayProjects(); // Use pre-fetched projects to display
+          resetTimer();
         });
 
         // Event listener for the job button
         selectJobBtn.addEventListener("click", function () {
           if (selectedProject) {
             jobListContainer.style.display = "block";
-            getJobsForProject();
+            displayJobsForProject(selectedProject.id); // Use pre-fetched jobs to display
+            resetTimer();
           }
         });
 
