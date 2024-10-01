@@ -482,8 +482,15 @@
           projectList.innerHTML = ""; // Clear any previous list
           if (projectsData && projectsData.length > 0) {
             projectsData.forEach((project) => {
-              const projectItem = document.createElement("div");
-              projectItem.classList.add("list-item");
+              // Create a button for each project
+              const projectItem = document.createElement("button");
+              projectItem.classList.add(
+                "list-item",
+                "btn",
+                "btn-light",
+                "my-2",
+                "w-100"
+              );
 
               // Set data attributes for the project id and title
               projectItem.setAttribute("data-project-id", project.id);
@@ -494,7 +501,7 @@
 
               projectItem.textContent = `${project.project_id} - ${project.project_title}`;
 
-              // Add both click and touchstart events using this.dataset
+              // Add both click and touchstart events
               projectItem.addEventListener("click", handleProjectSelection);
               projectItem.addEventListener(
                 "touchstart",
@@ -544,8 +551,15 @@
           jobList.innerHTML = ""; // Clear previous job list
           if (jobsData[projectId] && jobsData[projectId].length > 0) {
             jobsData[projectId].forEach((job) => {
-              const jobItem = document.createElement("div");
-              jobItem.classList.add("list-item");
+              // Create a button for each job
+              const jobItem = document.createElement("button");
+              jobItem.classList.add(
+                "list-item",
+                "btn",
+                "btn-light",
+                "my-2",
+                "w-100"
+              );
 
               // Set data attributes for the job id and title
               jobItem.setAttribute("data-job-id", job.id);
@@ -553,7 +567,7 @@
 
               jobItem.textContent = job.job_title;
 
-              // Add both click and touchstart events using this.dataset
+              // Add both click and touchstart events
               jobItem.addEventListener("click", handleJobSelection);
               jobItem.addEventListener("touchstart", handleJobSelection);
 
