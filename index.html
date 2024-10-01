@@ -479,7 +479,7 @@
 
         // Display the pre-fetched projects in a scrollable list
         function displayProjects() {
-          projectList.innerHTML = "";
+          projectList.innerHTML = ""; // Clear any previous list
           if (projectsData && projectsData.length > 0) {
             projectsData.forEach((project) => {
               const projectItem = document.createElement("div");
@@ -494,7 +494,7 @@
 
               projectItem.textContent = `${project.project_id} - ${project.project_title}`;
 
-              // Add both click and touchstart events
+              // Add both click and touchstart events using this.dataset
               projectItem.addEventListener("click", handleProjectSelection);
               projectItem.addEventListener(
                 "touchstart",
@@ -508,15 +508,15 @@
           }
         }
 
-        function handleProjectSelection(event) {
-          // Get the data attributes from the clicked/touched project item
-          const projectId = event.target.getAttribute("data-project-id");
-          const projectTitle = event.target.getAttribute("data-project-title");
+        // Handle project selection when clicked or touched
+        function handleProjectSelection() {
+          const projectId = this.dataset.projectId;
+          const projectTitle = this.dataset.projectTitle;
 
           // Find the selected project in the projectsData array
           selectedProject = projectsData.find(
-            (project) => project.id === projectId
-          );
+            (project) => project.id == projectId
+          ); // Use non-strict comparison for flexibility
           localStorage.setItem(
             "selectedProject",
             JSON.stringify(selectedProject)
@@ -524,7 +524,8 @@
 
           updateSelectedEntity();
 
-          selectedJob = null; // Clear the selected job when a new project is selected
+          // Clear the selected job when a new project is selected
+          selectedJob = null;
           jobEntity.textContent = "Vælg Job"; // Reset job display
 
           projectListContainer.style.display = "none";
@@ -532,7 +533,7 @@
           projectEntity.style.backgroundColor =
             selectedProject.project_color || "#ffffff"; // Fallback to a default color
 
-          selectJobBtn.disabled = false;
+          selectJobBtn.disabled = false; // Enable the job button
 
           // Display pre-fetched jobs for the selected project
           displayJobsForProject(selectedProject.id);
@@ -540,7 +541,7 @@
 
         // Display jobs for the selected project
         function displayJobsForProject(projectId) {
-          jobList.innerHTML = "";
+          jobList.innerHTML = ""; // Clear previous job list
           if (jobsData[projectId] && jobsData[projectId].length > 0) {
             jobsData[projectId].forEach((job) => {
               const jobItem = document.createElement("div");
@@ -552,7 +553,7 @@
 
               jobItem.textContent = job.job_title;
 
-              // Add both click and touchstart events
+              // Add both click and touchstart events using this.dataset
               jobItem.addEventListener("click", handleJobSelection);
               jobItem.addEventListener("touchstart", handleJobSelection);
 
@@ -566,23 +567,29 @@
           }
         }
 
-        function handleJobSelection(event) {
-          const jobId = event.target.getAttribute("data-job-id");
-          const jobTitle = event.target.getAttribute("data-job-title");
+        // Handle job selection when clicked or touched
+        function handleJobSelection() {
+          const jobId = this.dataset.jobId;
+          const jobTitle = this.dataset.jobTitle;
 
           selectedJob = jobsData[selectedProject.id].find(
-            (job) => job.id === jobId
+            (job) => job.id == jobId // Ensure comparison is not strict as types might vary
           );
-          localStorage.setItem(
-            "selectedEntity",
-            JSON.stringify({
-              project: selectedProject,
-              job: selectedJob,
-            })
-          );
-          jobListContainer.style.display = "none";
-          jobEntity.textContent = selectedJob.job_title;
-          updateSelectedEntity();
+
+          if (selectedJob) {
+            localStorage.setItem(
+              "selectedEntity",
+              JSON.stringify({
+                project: selectedProject,
+                job: selectedJob,
+              })
+            );
+            jobListContainer.style.display = "none";
+            jobEntity.textContent = selectedJob.job_title;
+            updateSelectedEntity();
+          } else {
+            console.error("Job not found!");
+          }
         }
 
         // Update the display to show the selected project and job
