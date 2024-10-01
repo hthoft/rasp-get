@@ -285,6 +285,32 @@
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/jquery-3.6.0.min.js"></script>
     <script>
+      // Function to set a cookie
+      function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000); // Days to milliseconds
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/";
+      }
+
+      // Function to get a cookie by name
+      function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(";");
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) === " ") c = c.substring(1, c.length);
+          if (c.indexOf(nameEQ) === 0)
+            return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+      }
+
+      // Function to delete a cookie
+      function eraseCookie(name) {
+        document.cookie = name + "=; Max-Age=-99999999;";
+      }
+
       document.addEventListener("DOMContentLoaded", function () {
         const splashLink = document.getElementById("splashLink");
         const splashImage = document.getElementById("splashImage");
@@ -389,7 +415,7 @@
         document
           .getElementById("printBtn")
           .addEventListener("click", function () {
-            selectedPrintJob = localStorage.getItem("selectedEntity");
+            selectedPrintJob = getCookie("selectedEntity");
             console.log(
               "Printing QR " +
                 document.getElementById("countDisplay").textContent +
@@ -442,10 +468,7 @@
             dataType: "json",
             success: function (projects) {
               projectsData = projects;
-              localStorage.setItem(
-                "projectsData",
-                JSON.stringify(projectsData)
-              );
+              setCookie("projectsData", JSON.stringify(projectsData), 1);
 
               projects.forEach((project) => {
                 fetchJobsForProject(project.id);
@@ -465,7 +488,7 @@
             dataType: "json",
             success: function (jobs) {
               jobsData[projectId] = jobs;
-              localStorage.setItem("jobsData", JSON.stringify(jobsData));
+              setCookie("jobsData", JSON.stringify(jobsData), 1);
             },
             error: function (xhr, status, error) {
               console.error(
@@ -482,7 +505,6 @@
           projectList.innerHTML = ""; // Clear any previous list
           if (projectsData && projectsData.length > 0) {
             projectsData.forEach((project) => {
-              // Create a button for each project
               const projectItem = document.createElement("button");
               projectItem.classList.add(
                 "list-item",
@@ -492,7 +514,6 @@
                 "w-100"
               );
 
-              // Set data attributes for the project id and title
               projectItem.setAttribute("data-project-id", project.id);
               projectItem.setAttribute(
                 "data-project-title",
@@ -501,7 +522,6 @@
 
               projectItem.textContent = `${project.project_id} - ${project.project_title}`;
 
-              // Add both click and touchstart events
               projectItem.addEventListener("click", handleProjectSelection);
               projectItem.addEventListener(
                 "touchstart",
@@ -515,48 +535,36 @@
           }
         }
 
-        // Handle project selection when clicked or touched
         function handleProjectSelection(event) {
           event.preventDefault();
           event.stopPropagation();
-          alert("Project selected");
           const projectId = this.dataset.projectId;
           const projectTitle = this.dataset.projectTitle;
 
-          projectListContainer.style.display = "none"; // Hide the job list when a new project is selected
-
-          // Find the selected project in the projectsData array
           selectedProject = projectsData.find(
             (project) => project.id == projectId
-          ); // Use non-strict comparison for flexibility
-          localStorage.setItem(
-            "selectedProject",
-            JSON.stringify(selectedProject)
           );
+          setCookie("selectedProject", JSON.stringify(selectedProject), 1);
 
           updateSelectedEntity();
 
-          // Clear the selected job when a new project is selected
           selectedJob = null;
-          jobEntity.textContent = "Vælg Job"; // Reset job display
+          jobEntity.textContent = "Vælg Job";
 
           projectListContainer.style.display = "none";
           projectEntity.textContent = selectedProject.project_title;
           projectEntity.style.backgroundColor =
-            selectedProject.project_color || "#ffffff"; // Fallback to a default color
+            selectedProject.project_color || "#ffffff";
 
-          selectJobBtn.disabled = false; // Enable the job button
+          selectJobBtn.disabled = false;
 
-          // Display pre-fetched jobs for the selected project
           displayJobsForProject(selectedProject.id);
         }
 
-        // Display jobs for the selected project
         function displayJobsForProject(projectId) {
-          jobList.innerHTML = ""; // Clear previous job list
+          jobList.innerHTML = "";
           if (jobsData[projectId] && jobsData[projectId].length > 0) {
             jobsData[projectId].forEach((job) => {
-              // Create a button for each job
               const jobItem = document.createElement("button");
               jobItem.classList.add(
                 "list-item",
@@ -566,13 +574,11 @@
                 "w-100"
               );
 
-              // Set data attributes for the job id and title
               jobItem.setAttribute("data-job-id", job.id);
               jobItem.setAttribute("data-job-title", job.job_title);
 
               jobItem.textContent = job.job_title;
 
-              // Add both click and touchstart events
               jobItem.addEventListener("click", handleJobSelection);
               jobItem.addEventListener("touchstart", handleJobSelection);
 
@@ -586,22 +592,19 @@
           }
         }
 
-        // Handle job selection when clicked or touched
         function handleJobSelection() {
           const jobId = this.dataset.jobId;
           const jobTitle = this.dataset.jobTitle;
 
           selectedJob = jobsData[selectedProject.id].find(
-            (job) => job.id == jobId // Ensure comparison is not strict as types might vary
+            (job) => job.id == jobId
           );
 
           if (selectedJob) {
-            localStorage.setItem(
+            setCookie(
               "selectedEntity",
-              JSON.stringify({
-                project: selectedProject,
-                job: selectedJob,
-              })
+              JSON.stringify({ project: selectedProject, job: selectedJob }),
+              1
             );
             jobListContainer.style.display = "none";
             jobEntity.textContent = selectedJob.job_title;
@@ -611,10 +614,8 @@
           }
         }
 
-        // Update the display to show the selected project and job
         function updateSelectedEntity() {
-          const entity =
-            JSON.parse(localStorage.getItem("selectedEntity")) || {};
+          const entity = JSON.parse(getCookie("selectedEntity")) || {};
           const projectTitle =
             entity.project?.project_title || "Ingen projekt valgt";
           const jobTitle = entity.job?.job_title || "Ingen job valgt";
@@ -632,23 +633,20 @@
           printProjectEntity.style.backgroundColor = projectColor;
         }
 
-        // Event listener for the project button
         selectProjectBtn.addEventListener("click", function () {
           projectListContainer.style.display = "block";
-          displayProjects(); // Use pre-fetched projects to display
+          displayProjects();
           resetTimer();
         });
 
-        // Event listener for the job button
         selectJobBtn.addEventListener("click", function () {
           if (selectedProject) {
             jobListContainer.style.display = "block";
-            displayJobsForProject(selectedProject.id); // Use pre-fetched jobs to display
+            displayJobsForProject(selectedProject.id);
             resetTimer();
           }
         });
 
-        // Initialize selected project and job if already in localStorage
         updateSelectedEntity();
       });
     </script>
