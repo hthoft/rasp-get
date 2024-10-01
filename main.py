@@ -13,6 +13,19 @@ from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 import subprocess
 
+def custom_encode(number):
+    # Convert the number to a hexadecimal string
+    hex_string = hex(number)[2:]  # Convert to hex and remove '0x' prefix
+    
+    # Simple obfuscation: reverse the string and add a salt
+    hex_string = hex_string[::-1] + 'salt'
+    
+    # Further obfuscation: Convert each character to its char code in hex
+    obfuscated = ''.join([format(ord(char), 'x') for char in hex_string])
+    
+    return obfuscated
+
+
 def handle_print(job_id, job_title, print_count):
     def generate_qr_code(data, logo_path, output_path, author, max_width_mm):
         # Generate QR code
@@ -82,8 +95,9 @@ def handle_print(job_id, job_title, print_count):
 
         img.save(output_path, dpi=(300, 300))
 
+    obfuscated_job_id = custom_encode(int(job_id)) 
     # Generate QR code with job_id and job_title
-    data = f"{job_id} - {job_title}"  # Use job ID and title for the QR code data
+    data = f"{obfuscated_job_id}"  # Use job ID and title for the QR code data
     logo_path = "dark-logo-white.png"
     output_path = f"/tmp/qrcode_{job_id}.png"
     author = "Jens Haldrup"

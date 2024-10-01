@@ -10,7 +10,7 @@ fi
 
 # Update package list and install necessary system dependencies
 echo "Updating system and installing dependencies..."
-apt update && apt install -y python3-pip libusb-1.0-0-dev
+apt update && apt install -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer
 
 # Install Python libraries required for Brother QL
 echo "Installing Python dependencies (brother_ql, pyusb)..."
