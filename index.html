@@ -519,6 +519,7 @@
         function handleProjectSelection(event) {
           event.preventDefault();
           event.stopPropagation();
+          aler("Project selected");
           const projectId = this.dataset.projectId;
           const projectTitle = this.dataset.projectTitle;
 
