@@ -427,6 +427,7 @@
               const selectedEntity = JSON.parse(selectedPrintJob);
               const job_id = selectedEntity?.job?.id;
               const job_title = selectedEntity?.job?.job_title;
+              const project_title = selectedEntity?.project?.project_title;
 
               // If job_id or job_title is missing, stop the process
               if (!job_id || !job_title) {
@@ -446,6 +447,7 @@
                 body: JSON.stringify({
                   job_id: job_id,
                   job_title: job_title,
+                  project_title: project_title,
                   print_count: print_count,
                 }),
               })
