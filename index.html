@@ -600,13 +600,14 @@
                   color: "#ffffff",
                   title: "Indstillinger",
                   html: `
-            <strong>SSID:</strong> ${data.ssid} <br>
-            <strong>Network State:</strong> ${data.network_state} <br>
-            <strong>Printer Connected:</strong> ${
-              data.printer_connected ? "Yes" : "No"
-            } <br>
-            <strong>Uptime:</strong> ${data.uptime} <br>
-            <strong>CPU Temperature:</strong> ${data.cpu_temp} <br>
+<p class="fs-2 fw-bolder">SSID: ${data.ssid}</p>
+<p class="fs-2 fw-bolder">Network State: ${data.network_state}</p>
+<p class="fs-2 fw-bolder">Printer Connected: ${
+                    data.printer_connected ? "Yes" : "No"
+                  }</p>
+<p class="fs-2 fw-bolder">Uptime: ${data.uptime}</p>
+<p class="fs-2 fw-bolder">CPU Temperature: ${data.cpu_temp}</p>
+
           `,
                   confirmButtonColor: "#3ad244",
                   confirmButtonText: "Fortsæt",
@@ -615,7 +616,12 @@
                     confirmButton: "btn-maprova-green",
                   },
                   buttonsStyling: false,
-                  timer: 10000,
+                  timer: 9000,
+                  willClose: () => {
+                    settingsContainer.style.display = "none";
+                    nextContainer.style.display = "block";
+                    resetTimer();
+                  },
                 });
                 resetTimer();
               })
