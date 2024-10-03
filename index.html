@@ -145,6 +145,12 @@
       :focus-visible {
         outline: -webkit-focus-ring-color auto 0px;
       }
+
+      .custom-height {
+        height: calc(
+          100% + 100px
+        ) !important; /* Adds 100px to the default height */
+      }
     </style>
   </head>
   <body>
@@ -453,6 +459,7 @@
         document
           .getElementById("printBtn")
           .addEventListener("click", function () {
+            resetTimer();
             const selectedPrintJob = getCookie("selectedEntity");
 
             if (!selectedPrintJob) {
@@ -495,6 +502,9 @@
                 allowOutsideClick: false,
                 didOpen: () => {
                   Swal.showLoading();
+                },
+                customClass: {
+                  popup: "custom-height", // Add custom class for height
                 },
               });
 
