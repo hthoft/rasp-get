@@ -460,7 +460,7 @@
               console.error("Selected entity not found in cookies");
               Swal.fire({
                 title: "Fejl",
-                text: "Du har ikke valgt et job endnu.",
+                html: "Du har ikke valgt et job endnu.",
                 icon: "error",
                 showConfirmButton: true,
                 allowOutsideClick: false,
@@ -478,7 +478,7 @@
                 console.error("Job ID or title is missing.");
                 Swal.fire({
                   title: "Fejl",
-                  text: "Der opstod en fejl under udskrivningen",
+                  html: "Der opstod en fejl under udskrivningen",
                   icon: "error",
                   showConfirmButton: true,
                   allowOutsideClick: false,
@@ -492,7 +492,7 @@
               // Show a loading spinner while the print process is ongoing
               Swal.fire({
                 title: "Printer labels",
-                text: "<span class='fs-2'>Vent venligst mens printjobbet behandles...</span>",
+                html: "<span class='fs-2'>Vent venligst mens printjobbet behandles...</span>",
                 allowOutsideClick: false,
                 didOpen: () => {
                   Swal.showLoading();
@@ -553,7 +553,7 @@
                   console.error("Error printing:", error);
                   Swal.fire({
                     title: "Fejl",
-                    text: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
+                    htnl: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
                     icon: "error",
                     showConfirmButton: true,
                     allowOutsideClick: false,
@@ -563,7 +563,7 @@
               console.error("Error parsing selected entity:", error);
               Swal.fire({
                 title: "Fejl",
-                text: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
+                html: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
                 icon: "error",
                 showConfirmButton: true,
                 allowOutsideClick: false,
