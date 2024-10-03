@@ -4,6 +4,8 @@ from flask_cors import CORS
 import threading
 import os
 import webview
+import psutil
+import platform
 
 app = Flask(__name__)
 CORS(app)  # Apply CORS to the entire app
@@ -188,7 +190,6 @@ def get_projects():
     projects = fetch_all_projects()
     return jsonify(projects)
 
-
 # Flask route to fetch jobs by project ID
 @app.route('/api/jobs/<project_id>', methods=['GET'])
 def get_jobs_by_project(project_id):
@@ -220,6 +221,57 @@ def print_qr_code():
         print(f"Error occurred during print job: {e}")
         return jsonify({"status": "error", "message": "Internal server error", "details": str(e)}), 500
 
+
+@app.route('/api/system_info', methods=['GET'])
+def get_system_info():
+    # Get network SSID and state
+    ssid, state = get_network_info()
+
+    # Get printer connection details (example logic; adjust as needed)
+    printer_connected = check_printer_connection()  # Placeholder function
+
+    # Get uptime
+    uptime = get_uptime()
+
+    # Get CPU temperature
+    cpu_temp = get_cpu_temperature()
+
+    return jsonify({
+        'ssid': ssid,
+        'network_state': state,
+        'printer_connected': printer_connected,
+        'uptime': uptime,
+        'cpu_temp': cpu_temp
+    })
+
+def get_network_info():
+    try:
+        # Example for Linux systems
+        output = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
+        ssid = output if output else "Not connected"
+        state = "Connected" if ssid != "Not connected" else "Disconnected"
+    except Exception as e:
+        ssid = "Error"
+        state = "Error"
+
+    return ssid, state
+
+def check_printer_connection():
+    # Logic to check if the printer is connected
+    # This is just a placeholder; implement your own check
+    return True
+
+def get_uptime():
+    uptime_seconds = int(time.time() - psutil.boot_time())
+    uptime_string = str(datetime.timedelta(seconds=uptime_seconds))
+    return uptime_string
+
+def get_cpu_temperature():
+    # This may vary based on your platform
+    if platform.system() == "Linux":
+        temp = subprocess.check_output(["vcgencmd", "measure_temp"]).decode()
+        return temp.split("=")[1].strip()
+    return "N/A"
 
 # Function to start Flask in a separate thread
 def start_flask():

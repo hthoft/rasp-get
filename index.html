@@ -6,6 +6,7 @@
     <title>My Website</title>
     <!-- Link Bootstrap CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/sweetalert-dark.css" rel="stylesheet" />
     <style>
       /* Remove margin and padding from body */
       body {
@@ -373,10 +374,12 @@
         const countdownTime = 10000; // 10 seconds in milliseconds
 
         Swal.fire({
+          color: "#ffffff",
           title: "Sørg for at printeren er klar!",
           text: "Tænd printeren, tjek labelrulle og tryk for at starte",
           imageUrl: "config.gif",
           imageWidth: 230,
+          color: "#ffffff",
           confirmButtonColor: "#3ad244", // Set Maprova green color
           confirmButtonText: "Bekræft og fortsæt",
           customClass: {
@@ -459,6 +462,7 @@
             if (!selectedPrintJob) {
               console.error("Selected entity not found in cookies");
               Swal.fire({
+                color: "#ffffff",
                 title: "Fejl",
                 html: "Du har ikke valgt et job endnu.",
                 icon: "error",
@@ -477,6 +481,7 @@
               if (!job_id || !job_title) {
                 console.error("Job ID or title is missing.");
                 Swal.fire({
+                  color: "#ffffff",
                   title: "Fejl",
                   html: "<span class='text-danger'>Der opstod en fejl under udskrivningen</span>",
                   icon: "error",
@@ -491,6 +496,7 @@
 
               // Show a loading spinner while the print process is ongoing
               Swal.fire({
+                color: "#ffffff",
                 title: "Printer labels",
                 html: "<span class='fw-bold'>Vent venligst mens printjobbet behandles...</span>",
                 allowOutsideClick: false,
@@ -523,6 +529,7 @@
 
                   if (data.status === "success") {
                     Swal.fire({
+                      color: "#ffffff",
                       title: "Fuldført",
                       html: "<span class='fs-2'>Printjob afsluttet</span>",
                       icon: "success",
@@ -537,6 +544,7 @@
                     });
                   } else {
                     Swal.fire({
+                      color: "#ffffff",
                       title: "Printerfejl",
                       html: "<span class='fs-2'>Tjek forbindelse / labelrulle</span>",
                       icon: "error",
@@ -552,6 +560,7 @@
                 .catch((error) => {
                   console.error("Error printing:", error);
                   Swal.fire({
+                    color: "#ffffff",
                     title: "Fejl",
                     htnl: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
                     icon: "error",
@@ -562,6 +571,7 @@
             } catch (error) {
               console.error("Error parsing selected entity:", error);
               Swal.fire({
+                color: "#ffffff",
                 title: "Fejl",
                 html: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
                 icon: "error",
@@ -583,9 +593,41 @@
         document
           .getElementById("settingsIcon")
           .addEventListener("click", function () {
-            settingsContainer.style.display = "block";
-            nextContainer.style.display = "none";
-            resetTimer();
+            fetch("/api/system_info")
+              .then((response) => response.json())
+              .then((data) => {
+                Swal.fire({
+                  color: "#ffffff",
+                  title: "Indstillinger",
+                  html: `
+            <strong>SSID:</strong> ${data.ssid} <br>
+            <strong>Network State:</strong> ${data.network_state} <br>
+            <strong>Printer Connected:</strong> ${
+              data.printer_connected ? "Yes" : "No"
+            } <br>
+            <strong>Uptime:</strong> ${data.uptime} <br>
+            <strong>CPU Temperature:</strong> ${data.cpu_temp} <br>
+          `,
+                  confirmButtonColor: "#3ad244",
+                  confirmButtonText: "Fortsæt",
+                  customClass: {
+                    popup: "fullscreen",
+                    confirmButton: "btn-maprova-green",
+                  },
+                  buttonsStyling: false,
+                  timer: 10000,
+                });
+                resetTimer();
+              })
+              .catch((error) => {
+                console.error("Error fetching system info:", error);
+                Swal.fire({
+                  icon: "error",
+                  color: "#ffffff",
+                  title: "Fejl",
+                  text: "Kunne ikke hente systemoplysninger",
+                });
+              });
           });
 
         document
@@ -695,21 +737,6 @@
 
           updateSelectedEntity();
 
-          Swal.fire({
-            title: "Projekt valgt!",
-            html:
-              "<span class='fs-4 mb-4 pb-2'>Du har valgt følgende projekt:</span> <br><span class='fs-1'><b>" +
-              projectTitle +
-              "</b></span>",
-            icon: "success",
-            showConfirmButton: false, // Hide the confirm button
-            allowOutsideClick: false, // Prevent closing on outside click
-            timer: 2500, // Timer in milliseconds (3 seconds)
-            willClose: () => {
-              projectListContainer.style.display = "none";
-            },
-          });
-
           selectedJob = null;
           jobEntity.textContent = "Vælg Job";
           projectEntity.textContent = selectedProject.project_title;
@@ -717,6 +744,26 @@
             selectedProject.project_color || "#ffffff";
 
           selectJobBtn.disabled = false;
+
+          projectColor = selectedProject.project_color || "grey";
+
+          Swal.fire({
+            color: "#ffffff",
+            title: "Projekt valgt!",
+            html:
+              "<p class='fs-4'>Du har valgt følgende projekt:</p><span class='fs-1 badge text-center' style='font-size: calc(1.375rem + 1.5vw) !important; background-color: " +
+              projectColor +
+              "'>" +
+              projectTitle +
+              "</span>",
+            icon: "success",
+            showConfirmButton: false, // Hide the confirm button
+            allowOutsideClick: false, // Prevent closing on outside click
+            timer: 2000, // Timer in milliseconds (3 seconds)
+            willClose: () => {
+              projectListContainer.style.display = "none";
+            },
+          });
 
           displayJobsForProject(selectedProject.id);
         }
@@ -789,15 +836,16 @@
             jobEntity.textContent = selectedJob.job_title;
             updateSelectedEntity();
             Swal.fire({
+              color: "#ffffff",
               title: "Job valgt!",
               html:
-                "<span class='fs-4 mb-4 pb-2'>Du har valgt følgende job:</span> <br><span class='fs-1'><b>" +
+                "<p class='fs-4'>Du har valgt følgende job:</p><span class='fs-1' style='font-size: calc(1.375rem + 2vw) !important'><b>" +
                 jobTitle +
                 "</b></span>",
               icon: "success",
               showConfirmButton: false, // Hide the confirm button
               allowOutsideClick: false, // Prevent closing on outside click
-              timer: 1500, // Timer in milliseconds (3 seconds)
+              timer: 2000, // Timer in milliseconds (3 seconds)
               willClose: () => {
                 jobListContainer.style.display = "none";
                 vaegQRContainer.style.display = "none";
