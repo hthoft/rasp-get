@@ -259,9 +259,20 @@ def get_network_info():
     return ssid, state
 
 def check_printer_connection():
-    # Logic to check if the printer is connected
-    # This is just a placeholder; implement your own check
-    return True
+    try:
+        # Run the 'lsusb' command to get a list of connected USB devices
+        lsusb_output = subprocess.check_output(['lsusb']).decode('utf-8')
+
+        # Check if the Brother QL-700's USB ID is present in the output
+        brother_usb_id = "04f9:2042"  # USB ID for Brother QL-700
+
+        if brother_usb_id in lsusb_output:
+            return True  # Printer is connected
+        else:
+            return False  # Printer is not connected
+    except subprocess.CalledProcessError as e:
+        print(f"Error checking printer connection: {e}")
+        return False  # Return False if something goes wrong
 
 def get_uptime():
     uptime_seconds = int(time.time() - psutil.boot_time())
