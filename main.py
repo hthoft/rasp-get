@@ -190,8 +190,6 @@ def get_jobs_by_project(project_id):
     jobs = fetch_jobs_by_project(project_id)
     return jsonify(jobs)
 
-
-# Flask route to print QR codes
 @app.route('/api/print', methods=['POST'])
 def print_qr_code():
     data = request.get_json()
@@ -199,19 +197,22 @@ def print_qr_code():
     job_id = data.get('job_id')
     job_title = data.get('job_title')
     project_title = data.get('project_title')
-    print_count = int(data.get('print_count', 1))
+    print_count = int(data.get('print_count', 1))  # Default to 1 if not provided
 
     if not job_id or not job_title:
-        return jsonify({"error": "Missing job_id or job_title"}), 400
+        return jsonify({"status": "error", "message": "Missing job_id or job_title"}), 400
 
-    # Handle the print job
-    print_successful = handle_print(job_id, job_title, project_title, print_count)
+    try:
+        print_successful = handle_print(job_id, job_title, project_title, print_count)
 
-    if print_successful:
-        return jsonify({"status": "success", "message": "Print job completed successfully"}), 200
-    else:
-        return jsonify({"status": "error", "message": "Failed to print, check printer connection / label roll"}), 500
+        if print_successful:
+            return jsonify({"status": "success", "message": "Print job completed successfully"}), 200
+        else:
+            return jsonify({"status": "error", "message": "Failed to print, check printer connection / label roll"}), 500
 
+    except Exception as e:
+        print(f"Error occurred during printing: {e}")
+        return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 # Function to start Flask in a separate thread
 def start_flask():
