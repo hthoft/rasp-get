@@ -492,7 +492,7 @@
               // Show a loading spinner while the print process is ongoing
               Swal.fire({
                 title: "Printer labels",
-                html: "<span class='fs-2'>Vent venligst mens printjobbet behandles...</span>",
+                html: "<span class='fw-bold'>Vent venligst mens printjobbet behandles...</span>",
                 allowOutsideClick: false,
                 didOpen: () => {
                   Swal.showLoading();
@@ -524,7 +524,7 @@
                   if (data.status === "success") {
                     Swal.fire({
                       title: "Fuldført",
-                      text: "Printjob afsluttet",
+                      html: "<span class='fs-2'>Printjob afsluttet</span>",
                       icon: "success",
                       timer: 2000,
                       showConfirmButton: false,
