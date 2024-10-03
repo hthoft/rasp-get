@@ -112,7 +112,7 @@
 
       .swal2-popup.fullscreen {
         width: 100vw !important;
-        height: 100vh !important;
+        height: 95vh !important;
       }
 
       .swal2-title {
@@ -140,6 +140,10 @@
 
       .btn-maprova-green:hover {
         background-color: #2f9e3b !important; /* Darker shade for hover effect */
+      }
+
+      :focus-visible {
+        outline: -webkit-focus-ring-color auto 0px;
       }
     </style>
   </head>
@@ -449,7 +453,6 @@
         document
           .getElementById("printBtn")
           .addEventListener("click", function () {
-            // Get selected print job from cookies
             const selectedPrintJob = getCookie("selectedEntity");
 
             if (!selectedPrintJob) {
@@ -463,7 +466,6 @@
               const job_title = selectedEntity?.job?.job_title;
               const project_title = selectedEntity?.project?.project_title;
 
-              // If job_id or job_title is missing, stop the process
               if (!job_id || !job_title) {
                 console.error("Job ID or title is missing.");
                 return;
@@ -493,11 +495,40 @@
                 })
                 .then((data) => {
                   console.log("Print response:", data);
-                  printQRContainer.style.display = "none";
-                  nextContainer.style.display = "block";
-                  resetTimer();
+
+                  if (data.status === "success") {
+                    Swal.fire({
+                      title: "Fuldført",
+                      text: "Printjob afsluttet",
+                      icon: "success",
+                      imageUrl: "success.gif",
+                      imageWidth: 230,
+                      timer: 1500,
+                      showConfirmButton: false,
+                      allowOutsideClick: false,
+                      onClose: () => {
+                        printQRContainer.style.display = "none";
+                        nextContainer.style.display = "block";
+                        resetTimer();
+                      },
+                    });
+                  } else {
+                    Swal.fire({
+                      title: "Printerfejl",
+                      text: "Tjek forbindelse / labelrulle",
+                      icon: "error",
+                      imageUrl: "error.gif",
+                      imageWidth: 230,
+                      showConfirmButton: true,
+                      confirmButtonColor: "#3ad244", // Maprova green color
+                      confirmButtonText: "OK",
+                      allowOutsideClick: false,
+                    });
+                  }
                 })
-                .catch((error) => console.error("Error printing:", error));
+                .catch((error) => {
+                  console.error("Error printing:", error);
+                });
             } catch (error) {
               console.error("Error parsing selected entity:", error);
             }
@@ -630,11 +661,13 @@
           Swal.fire({
             title: "Projekt valgt!",
             html:
-              "Du har valgt følgende projekt: <br><b>" + projectTitle + "</b>",
+              "<span class='fs-4 mb-4 pb-2'>Du har valgt følgende projekt:</span> <br><span class='fs-1'><b>" +
+              projectTitle +
+              "</b></span>",
             icon: "success",
             showConfirmButton: false, // Hide the confirm button
             allowOutsideClick: false, // Prevent closing on outside click
-            timer: 1500, // Timer in milliseconds (3 seconds)
+            timer: 2500, // Timer in milliseconds (3 seconds)
             willClose: () => {
               projectListContainer.style.display = "none";
             },
@@ -720,7 +753,10 @@
             updateSelectedEntity();
             Swal.fire({
               title: "Job valgt!",
-              html: "Du har valgt følgende job: <b>" + jobTitle + "</b>",
+              html:
+                "<span class='fs-4 mb-4 pb-2'>Du har valgt følgende job:</span> <br><span class='fs-1'><b>" +
+                jobTitle +
+                "</b></span>",
               icon: "success",
               showConfirmButton: false, // Hide the confirm button
               allowOutsideClick: false, // Prevent closing on outside click
