@@ -561,10 +561,14 @@
                   console.error("Error printing:", error);
                   Swal.fire({
                     color: "#ffffff",
-                    title: "Fejl",
-                    htnl: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
+                    title: "Printerfejl",
+                    html: "<span class='fs-2'>Tjek forbindelse / labelrulle</span>",
                     icon: "error",
+                    imageUrl: "config.gif",
+                    imageWidth: 230,
                     showConfirmButton: true,
+                    confirmButtonColor: "#3ad244", // Maprova green color
+                    confirmButtonText: "OK",
                     allowOutsideClick: false,
                   });
                 });
