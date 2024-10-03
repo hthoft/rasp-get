@@ -145,12 +145,6 @@
       :focus-visible {
         outline: -webkit-focus-ring-color auto 0px;
       }
-
-      .custom-height {
-        height: calc(
-          100% + 100px
-        ) !important; /* Adds 100px to the default height */
-      }
     </style>
   </head>
   <body>
@@ -498,13 +492,10 @@
               // Show a loading spinner while the print process is ongoing
               Swal.fire({
                 title: "Printer labels",
-                text: "Vent venligst mens printjobbet behandles...",
+                text: "<span class='fs-2'>Vent venligst mens printjobbet behandles...</span>",
                 allowOutsideClick: false,
                 didOpen: () => {
                   Swal.showLoading();
-                },
-                customClass: {
-                  popup: "custom-height", // Add custom class for height
                 },
               });
 
@@ -535,10 +526,10 @@
                       title: "Fuldført",
                       text: "Printjob afsluttet",
                       icon: "success",
-                      timer: 1500,
+                      timer: 2000,
                       showConfirmButton: false,
                       allowOutsideClick: false,
-                      onClose: () => {
+                      willClose: () => {
                         printQRContainer.style.display = "none";
                         nextContainer.style.display = "block";
                         resetTimer();
@@ -547,7 +538,7 @@
                   } else {
                     Swal.fire({
                       title: "Printerfejl",
-                      text: "Tjek forbindelse / labelrulle",
+                      html: "<span class='fs-2'>Tjek forbindelse / labelrulle</span>",
                       icon: "error",
                       imageUrl: "config.gif",
                       imageWidth: 230,
@@ -562,7 +553,7 @@
                   console.error("Error printing:", error);
                   Swal.fire({
                     title: "Fejl",
-                    text: "Der opstod en fejl under udskrivningen",
+                    text: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
                     icon: "error",
                     showConfirmButton: true,
                     allowOutsideClick: false,
@@ -572,7 +563,7 @@
               console.error("Error parsing selected entity:", error);
               Swal.fire({
                 title: "Fejl",
-                text: "Der opstod en fejl under udskrivningen",
+                text: "<span class='fs-2'>Der opstod en fejl under udskrivningen</span>",
                 icon: "error",
                 showConfirmButton: true,
                 allowOutsideClick: false,
