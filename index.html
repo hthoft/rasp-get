@@ -547,13 +547,17 @@
                       color: "#ffffff",
                       title: "Printerfejl",
                       html: "<span class='fs-2'>Tjek forbindelse / labelrulle</span>",
-                      icon: "error",
                       imageUrl: "config.gif",
                       imageWidth: 230,
                       showConfirmButton: true,
                       confirmButtonColor: "#3ad244", // Maprova green color
                       confirmButtonText: "OK",
                       allowOutsideClick: false,
+                      willClose: () => {
+                        printQRContainer.style.display = "none";
+                        nextContainer.style.display = "block";
+                        resetTimer();
+                      },
                     });
                   }
                 })
@@ -563,13 +567,17 @@
                     color: "#ffffff",
                     title: "Printerfejl",
                     html: "<span class='fs-2'>Tjek forbindelse / labelrulle</span>",
-                    icon: "error",
                     imageUrl: "config.gif",
                     imageWidth: 230,
                     showConfirmButton: true,
                     confirmButtonColor: "#3ad244", // Maprova green color
                     confirmButtonText: "OK",
                     allowOutsideClick: false,
+                    willClose: () => {
+                      printQRContainer.style.display = "none";
+                      nextContainer.style.display = "block";
+                      resetTimer();
+                    },
                   });
                 });
             } catch (error) {
