@@ -16,16 +16,7 @@
         position: relative;
         display: inline-block;
       }
-      #overlayText {
-        position: absolute;
-        top: 75%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        font-size: 3rem;
-        font-weight: bold;
-        z-index: 2;
-      }
+
       #nextContainer,
       #printQRContainer,
       #vaegQRContainer,
@@ -118,6 +109,38 @@
         font-weight: bold;
         color: white;
       }
+
+      .swal2-popup.fullscreen {
+        width: 100vw !important;
+        height: 100vh !important;
+      }
+
+      .swal2-title {
+        font-size: 24px !important; /* Increase title font size */
+      }
+
+      .swal2-content {
+        font-size: 18px !important; /* Increase content text font size */
+      }
+
+      .swal2-confirm {
+        font-size: 20px !important; /* Increase confirm button font size */
+        padding: 12px 24px !important; /* Adjust button padding */
+      }
+
+      .btn-maprova-green {
+        background-color: #3ad244 !important; /* Maprova green */
+        color: white !important; /* Text color */
+        font-size: 20px !important; /* Increase button font size */
+        padding: 12px 24px !important; /* Adjust button padding */
+        border-radius: 1.5rem !important; /* Increase border radius */
+        border-color: #3ad244 !important; /* Border color */
+        border-width: 0;
+      }
+
+      .btn-maprova-green:hover {
+        background-color: #2f9e3b !important; /* Darker shade for hover effect */
+      }
     </style>
   </head>
   <body>
@@ -130,7 +153,6 @@
           width="800"
           height="480"
         />
-        <div id="overlayText">START</div>
       </a>
     </div>
 
@@ -315,7 +337,6 @@
       document.addEventListener("DOMContentLoaded", function () {
         const splashLink = document.getElementById("splashLink");
         const splashImage = document.getElementById("splashImage");
-        const overlayText = document.getElementById("overlayText");
         const splashContainer = document.getElementById("splashContainer");
         const nextContainer = document.getElementById("nextContainer");
         const printQRContainer = document.getElementById("printQRContainer");
@@ -355,8 +376,10 @@
           confirmButtonColor: "#3ad244", // Set Maprova green color
           confirmButtonText: "Bekræft og fortsæt",
           customClass: {
+            popup: "fullscreen", // Custom class for full screen
             confirmButton: "btn-maprova-green", // Custom class for confirm button
           },
+          buttonsStyling: false, // Disable default button styling
         });
 
         function resetTimer() {
@@ -371,14 +394,12 @@
             jobListContainer.style.display = "none";
 
             splashImage.style.display = "block";
-            overlayText.style.display = "block";
           }, countdownTime);
         }
 
         splashLink.addEventListener("click", function (event) {
           event.preventDefault();
           splashImage.style.display = "none";
-          overlayText.style.display = "none";
           nextContainer.style.display = "block";
           resetTimer();
         });
