@@ -284,6 +284,7 @@
     <!-- Optional: Include Bootstrap JS and jQuery -->
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/sweetalert.js"></script>
     <script>
       // Function to set a cookie
       function setCookie(name, value, days) {
@@ -345,6 +346,18 @@
 
         let countdownTimer;
         const countdownTime = 10000; // 10 seconds in milliseconds
+
+        Swal.fire({
+          title: "Sørg for at printeren er klar!",
+          text: "Tænd printeren, tjek labelrulle og tryk for at starte",
+          imageUrl: "config.gif",
+          imageWidth: 230,
+          confirmButtonColor: "#3ad244", // Set Maprova green color
+          confirmButtonText: "Bekræft og fortsæt",
+          customClass: {
+            confirmButton: "btn-maprova-green", // Custom class for confirm button
+          },
+        });
 
         function resetTimer() {
           clearTimeout(countdownTimer);
@@ -593,10 +606,21 @@
 
           updateSelectedEntity();
 
+          Swal.fire({
+            title: "Projekt valgt!",
+            html:
+              "Du har valgt følgende projekt: <br><b>" + projectTitle + "</b>",
+            icon: "success",
+            showConfirmButton: false, // Hide the confirm button
+            allowOutsideClick: false, // Prevent closing on outside click
+            timer: 1500, // Timer in milliseconds (3 seconds)
+            willClose: () => {
+              projectListContainer.style.display = "none";
+            },
+          });
+
           selectedJob = null;
           jobEntity.textContent = "Vælg Job";
-
-          projectListContainer.style.display = "none";
           projectEntity.textContent = selectedProject.project_title;
           projectEntity.style.backgroundColor =
             selectedProject.project_color || "#ffffff";
@@ -608,8 +632,21 @@
 
         function displayJobsForProject(projectId) {
           jobList.innerHTML = "";
+
           if (jobsData[projectId] && jobsData[projectId].length > 0) {
-            jobsData[projectId].forEach((job) => {
+            // Filter jobs that are active
+            const activeJobs = jobsData[projectId].filter(
+              (job) => job.job_status === "active"
+            );
+
+            // Sort active jobs by job_activation timestamp (oldest first)
+            activeJobs.sort((a, b) => {
+              const dateA = new Date(a.job_activation);
+              const dateB = new Date(b.job_activation);
+              return dateA - dateB;
+            });
+
+            activeJobs.forEach((job) => {
               const jobItem = document.createElement("button");
               jobItem.classList.add(
                 "list-item",
@@ -644,9 +681,13 @@
           const jobId = this.dataset.jobId;
           const jobTitle = this.dataset.jobTitle;
 
+          console.log("Selected job:", jobId, jobTitle);
+
           selectedJob = jobsData[selectedProject.id].find(
             (job) => job.id == jobId
           );
+
+          console.log("Selected job object:", selectedJob);
 
           if (selectedJob) {
             setCookie(
@@ -654,9 +695,22 @@
               JSON.stringify({ project: selectedProject, job: selectedJob }),
               1
             );
-            jobListContainer.style.display = "none";
             jobEntity.textContent = selectedJob.job_title;
             updateSelectedEntity();
+            Swal.fire({
+              title: "Job valgt!",
+              html: "Du har valgt følgende job: <b>" + jobTitle + "</b>",
+              icon: "success",
+              showConfirmButton: false, // Hide the confirm button
+              allowOutsideClick: false, // Prevent closing on outside click
+              timer: 1500, // Timer in milliseconds (3 seconds)
+              willClose: () => {
+                jobListContainer.style.display = "none";
+                vaegQRContainer.style.display = "none";
+                nextContainer.style.display = "block";
+                resetTimer();
+              },
+            });
           } else {
             console.error("Job not found!");
           }
