@@ -593,7 +593,7 @@
         document
           .getElementById("settingsIcon")
           .addEventListener("click", function () {
-            fetch("/api/system_info")
+            fetch("http://127.0.0.1:5000/api/system_info")
               .then((response) => response.json())
               .then((data) => {
                 Swal.fire({
