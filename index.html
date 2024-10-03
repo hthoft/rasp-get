@@ -488,6 +488,16 @@
               const print_count =
                 document.getElementById("countDisplay").textContent || 1;
 
+              // Show a loading spinner while the print process is ongoing
+              Swal.fire({
+                title: "Printer labels",
+                text: "Vent venligst mens printjobbet behandles...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                  Swal.showLoading();
+                },
+              });
+
               // Send the print job to the server
               fetch("http://127.0.0.1:5000/api/print", {
                 method: "POST",
@@ -550,6 +560,13 @@
                 });
             } catch (error) {
               console.error("Error parsing selected entity:", error);
+              Swal.fire({
+                title: "Fejl",
+                text: "Der opstod en fejl under udskrivningen",
+                icon: "error",
+                showConfirmButton: true,
+                allowOutsideClick: false,
+              });
             }
           });
 
