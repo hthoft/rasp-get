@@ -6,7 +6,7 @@ import os
 import webview
 import psutil
 import platform
-from datetime import timedelta
+from datetime import timedelta, datetime
 import time
 
 app = Flask(__name__)
@@ -265,8 +265,9 @@ def check_printer_connection():
 
 def get_uptime():
     uptime_seconds = int(time.time() - psutil.boot_time())
-    uptime_string = str(datetime.timedelta(seconds=uptime_seconds))
+    uptime_string = str(timedelta(seconds=uptime_seconds))  # Correct usage of timedelta
     return uptime_string
+
 
 def get_cpu_temperature():
     # This may vary based on your platform
