@@ -457,6 +457,13 @@
 
             if (!selectedPrintJob) {
               console.error("Selected entity not found in cookies");
+              Swal.fire({
+                title: "Fejl",
+                text: "Du har ikke valgt et job endnu.",
+                icon: "error",
+                showConfirmButton: true,
+                allowOutsideClick: false,
+              });
               return;
             }
 
@@ -468,6 +475,13 @@
 
               if (!job_id || !job_title) {
                 console.error("Job ID or title is missing.");
+                Swal.fire({
+                  title: "Fejl",
+                  text: "Der opstod en fejl under udskrivningen",
+                  icon: "error",
+                  showConfirmButton: true,
+                  allowOutsideClick: false,
+                });
                 return;
               }
 
@@ -501,8 +515,6 @@
                       title: "Fuldført",
                       text: "Printjob afsluttet",
                       icon: "success",
-                      imageUrl: "success.gif",
-                      imageWidth: 230,
                       timer: 1500,
                       showConfirmButton: false,
                       allowOutsideClick: false,
@@ -517,7 +529,7 @@
                       title: "Printerfejl",
                       text: "Tjek forbindelse / labelrulle",
                       icon: "error",
-                      imageUrl: "error.gif",
+                      imageUrl: "config.gif",
                       imageWidth: 230,
                       showConfirmButton: true,
                       confirmButtonColor: "#3ad244", // Maprova green color
@@ -528,6 +540,13 @@
                 })
                 .catch((error) => {
                   console.error("Error printing:", error);
+                  Swal.fire({
+                    title: "Fejl",
+                    text: "Der opstod en fejl under udskrivningen",
+                    icon: "error",
+                    showConfirmButton: true,
+                    allowOutsideClick: false,
+                  });
                 });
             } catch (error) {
               console.error("Error parsing selected entity:", error);
