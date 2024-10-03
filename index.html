@@ -356,10 +356,11 @@
               if (!alertShown) {
                 Swal.fire({
                   color: "#ffffff",
-                  title: "Printer Disconnected",
+                  title: "Printer Fejl",
                   html: "<span class='fs-2'>Printeren er frakoblet!</span>",
-                  icon: "error",
-                  confirmButtonColor: "#3ad244", // Maprova green color
+                  imageUrl: "disconnect.gif",
+                  imageWidth: 230,
+                  confirmButtonColor: "#fc0303", // Maprova green color
                   confirmButtonText: "OK",
                   allowOutsideClick: false,
                 });
