@@ -27,117 +27,122 @@ def custom_encode(number):
 
 
 def handle_print(job_id, job_title, project_title, print_count):
-    def generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm):
-        # Generate QR code
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_H,
-            box_size=10,
-            border=1,
-        )
-        qr.add_data(data)
-        qr.make(fit=True)
+    try:
+        def generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm):
+            # Generate QR code
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_H,
+                box_size=10,
+                border=1,
+            )
+            qr.add_data(data)
+            qr.make(fit=True)
 
-        qr_img = qr.make_image(fill='black', back_color='white').convert('RGB')
+            qr_img = qr.make_image(fill='black', back_color='white').convert('RGB')
 
-        # Open the logo image
-        logo = Image.open(logo_path)
-        max_width_pixels = int(max_width_mm * 300 / 25.4)
-        logo_width = max_width_pixels
-        logo_height = int(logo.size[1] * (logo_width / logo.size[0]))
-        logo = logo.resize((logo_width, logo_height), Image.LANCZOS)
+            # Open the logo image
+            logo = Image.open(logo_path)
+            max_width_pixels = int(max_width_mm * 300 / 25.4)
+            logo_width = max_width_pixels
+            logo_height = int(logo.size[1] * (logo_width / logo.size[0]))
+            logo = logo.resize((logo_width, logo_height), Image.LANCZOS)
 
-        # Font for the job title
-        job_title_font_size = 64
-        job_title_font = ImageFont.truetype("arialbd.ttf", job_title_font_size)
-        job_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), job_title, font=job_title_font)
-        job_title_height = job_title_bbox[3] - job_title_bbox[1]
+            # Font for the job title
+            job_title_font_size = 64
+            job_title_font = ImageFont.truetype("arialbd.ttf", job_title_font_size)
+            job_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), job_title, font=job_title_font)
+            job_title_height = job_title_bbox[3] - job_title_bbox[1]
 
-                # Font for the project title
-        project_title_font_size = 40
-        project_title_font = ImageFont.truetype("arial.ttf", project_title_font_size)
-        project_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), project_title, font=project_title_font)
-        project_title_height = project_title_bbox[3] - project_title_bbox[1]
+                    # Font for the project title
+            project_title_font_size = 40
+            project_title_font = ImageFont.truetype("arial.ttf", project_title_font_size)
+            project_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), project_title, font=project_title_font)
+            project_title_height = project_title_bbox[3] - project_title_bbox[1]
 
-        # Calculate the height based on the contents
-        text_space = 150  # Space for the author and timestamp text
-        qr_size = max_width_pixels  # QR code should fill the entire width
-        total_height = logo_height + job_title_height + project_title_height + qr_size + text_space 
+            # Calculate the height based on the contents
+            text_space = 150  # Space for the author and timestamp text
+            qr_size = max_width_pixels  # QR code should fill the entire width
+            total_height = logo_height + job_title_height + project_title_height + qr_size + text_space 
 
-        # Create a new image with the calculated dimensions
-        img = Image.new('RGB', (max_width_pixels, total_height), 'white')
+            # Create a new image with the calculated dimensions
+            img = Image.new('RGB', (max_width_pixels, total_height), 'white')
 
-        # Paste the logo and QR code onto the new image
-        logo_pos = (0, -10)
-        img.paste(logo, logo_pos)
+            # Paste the logo and QR code onto the new image
+            logo_pos = (0, -10)
+            img.paste(logo, logo_pos)
 
-        # Draw the job title below the logo
-        draw = ImageDraw.Draw(img)
-        job_title_pos = ((max_width_pixels - job_title_bbox[2]) // 2, logo_height - 40)
-        draw.text(job_title_pos, job_title, font=job_title_font, fill='black')
+            # Draw the job title below the logo
+            draw = ImageDraw.Draw(img)
+            job_title_pos = ((max_width_pixels - job_title_bbox[2]) // 2, logo_height - 40)
+            draw.text(job_title_pos, job_title, font=job_title_font, fill='black')
 
-        project_title_pos = ((max_width_pixels - project_title_bbox[2]) // 2, logo_height + job_title_height - 20)
-        draw.text(project_title_pos, project_title, font=project_title_font, fill='black')
+            project_title_pos = ((max_width_pixels - project_title_bbox[2]) // 2, logo_height + job_title_height - 20)
+            draw.text(project_title_pos, project_title, font=project_title_font, fill='black')
 
-        # Draw the QR code below the job title
-        qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
-        qr_pos = (0, logo_height + job_title_height + project_title_height + 5)
-        img.paste(qr_img, qr_pos)
+            # Draw the QR code below the job title
+            qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
+            qr_pos = (0, logo_height + job_title_height + project_title_height + 5)
+            img.paste(qr_img, qr_pos)
 
-        # Add timestamp and author below the QR code
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        font_size = 36
-        font = ImageFont.truetype("arial.ttf", font_size)
-        bold_font = ImageFont.truetype("arialbd.ttf", font_size)
+            # Add timestamp and author below the QR code
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            font_size = 36
+            font = ImageFont.truetype("arial.ttf", font_size)
+            bold_font = ImageFont.truetype("arialbd.ttf", font_size)
 
-        text_author = "Udskrevet af:  "
-        text_time = "Udskrevet d.:  "
+            text_author = "Udskrevet af:  "
+            text_time = "Udskrevet d.:  "
 
-        author_bbox = draw.textbbox((0, 0), text_author, font=bold_font)
-        author_width = author_bbox[2] - author_bbox[0]
-        time_bbox = draw.textbbox((0, 0), text_time, font=bold_font)
-        time_width = time_bbox[2] - time_bbox[0]
+            author_bbox = draw.textbbox((0, 0), text_author, font=bold_font)
+            author_width = author_bbox[2] - author_bbox[0]
+            time_bbox = draw.textbbox((0, 0), text_time, font=bold_font)
+            time_width = time_bbox[2] - time_bbox[0]
 
-        author_text = f"{text_author} {author}"
-        time_text = f"{text_time} {timestamp}"
+            author_text = f"{text_author} {author}"
+            time_text = f"{text_time} {timestamp}"
 
-        total_text_width = max(
-            author_width + draw.textbbox((0, 0), author, font=font)[2] - draw.textbbox((0, 0), author, font=font)[0],
-            time_width + draw.textbbox((0, 0), timestamp, font=font)[2] - draw.textbbox((0, 0), timestamp, font=font)[0]
-        )
+            total_text_width = max(
+                author_width + draw.textbbox((0, 0), author, font=font)[2] - draw.textbbox((0, 0), author, font=font)[0],
+                time_width + draw.textbbox((0, 0), timestamp, font=font)[2] - draw.textbbox((0, 0), timestamp, font=font)[0]
+            )
 
-        text_pos_y = logo_height + job_title_height + qr_size + 70
+            text_pos_y = logo_height + job_title_height + qr_size + 70
 
-        draw.text(((max_width_pixels - total_text_width) // 2, text_pos_y), text_author, fill='black', font=bold_font)
-        draw.text(((max_width_pixels - total_text_width) // 2 + author_width, text_pos_y), author, fill='black', font=font)
-        draw.text(((max_width_pixels - total_text_width) // 2, text_pos_y + author_bbox[3] + 8), text_time, fill='black', font=bold_font)
-        draw.text(((max_width_pixels - total_text_width) // 2 + time_width, text_pos_y + author_bbox[3] + 8), timestamp, fill='black', font=font)
+            draw.text(((max_width_pixels - total_text_width) // 2, text_pos_y), text_author, fill='black', font=bold_font)
+            draw.text(((max_width_pixels - total_text_width) // 2 + author_width, text_pos_y), author, fill='black', font=font)
+            draw.text(((max_width_pixels - total_text_width) // 2, text_pos_y + author_bbox[3] + 8), text_time, fill='black', font=bold_font)
+            draw.text(((max_width_pixels - total_text_width) // 2 + time_width, text_pos_y + author_bbox[3] + 8), timestamp, fill='black', font=font)
 
-        img.save(output_path, dpi=(300, 300))
+            img.save(output_path, dpi=(300, 300))
 
-    obfuscated_job_id = custom_encode(int(job_id)) 
-    # Generate QR code with job_id and job_title
-    data = f"{obfuscated_job_id}"  # Use job ID for the QR code data
-    logo_path = "dark-logo-white.png"
-    #output_path = f"qrcode_{job_id}.png"
-    output_path = f"/tmp/qrcode_{job_id}.png"
-    author = "Label Printer Hal 7"
-    max_width_mm = 62  # Maximum width of the roll in mm
-    generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm)
+        obfuscated_job_id = custom_encode(int(job_id)) 
+        # Generate QR code with job_id and job_title
+        data = f"{obfuscated_job_id}"  # Use job ID for the QR code data
+        logo_path = "dark-logo-white.png"
+        #output_path = f"qrcode_{job_id}.png"
+        output_path = f"/tmp/qrcode_{job_id}.png"
+        author = "Label Printer Hal 7"
+        max_width_mm = 62  # Maximum width of the roll in mm
+        generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm)
 
-    # Print the QR code as many times as specified by print_count
-    for i in range(print_count):
-        print_command = (
-            f"sudo BROTHER_QL_PRINTER=usb://0x04f9:0x2042 BROTHER_QL_MODEL=QL-700 "
-            f"brother_ql print -l 62 {output_path}"
-        )
+        for i in range(print_count):
+            print_command = (
+                f"sudo BROTHER_QL_PRINTER=usb://0x04f9:0x2042 BROTHER_QL_MODEL=QL-700 "
+                f"brother_ql print -l 62 /tmp/qrcode_{job_id}.png"
+            )
 
-        try:
             subprocess.run(print_command, shell=True, check=True)
             print(f"Printing {i + 1}/{print_count} QR codes")
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to print on iteration {i + 1}: {e}")
-            break
+
+        return True  # If everything worked fine
+
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to print: {e}")
+        return False  # Return False if the print failed
+    except Exception as e:
+        print(f"Unexpected error: {e}")  # Catch any unexpected errors
+        return False  # Handle other unexpected errors
 
 
 
@@ -211,8 +216,10 @@ def print_qr_code():
             return jsonify({"status": "error", "message": "Failed to print, check printer connection / label roll"}), 500
 
     except Exception as e:
-        print(f"Error occurred during printing: {e}")
-        return jsonify({"status": "error", "message": "Internal server error"}), 500
+        # Log the exact error details
+        print(f"Error occurred during print job: {e}")
+        return jsonify({"status": "error", "message": "Internal server error", "details": str(e)}), 500
+
 
 # Function to start Flask in a separate thread
 def start_flask():
