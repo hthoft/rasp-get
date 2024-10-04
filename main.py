@@ -10,6 +10,9 @@ from datetime import timedelta, datetime
 import time
 import subprocess
 import json
+import qrcode
+from PIL import Image, ImageDraw, ImageFont
+import subprocess
 
 app = Flask(__name__)
 CORS(app)  # Apply CORS to the entire app
@@ -69,7 +72,7 @@ def handle_print(job_id, job_title, project_title, print_count):
             job_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), job_title, font=job_title_font)
             job_title_height = job_title_bbox[3] - job_title_bbox[1]
 
-            # Font for the project title
+                    # Font for the project title
             project_title_font_size = 40
             project_title_font = ImageFont.truetype("arial.ttf", project_title_font_size)
             project_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), project_title, font=project_title_font)
@@ -135,6 +138,7 @@ def handle_print(job_id, job_title, project_title, print_count):
         # Generate QR code with job_id and job_title
         data = f"{obfuscated_job_id}"  # Use job ID for the QR code data
         logo_path = "dark-logo-white.png"
+        #output_path = f"qrcode_{job_id}.png"
         output_path = f"/tmp/qrcode_{job_id}.png"
         author = "Label Printer Hal 7"
         max_width_mm = 62  # Maximum width of the roll in mm
@@ -157,6 +161,7 @@ def handle_print(job_id, job_title, project_title, print_count):
     except Exception as e:
         print(f"Unexpected error: {e}")  # Catch any unexpected errors
         return False  # Handle other unexpected errors
+
 
 
 # Save data to cache
@@ -205,7 +210,7 @@ def fetch_all_projects():
         return cached_projects
     except requests.RequestException as e:
         print(f"Error fetching projects: {e}")
-        return load_cached_data(projects_cache_file)  # Use cached data as fallback
+        return load_cached_data(projects_cache_file)  # Use cached data as fallbackf
 
 
 # Function to fetch jobs by project ID
