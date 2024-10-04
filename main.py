@@ -188,13 +188,17 @@ def fetch_all_projects():
     api_key = '7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44'
     customer_id = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
     url = f"https://portal.maprova.dk/api/getAllProjects.php?apiKey={api_key}&customerID={customer_id}"
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
     
     if not is_network_connected():
         print("Network unavailable, using cached project data")
         return load_cached_data(projects_cache_file)
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()  # Raise an error for bad status codes
         cached_projects = response.json()  # Cache the response
         save_cached_data(projects_cache_file, cached_projects)  # Save to cache
@@ -210,6 +214,11 @@ def fetch_jobs_by_project(project_id):
     api_key = '7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44'
     customer_id = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
     url = f"https://portal.maprova.dk/api/getJobsByProjectID.php?project_id={project_id}&apiKey={api_key}&customerID={customer_id}"
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+
     
     if not is_network_connected():
         print("Network unavailable, using cached job data")
@@ -217,7 +226,7 @@ def fetch_jobs_by_project(project_id):
         return cached_jobs.get(str(project_id), {})
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()  # Raise an error for bad status codes
         jobs = response.json()
         cached_jobs[project_id] = jobs  # Cache the response
