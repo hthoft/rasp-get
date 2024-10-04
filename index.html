@@ -340,41 +340,63 @@
       }
 
       let printerConnected = true; // Initial assumption: printer is connected
-      let alertShown = false; // Flag to ensure the alert is shown only once when disconnected
+      let networkConnected = true; // Initial assumption: network is connected
+      let printerAlertShown = false; // Flag to ensure the printer alert is shown only once
+      let networkAlertShown = false; // Flag to ensure the network alert is shown only once
 
-      // Function to check printer connection status
-      function checkPrinterConnection() {
+      // Function to check printer and network connection status
+      function checkSystemConnections() {
         fetch("http://127.0.0.1:5000/api/system_info")
           .then((response) => response.json())
           .then((data) => {
             // If printer is connected, update status and reset alert flag
             if (data.printer_connected) {
               printerConnected = true;
-              alertShown = false;
+              printerAlertShown = false;
             } else {
               // If printer is disconnected and the alert hasn't been shown yet, show the alert
-              if (!alertShown) {
+              if (!printerAlertShown) {
                 Swal.fire({
                   color: "#ffffff",
                   html: "<span class='fs-2'>Printeren er frakoblet!</span>",
                   imageUrl: "disconnect.gif",
                   imageWidth: 300,
-                  confirmButtonColor: "#fc0303", // Maprova green color
+                  confirmButtonColor: "#fc0303", // Red for error alert
                   confirmButtonText: "OK",
                   allowOutsideClick: false,
                 });
-                alertShown = true; // Ensure the alert is only shown once
+                printerAlertShown = true; // Ensure the alert is only shown once
               }
               printerConnected = false;
             }
+
+            // Check network connection status
+            if (data.network_state === "Connected") {
+              networkConnected = true;
+              networkAlertShown = false;
+            } else {
+              // If the network is disconnected and the alert hasn't been shown yet, show the alert
+              if (!networkAlertShown) {
+                Swal.fire({
+                  color: "#ffffff",
+                  html: "<span class='fs-2'>Netværket er frakoblet!</span>",
+                  icon: "error",
+                  confirmButtonColor: "#fc0303", // Red for error alert
+                  confirmButtonText: "OK",
+                  allowOutsideClick: false,
+                });
+                networkAlertShown = true; // Ensure the alert is only shown once
+              }
+              networkConnected = false;
+            }
           })
           .catch((error) => {
-            console.error("Error fetching printer connection status:", error);
+            console.error("Error fetching system connection status:", error);
           });
       }
 
       // Set up an interval to check printer connection every 10 seconds
-      setInterval(checkPrinterConnection, 10000); // 10,000 milliseconds = 10 seconds
+      setInterval(checkSystemConnections, 10000); // 10,000 milliseconds = 10 seconds
 
       document.addEventListener("DOMContentLoaded", function () {
         const splashLink = document.getElementById("splashLink");
