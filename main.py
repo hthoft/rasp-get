@@ -8,14 +8,25 @@ import psutil
 import platform
 from datetime import timedelta, datetime
 import time
+import subprocess
+import json
 
 app = Flask(__name__)
 CORS(app)  # Apply CORS to the entire app
 
-import qrcode
-from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont
-import subprocess
+# Cache Directory and Files
+cache_dir = './cache'
+projects_cache_file = os.path.join(cache_dir, 'projects_cache.json')
+jobs_cache_file = os.path.join(cache_dir, 'jobs_cache.json')
+
+# In-memory cache for projects and jobs
+cached_projects = None
+cached_jobs = {}
+
+# Create cache directory if it doesn't exist
+if not os.path.exists(cache_dir):
+    os.makedirs(cache_dir)
+
 
 def custom_encode(number):
     # Convert the number to a hexadecimal string
@@ -58,7 +69,7 @@ def handle_print(job_id, job_title, project_title, print_count):
             job_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), job_title, font=job_title_font)
             job_title_height = job_title_bbox[3] - job_title_bbox[1]
 
-                    # Font for the project title
+            # Font for the project title
             project_title_font_size = 40
             project_title_font = ImageFont.truetype("arial.ttf", project_title_font_size)
             project_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), project_title, font=project_title_font)
@@ -124,7 +135,6 @@ def handle_print(job_id, job_title, project_title, print_count):
         # Generate QR code with job_id and job_title
         data = f"{obfuscated_job_id}"  # Use job ID for the QR code data
         logo_path = "dark-logo-white.png"
-        #output_path = f"qrcode_{job_id}.png"
         output_path = f"/tmp/qrcode_{job_id}.png"
         author = "Label Printer Hal 7"
         max_width_mm = 62  # Maximum width of the roll in mm
@@ -149,42 +159,75 @@ def handle_print(job_id, job_title, project_title, print_count):
         return False  # Handle other unexpected errors
 
 
+# Save data to cache
+def save_cached_data(filename, data):
+    with open(filename, 'w') as f:
+        json.dump(data, f)
+
+
+# Load data from cache
+def load_cached_data(filename):
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            return json.load(f)
+    return {}
+
+
+# Check if network is available
+def is_network_connected():
+    try:
+        output = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
+        return output != ""  # True if connected
+    except Exception:
+        return False
+
 
 # Function to fetch all projects
 def fetch_all_projects():
+    global cached_projects
     api_key = '7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44'
     customer_id = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
     url = f"https://portal.maprova.dk/api/getAllProjects.php?apiKey={api_key}&customerID={customer_id}"
     
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
+    if not is_network_connected():
+        print("Network unavailable, using cached project data")
+        return load_cached_data(projects_cache_file)
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad status codes
-        return response.json()
+        cached_projects = response.json()  # Cache the response
+        save_cached_data(projects_cache_file, cached_projects)  # Save to cache
+        return cached_projects
     except requests.RequestException as e:
         print(f"Error fetching projects: {e}")
-        return {}
+        return load_cached_data(projects_cache_file)  # Use cached data as fallback
+
 
 # Function to fetch jobs by project ID
 def fetch_jobs_by_project(project_id):
+    global cached_jobs
     api_key = '7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44'
     customer_id = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
     url = f"https://portal.maprova.dk/api/getJobsByProjectID.php?project_id={project_id}&apiKey={api_key}&customerID={customer_id}"
     
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
+    if not is_network_connected():
+        print("Network unavailable, using cached job data")
+        cached_jobs = load_cached_data(jobs_cache_file)
+        return cached_jobs.get(str(project_id), {})
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad status codes
-        return response.json()
+        jobs = response.json()
+        cached_jobs[project_id] = jobs  # Cache the response
+        save_cached_data(jobs_cache_file, cached_jobs)  # Save to cache
+        return jobs
     except requests.RequestException as e:
         print(f"Error fetching jobs for project {project_id}: {e}")
-        return {}
+        cached_jobs = load_cached_data(jobs_cache_file)
+        return cached_jobs.get(str(project_id), {})  # Use cached data as fallback
+
 
 # Flask route to serve project data
 @app.route('/api/projects', methods=['GET'])
@@ -192,11 +235,13 @@ def get_projects():
     projects = fetch_all_projects()
     return jsonify(projects)
 
+
 # Flask route to fetch jobs by project ID
 @app.route('/api/jobs/<project_id>', methods=['GET'])
 def get_jobs_by_project(project_id):
     jobs = fetch_jobs_by_project(project_id)
     return jsonify(jobs)
+
 
 @app.route('/api/print', methods=['POST'])
 def print_qr_code():
@@ -219,23 +264,18 @@ def print_qr_code():
             return jsonify({"status": "error", "message": "Failed to print, check printer connection / label roll"}), 500
 
     except Exception as e:
-        # Log the exact error details
         print(f"Error occurred during print job: {e}")
         return jsonify({"status": "error", "message": "Internal server error", "details": str(e)}), 500
 
 
 @app.route('/api/system_info', methods=['GET'])
 def get_system_info():
-    # Get network SSID and state
     ssid, state = get_network_info()
 
-    # Get printer connection details (example logic; adjust as needed)
-    printer_connected = check_printer_connection()  # Placeholder function
+    printer_connected = check_printer_connection()
 
-    # Get uptime
     uptime = get_uptime()
 
-    # Get CPU temperature
     cpu_temp = get_cpu_temperature()
 
     return jsonify({
@@ -246,46 +286,41 @@ def get_system_info():
         'cpu_temp': cpu_temp
     })
 
+
 def get_network_info():
     try:
-        # Example for Linux systems
         output = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
         ssid = output if output else "Not connected"
         state = "Connected" if ssid != "Not connected" else "Disconnected"
-    except Exception as e:
+    except Exception:
         ssid = "Error"
         state = "Error"
 
     return ssid, state
 
+
 def check_printer_connection():
     try:
-        # Run the 'lsusb' command to get a list of connected USB devices
         lsusb_output = subprocess.check_output(['lsusb']).decode('utf-8')
-
-        # Check if the Brother QL-700's USB ID is present in the output
-        brother_usb_id = "04f9:2042"  # USB ID for Brother QL-700
-
-        if brother_usb_id in lsusb_output:
-            return True  # Printer is connected
-        else:
-            return False  # Printer is not connected
+        brother_usb_id = "04f9:2042"
+        return brother_usb_id in lsusb_output
     except subprocess.CalledProcessError as e:
         print(f"Error checking printer connection: {e}")
-        return False  # Return False if something goes wrong
+        return False
+
 
 def get_uptime():
     uptime_seconds = int(time.time() - psutil.boot_time())
-    uptime_string = str(timedelta(seconds=uptime_seconds))  # Correct usage of timedelta
+    uptime_string = str(timedelta(seconds=uptime_seconds))
     return uptime_string
 
 
 def get_cpu_temperature():
-    # This may vary based on your platform
     if platform.system() == "Linux":
         temp = subprocess.check_output(["vcgencmd", "measure_temp"]).decode()
         return temp.split("=")[1].strip()
     return "N/A"
+
 
 # Function to start Flask in a separate thread
 def start_flask():
