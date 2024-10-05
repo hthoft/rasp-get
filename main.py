@@ -301,6 +301,18 @@ def get_system_info():
     })
 
 
+@app.route('/api/reboot', methods=['POST'])
+def reboot_system():
+    try:
+        # Run the reboot command (this will reboot the Raspberry Pi)
+        subprocess.run(['sudo', 'reboot'], check=True)
+        return jsonify({"status": "success", "message": "System is rebooting..."}), 200
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while rebooting: {e}")
+        return jsonify({"status": "error", "message": "Failed to reboot the system", "details": str(e)}), 500
+
+
+
 def get_network_info():
     try:
         output = subprocess.check_output(["iwgetid", "-r"]).decode().strip()

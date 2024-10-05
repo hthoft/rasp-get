@@ -677,8 +677,7 @@
                   }</p>
 <p class="fs-2 fw-bolder">Uptime: ${data.uptime}</p>
 <p class="fs-2 fw-bolder">CPU Temperature: ${data.cpu_temp}</p>
-
-          `,
+`,
                   confirmButtonColor: "#3ad244",
                   confirmButtonText: "Fortsæt",
                   customClass: {
@@ -688,13 +687,45 @@
                   icon: "info",
                   buttonsStyling: false,
                   timer: 9000,
-                  willClose: () => {
-                    settingsContainer.style.display = "none";
-                    nextContainer.style.display = "block";
-                    resetTimer();
-                  },
+                  showCancelButton: true,
+                  cancelButtonText: "Genstart",
+                  cancelButtonColor: "#ff8800", // Orange color for warning
+                }).then((result) => {
+                  if (result.dismiss === Swal.DismissReason.cancel) {
+                    // User clicked "Genstart" button
+                    fetch("http://127.0.0.1:5000/api/reboot", {
+                      method: "POST",
+                    })
+                      .then((response) => response.json())
+                      .then((rebootData) => {
+                        if (rebootData.status === "success") {
+                          Swal.fire({
+                            icon: "success",
+                            title: "Genstarter...",
+                            text: rebootData.message,
+                            showConfirmButton: false,
+                            timer: 3000,
+                          });
+                        } else {
+                          Swal.fire({
+                            icon: "error",
+                            title: "Fejl ved genstart",
+                            text: rebootData.message,
+                            showConfirmButton: true,
+                          });
+                        }
+                      })
+                      .catch((error) => {
+                        console.error("Error during reboot request:", error);
+                        Swal.fire({
+                          icon: "error",
+                          title: "Fejl",
+                          text: "Kunne ikke sende genstart-anmodning",
+                          showConfirmButton: true,
+                        });
+                      });
+                  }
                 });
-                resetTimer();
               })
               .catch((error) => {
                 console.error("Error fetching system info:", error);
