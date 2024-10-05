@@ -47,7 +47,7 @@ def custom_encode(number):
 def handle_print(job_id, job_title, project_title, print_count):
     try:
         def generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm):
-            # Generate QR code
+            # QR code generation code (same as before)
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -72,7 +72,7 @@ def handle_print(job_id, job_title, project_title, print_count):
             job_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), job_title, font=job_title_font)
             job_title_height = job_title_bbox[3] - job_title_bbox[1]
 
-                    # Font for the project title
+            # Font for the project title
             project_title_font_size = 40
             project_title_font = ImageFont.truetype("arial.ttf", project_title_font_size)
             project_title_bbox = ImageDraw.Draw(Image.new('RGB', (1, 1))).textbbox((0, 0), project_title, font=project_title_font)
@@ -150,7 +150,13 @@ def handle_print(job_id, job_title, project_title, print_count):
                 f"brother_ql print -l 62 /tmp/qrcode_{job_id}.png"
             )
 
-            subprocess.run(print_command, shell=True, check=True)
+            result = subprocess.run(print_command, shell=True, capture_output=True, text=True)
+            
+            # Check for specific error message or warning in the output
+            if "Printing potentially not successful" in result.stdout or result.returncode != 0:
+                print(f"Warning: Printing potentially not successful on print {i + 1}")
+                return False  # Return False if any print job fails
+
             print(f"Printing {i + 1}/{print_count} QR codes")
 
         return True  # If everything worked fine
@@ -161,6 +167,7 @@ def handle_print(job_id, job_title, project_title, print_count):
     except Exception as e:
         print(f"Unexpected error: {e}")  # Catch any unexpected errors
         return False  # Handle other unexpected errors
+
 
 
 
