@@ -677,6 +677,8 @@
                   }</p>
 <p class="fs-2 fw-bolder">Uptime: ${data.uptime}</p>
 <p class="fs-2 fw-bolder">CPU Temperature: ${data.cpu_temp}</p>
+<br>
+<button id="rebootBtn" class="swal2-cancel btn btn-warning" style="background-color: #ff8800; color: white; padding: 10px 20px; font-size: 20px; border-radius: 5px;">Genstart</button>
 `,
                   confirmButtonColor: "#3ad244",
                   confirmButtonText: "Fortsæt",
@@ -686,13 +688,14 @@
                   },
                   icon: "info",
                   buttonsStyling: false,
-                  timer: 9000,
-                  showCancelButton: true,
-                  cancelButtonText: "Genstart",
-                  cancelButtonColor: "#ff8800", // Orange color for warning
-                }).then((result) => {
-                  if (result.dismiss === Swal.DismissReason.cancel) {
-                    // User clicked "Genstart" button
+                }).then(() => {
+                  resetTimer();
+                });
+
+                // Add event listener to the "Genstart" button
+                document
+                  .getElementById("rebootBtn")
+                  .addEventListener("click", function () {
                     fetch("http://127.0.0.1:5000/api/reboot", {
                       method: "POST",
                     })
@@ -724,8 +727,7 @@
                           showConfirmButton: true,
                         });
                       });
-                  }
-                });
+                  });
               })
               .catch((error) => {
                 console.error("Error fetching system info:", error);
