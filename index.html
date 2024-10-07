@@ -779,6 +779,29 @@
           });
         }
 
+        function fetchAllProjects() {
+          if (projectsData && Object.keys(jobsData).length > 0) {
+            console.log("Using cached project and job data.");
+            return;
+          }
+
+          console.log("Fetching projects...");
+
+          // Fetch all projects
+          $.ajax({
+            url: "http://127.0.0.1:5000/api/projects", // Replace with actual API URL
+            type: "GET",
+            dataType: "json",
+            success: function (projects) {
+              projectsData = projects;
+              setCookie("projectsData", JSON.stringify(projectsData), 1);
+            },
+            error: function (xhr, status, error) {
+              console.error("Error fetching projects:", error);
+            },
+          });
+        }
+
         // Fetch jobs for a given project and store them
         function fetchJobsForProject(projectId) {
           $.ajax({
@@ -847,6 +870,7 @@
             (project) => project.id == projectId
           );
           setCookie("selectedProject", JSON.stringify(selectedProject), 1);
+          fetchJobsForProject(projectId);
 
           updateSelectedEntity();
 
@@ -1005,6 +1029,7 @@
         });
 
         updateSelectedEntity();
+        fetchAllProjectsAndJobs();
       });
     </script>
   </body>
