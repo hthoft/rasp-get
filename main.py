@@ -287,7 +287,8 @@ def fetch_and_push_printer_status():
                 'cpu_temperature': cpu_temperature,
                 'memory_usage': memory_usage,
                 'cpu_usage': cpu_usage,
-                'usb_connected': int(usb_connected)  # Convert boolean to 0 or 1
+                'usb_connected': int(usb_connected), # Convert boolean to 0 or 1
+                'serial_number': printer_sn
             }
 
             # Send the data as a GET request

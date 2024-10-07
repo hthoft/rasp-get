@@ -691,23 +691,26 @@
   <div class="container">
     <div class="row">
       <div class="col-6">
-        <h3 class="fw-bold text-center">Network Info</h3>
+        <h3 class="fw-bold text-center">Netværksinfo</h3>
         <p class="fs-4"><strong>SSID:</strong> ${data.ssid}</p>
-        <p class="fs-4"><strong>Network State:</strong> ${
+        <p class="fs-4"><strong>Netværksstatus:</strong> ${
           data.network_state
         }</p>
-        <p class="fs-4"><strong>IP Address:</strong> ${data.ip_address}</p>
-        <p class="fs-4"><strong>MAC Address:</strong> ${data.mac_address}</p>
+        <p class="fs-4"><strong>IP-adresse:</strong> ${data.ip_address}</p>
+        <p class="fs-4"><strong>MAC-adresse:</strong> ${data.mac_address}</p>
       </div>
       <div class="col-6">
-        <h3 class="fw-bold text-center">System Info</h3>
-        <p class="fs-4"><strong>Printer Connected:</strong> ${
-          data.printer_connected ? "Yes" : "No"
+        <h3 class="fw-bold text-center">Systeminfo</h3>
+        <p class="fs-4"><strong>Serienummer:</strong> ${data.serial_number}</p>
+        <p class="fs-4"><strong>Printer tilsluttet:</strong> ${
+          data.printer_connected ? "Ja" : "Nej"
         }</p>
-        <p class="fs-4"><strong>Uptime:</strong> ${data.uptime}</p>
-        <p class="fs-4"><strong>CPU Temperature:</strong> ${data.cpu_temp}</p>
-        <p class="fs-4"><strong>Memory Usage:</strong> ${data.memory_usage}%</p>
-        <p class="fs-4"><strong>Push Status:</strong> ${data.push_status}</p>
+        <p class="fs-4"><strong>Oppetid:</strong> ${data.uptime}</p>
+        <p class="fs-4"><strong>CPU temperatur:</strong> ${data.cpu_temp}</p>
+        <p class="fs-4"><strong>Hukommelsesforbrug:</strong> ${
+          data.memory_usage
+        }%</p>
+        <p class="fs-4"><strong>Push status:</strong> ${data.push_status}</p>
       </div>
     </div>
     <div class="text-center mt-4">
@@ -718,7 +721,6 @@
     </div>
   </div>
 `,
-
                   confirmButtonColor: "#3ad244",
                   confirmButtonText: "Fortsæt",
                   customClass: {
