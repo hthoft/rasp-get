@@ -269,8 +269,7 @@ def fetch_and_push_printer_status():
     while True:
         try:
             # Collect the local device data
-            cpu_temperature = get_cpu_temperature()
-            print(f"CPU temperature: {cpu_temperature}")
+            cpu_temperature = float(get_cpu_temperature())
             memory_usage = get_memory_usage()
             cpu_usage = get_cpu_usage()
             usb_connected = check_printer_connection()
@@ -476,7 +475,6 @@ def get_uptime():
 def get_cpu_temperature():
     if platform.system() == "Linux":
         temp = subprocess.check_output(["vcgencmd", "measure_temp"]).decode()
-        print(f"Raw CPU temperature: {temp}")  # Debugging output
         return temp.split("=")[1].strip()  # Only return the numerical value (like 45.0'C)
     return "N/A"
 
