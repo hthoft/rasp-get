@@ -269,12 +269,13 @@ def fetch_and_push_printer_status():
     while True:
         try:
             # Collect the local device data
-            cpu_temperature = float(get_cpu_temperature().split("=")[1].strip().replace("'C", ""))
+            cpu_temperature = float(get_cpu_temperature())  # Ensure it's a float
 
             memory_usage = get_memory_usage()
             cpu_usage = get_cpu_usage()
             usb_connected = check_printer_connection()
             printer_sn = os.getenv('PRINTER_SN')
+
             # API endpoint for updating printer info
             url = f"https://portal.maprova.dk/api/printers/updateAndGetPrinter.php?printer_sn={printer_sn}&apiKey={api_key}&customerID={customer_id}"
             
@@ -291,7 +292,16 @@ def fetch_and_push_printer_status():
                 'usb_connected': int(usb_connected)  # Convert boolean to 0 or 1
             }
 
+            # Log the payload
+            print(f"Payload being sent: {payload}")
+
+            # Send the request
             response = requests.get(url, params=payload, headers=headers)
+
+            # Log the full response for debugging
+            print(f"Request URL: {response.url}")
+            print(f"Response Status Code: {response.status_code}")
+            print(f"Response Content: {response.text}")
 
             if response.status_code == 200:
                 data_push_status = True  # Set flag to True on successful push
@@ -299,14 +309,12 @@ def fetch_and_push_printer_status():
                 print(f"Failed to push data. Status Code: {response.status_code}")
                 data_push_status = False  # Set flag to False if push fails
 
-
         except Exception as e:
             print(f"Error pushing printer status: {e}")
             data_push_status = False  # Set flag to False on exception
 
         # Wait for 60 seconds before the next push
         time.sleep(60)
-
 
 
 # Start the thread to fetch and push printer status every 60 seconds
