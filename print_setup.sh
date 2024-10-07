@@ -14,7 +14,7 @@ apt update && apt install -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-instal
 
 # Install Python libraries required for Brother QL
 echo "Installing Python dependencies (brother_ql, pyusb)..."
-pip3 install brother_ql pyusb dotenv pillow psutil
+pip3 install brother_ql pyusb dotenv pillow psutil fcntl
 
 # Verify if the printer is connected
 echo "Checking if Brother QL-700 is detected..."

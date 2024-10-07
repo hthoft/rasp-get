@@ -13,7 +13,8 @@ import json
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
 import subprocess
-
+import socket
+import uuid
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -353,7 +354,7 @@ def print_qr_code():
 
 @app.route('/api/system_info', methods=['GET'])
 def get_system_info():
-    ssid, state, ip_adress, mac_adress = get_network_info()
+    ssid, state, ip_address, mac_address = get_network_info()
 
     printer_connected = check_printer_connection()
 
@@ -375,11 +376,11 @@ def get_system_info():
         'cpu_temp': cpu_temp,
         'memory_usage': memory_usage,
         'cpu_usage': cpu_usage,
-        'ip_adress': ip_adress,
-        'mac_adress': mac_adress,
+        'ip_address': ip_address,
+        'mac_address': mac_address,
         'push_status': push_status
-        
     })
+
 
 
 @app.route('/api/reboot', methods=['POST'])
@@ -392,20 +393,58 @@ def reboot_system():
         print(f"Error occurred while rebooting: {e}")
         return jsonify({"status": "error", "message": "Failed to reboot the system", "details": str(e)}), 500
 
+def get_ip_address():
+    """
+    Get the IP address of the machine (cross-platform).
+    """
+    try:
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        return ip_address
+    except Exception as e:
+        print(f"Error getting IP address: {e}")
+        return "N/A"
 
+def get_mac_address():
+    """
+    Get the MAC address of the machine (cross-platform).
+    """
+    try:
+        mac_address = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff) 
+                                for elements in range(0, 2*6, 8)][::-1])
+        return mac_address
+    except Exception as e:
+        print(f"Error getting MAC address: {e}")
+        return "N/A"
 
 def get_network_info():
+    """
+    Returns SSID (if applicable), network state, IP address, and MAC address.
+    Cross-platform version.
+    """
     try:
-        output = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
-        ssid = output if output else "Not connected"
-        state = "Connected" if ssid != "Not connected" else "Disconnected"
-        ip_address = subprocess.check_output(["hostname", "-I"]).decode().strip()
-        mac_address = subprocess.check_output(["cat", "/sys/class/net/wlan0/address"]).decode().strip()
-    except Exception:
+        # For Linux, get the SSID
+        if platform.system() == "Linux":
+            ssid = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
+            state = "Connected" if ssid else "Disconnected"
+        else:
+            # Windows and other platforms
+            ssid = "N/A"
+            state = "Connected"  # Assume connected if IP is obtained
+
+        ip_address = get_ip_address()
+        mac_address = get_mac_address()
+
+    except Exception as e:
         ssid = "Error"
         state = "Error"
+        ip_address = "N/A"
+        mac_address = "N/A"
+        print(f"Error in get_network_info: {e}")
 
     return ssid, state, ip_address, mac_address
+
+
 
 
 def check_printer_connection():
