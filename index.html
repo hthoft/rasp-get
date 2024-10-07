@@ -692,31 +692,39 @@
     <div class="row">
       <div class="col-6">
         <h3 class="fw-bold text-center">Netværksinfo</h3>
-        <p class="fs-4"><strong>SSID:</strong> ${data.ssid}</p>
-        <p class="fs-4"><strong>Netværksstatus:</strong> ${
+        <p class="fs-4 text-start"><strong>SSID:</strong> ${data.ssid}</p>
+        <p class="fs-4 text-start"><strong>Netværksstatus:</strong> ${
           data.network_state
         }</p>
-        <p class="fs-4"><strong>IP-adresse:</strong> ${data.ip_address}</p>
-        <p class="fs-4"><strong>MAC-adresse:</strong> ${data.mac_address}</p>
+        <p class="fs-4 text-start"><strong>IP-adresse:</strong> ${
+          data.ip_address
+        }</p>
+        <p class="fs-4 text-start"><strong>MAC-adresse:</strong> ${
+          data.mac_address
+        }</p>
         <br />
         <h3 class="fw-bold text-center">Hardware Info</h3>
-                <p class="fs-4"><strong>Serienummer:</strong> ${
+                <p class="fs-4 text-start"><strong>Serienummer:</strong> ${
                   data.serial_number
                 }</p>
-                <p class="fs-4"><strong>Model:</strong> PRPI-5</p>
-                <p class="fs-4"><strong>Version:</strong> 1.0</p>
+                <p class="fs-4 text-start"><strong>Model:</strong> PRPI-5</p>
+                <p class="fs-4 text-start"><strong>Version:</strong> 1.0</p>
       </div>
       <div class="col-6">
         <h3 class="fw-bold text-center">Systeminfo</h3>
-        <p class="fs-4"><strong>Printer tilsluttet:</strong> ${
+        <p class="fs-4 text-start"><strong>Printer tilsluttet:</strong> ${
           data.printer_connected ? "Ja" : "Nej"
         }</p>
-        <p class="fs-4"><strong>Oppetid:</strong> ${data.uptime}</p>
-        <p class="fs-4"><strong>CPU temperatur:</strong> ${data.cpu_temp}</p>
-        <p class="fs-4"><strong>Hukommelsesforbrug:</strong> ${
+        <p class="fs-4 text-start"><strong>Oppetid:</strong> ${data.uptime}</p>
+        <p class="fs-4 text-start"><strong>CPU temperatur:</strong> ${
+          data.cpu_temp
+        }</p>
+        <p class="fs-4 text-start"><strong>Hukommelsesforbrug:</strong> ${
           data.memory_usage
         }%</p>
-        <p class="fs-4"><strong>Push status:</strong> ${data.push_status}</p>
+        <p class="fs-4 text-start"><strong>Push status:</strong> ${
+          data.push_status
+        }</p>
       </div>
     </div>
     <div class="text-center mt-4">
@@ -732,7 +740,6 @@
                   customClass: {
                     popup: "fullscreen",
                   },
-                  icon: "info",
                   buttonsStyling: false,
                 }).then(() => {
                   resetTimer();
