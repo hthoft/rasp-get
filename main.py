@@ -270,7 +270,6 @@ def fetch_and_push_printer_status():
         try:
             # Collect the local device data
             cpu_temperature = float(get_cpu_temperature())  # Ensure it's a float
-
             memory_usage = get_memory_usage()
             cpu_usage = get_cpu_usage()
             usb_connected = check_printer_connection()
@@ -292,11 +291,28 @@ def fetch_and_push_printer_status():
                 'usb_connected': int(usb_connected)  # Convert boolean to 0 or 1
             }
 
-
-            # Send the request
+            # Send the request to fetch the printer status
             response = requests.get(url, params=payload, headers=headers)
-
             if response.status_code == 200:
+                printer_data = response.json()  # Get the printer data
+
+                # Check the reboot flag
+                reboot_flag = int(printer_data.get('reboot_flag', 0))
+                
+                if reboot_flag == 2:
+                    print("Reboot flag is set to 2. Rebooting system...")
+                    
+                    # Update reboot flag to 1 before the reboot
+                    update_reboot_flag(printer_sn, 1)
+                    
+                    # Perform the system reboot
+                    reboot_system()
+
+                if reboot_flag == 1:
+                    print("Reboot flag is set to 1. Confirm the rebooting..")
+                    # Perform the system reboot
+                    update_reboot_flag(printer_sn, 0)   
+
                 data_push_status = True  # Set flag to True on successful push
             else:
                 print(f"Failed to push data. Status Code: {response.status_code}")
@@ -308,6 +324,27 @@ def fetch_and_push_printer_status():
 
         # Wait for 60 seconds before the next push
         time.sleep(60)
+
+def update_reboot_flag(printer_sn, new_flag):
+    """Update the reboot flag."""
+    try:
+        url = f"https://portal.maprova.dk/api/printers/updateRebootFlag.php?printer_sn={printer_sn}&new_reboot_flag={new_flag}&apiKey={api_key}&customerID={customer_id}"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            print(f"Reboot flag updated to {new_flag} successfully")
+        else:
+            print(f"Failed to update reboot flag. Status Code: {response.status_code}")
+    except Exception as e:
+        print(f"Error updating reboot flag: {e}")
+
+def reboot_system():
+    """Perform system reboot."""
+    try:
+        subprocess.run(['sudo', 'reboot'], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while rebooting: {e}")
+
 
 
 # Start the thread to fetch and push printer status every 60 seconds
