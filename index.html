@@ -444,6 +444,9 @@
             popup: "fullscreen", // Custom class for full screen
             confirmButton: "btn-maprova-green", // Custom class for confirm button
           },
+          willClose: () => {
+            fetchAllProjectsAndJobs(); // Fetch projects and jobs when splashContainer is clicked
+          },
           buttonsStyling: false, // Disable default button styling
         });
 
@@ -778,9 +781,6 @@
             },
           });
         }
-
-        // Fetch all projects
-        fetchAllProjectsAndJobs();
 
         function fetchAllProjects() {
           if (projectsData && Object.keys(jobsData).length > 0) {
