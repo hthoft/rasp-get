@@ -273,9 +273,8 @@ def fetch_and_push_printer_status():
             memory_usage = get_memory_usage()
             cpu_usage = get_cpu_usage()
             usb_connected = check_printer_connection()
-
             # API endpoint for updating printer info
-            url = f"https://portal.maprova.dk/api/printer/updateAndGetPrinter.php?apiKey={api_key}&customerID={customer_id}"
+            url = f"https://portal.maprova.dk/api/printer/updateAndGetPrinter.php?printer_sn={printer_sn}&apiKey={api_key}&customerID={customer_id}"
             
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
