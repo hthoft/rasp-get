@@ -14,6 +14,17 @@ import qrcode
 from PIL import Image, ImageDraw, ImageFont
 import subprocess
 
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Access the API key, customer ID, and printer serial number
+api_key = os.getenv('API_KEY')
+customer_id = os.getenv('CUSTOMER_ID')
+printer_sn = os.getenv('PRINTER_SN')
+
+
 app = Flask(__name__)
 CORS(app)  # Apply CORS to the entire app
 
@@ -194,11 +205,10 @@ def is_network_connected():
         return False
 
 
+
 # Function to fetch all projects
 def fetch_all_projects():
     global cached_projects
-    api_key = '7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44'
-    customer_id = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
     url = f"https://portal.maprova.dk/api/getAllProjects.php?apiKey={api_key}&customerID={customer_id}"
 
     headers = {
@@ -223,8 +233,6 @@ def fetch_all_projects():
 # Function to fetch jobs by project ID
 def fetch_jobs_by_project(project_id):
     global cached_jobs
-    api_key = '7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44'
-    customer_id = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
     url = f"https://portal.maprova.dk/api/getJobsByProjectID.php?project_id={project_id}&apiKey={api_key}&customerID={customer_id}"
 
     headers = {
@@ -248,6 +256,60 @@ def fetch_jobs_by_project(project_id):
         print(f"Error fetching jobs for project {project_id}: {e}")
         cached_jobs = load_cached_data(jobs_cache_file)
         return cached_jobs.get(str(project_id), {})  # Use cached data as fallback
+
+# Global flag to track data push status
+data_push_status = False
+
+def fetch_and_push_printer_status():
+    global data_push_status
+    while True:
+        try:
+            # Collect the local device data
+            cpu_temperature = get_cpu_temperature()
+            memory_usage = get_memory_usage()
+            cpu_usage = get_cpu_usage()
+            usb_connected = check_printer_connection()
+
+            # API endpoint for updating printer info
+            url = f"https://portal.maprova.dk/api/updateAndGetPrinter.php?apiKey={api_key}&customerID={customer_id}"
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+
+            # Prepare the payload to send as GET parameters
+            payload = {
+                'printer_sn': printer_sn,
+                'cpu_temperature': cpu_temperature,
+                'memory_usage': memory_usage,
+                'cpu_usage': cpu_usage,
+                'usb_connected': int(usb_connected)  # Convert boolean to 0 or 1
+            }
+
+            # Send the data as a GET request
+            response = requests.get(url, params=payload, headers=headers)
+
+            if response.status_code == 200:
+                print(f"Data pushed successfully. Response: {response.json()}")
+                data_push_status = True  # Set flag to True on successful push
+            else:
+                print(f"Failed to push data. Status Code: {response.status_code}")
+                data_push_status = False  # Set flag to False if push fails
+
+        except Exception as e:
+            print(f"Error pushing printer status: {e}")
+            data_push_status = False  # Set flag to False on exception
+
+        # Wait for 60 seconds before the next push
+        time.sleep(60)
+
+
+
+# Start the thread to fetch and push printer status every 60 seconds
+def start_printer_status_pushing():
+    thread = threading.Thread(target=fetch_and_push_printer_status)
+    thread.daemon = True
+    thread.start()
 
 
 # Flask route to serve project data
@@ -291,7 +353,7 @@ def print_qr_code():
 
 @app.route('/api/system_info', methods=['GET'])
 def get_system_info():
-    ssid, state = get_network_info()
+    ssid, state, ip_adress, mac_adress = get_network_info()
 
     printer_connected = check_printer_connection()
 
@@ -299,12 +361,24 @@ def get_system_info():
 
     cpu_temp = get_cpu_temperature()
 
+    memory_usage = get_memory_usage()
+
+    cpu_usage = get_cpu_usage()
+
+    push_status = data_push_status
+
     return jsonify({
         'ssid': ssid,
         'network_state': state,
         'printer_connected': printer_connected,
         'uptime': uptime,
-        'cpu_temp': cpu_temp
+        'cpu_temp': cpu_temp,
+        'memory_usage': memory_usage,
+        'cpu_usage': cpu_usage,
+        'ip_adress': ip_adress,
+        'mac_adress': mac_adress,
+        'push_status': push_status
+        
     })
 
 
@@ -325,22 +399,30 @@ def get_network_info():
         output = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
         ssid = output if output else "Not connected"
         state = "Connected" if ssid != "Not connected" else "Disconnected"
+        ip_address = subprocess.check_output(["hostname", "-I"]).decode().strip()
+        mac_address = subprocess.check_output(["cat", "/sys/class/net/wlan0/address"]).decode().strip()
     except Exception:
         ssid = "Error"
         state = "Error"
 
-    return ssid, state
+    return ssid, state, ip_address, mac_address
 
 
 def check_printer_connection():
     try:
-        lsusb_output = subprocess.check_output(['lsusb']).decode('utf-8')
-        brother_usb_id = "04f9:2042"
-        return brother_usb_id in lsusb_output
-    except subprocess.CalledProcessError as e:
-        print(f"Error checking printer connection: {e}")
-        return False
+        if platform.system() == "Linux":
+            # This works on Linux (e.g., Raspberry Pi)
+            lsusb_output = subprocess.check_output(['lsusb']).decode('utf-8')
+            brother_usb_id = "04f9:2042"  # Example of Brother printer USB ID
+            return brother_usb_id in lsusb_output
+        else:
+            # On Windows or other OS, handle differently (lsusb is not available)
+            print("USB printer connection check is not supported on this OS.")
+            return False
 
+    except subprocess.CalledProcessError as e:
+        print(f"Error checking USB connection: {e}")
+        return False
 
 def get_uptime():
     uptime_seconds = int(time.time() - psutil.boot_time())
@@ -354,6 +436,14 @@ def get_cpu_temperature():
         return temp.split("=")[1].strip()
     return "N/A"
 
+# Function to get memory usage
+def get_memory_usage():
+    memory_info = psutil.virtual_memory()
+    return memory_info.percent  # Return percentage of memory used
+
+# Function to get CPU usage
+def get_cpu_usage():
+    return psutil.cpu_percent(interval=1)  # Return CPU usage as a percentage
 
 # Function to start Flask in a separate thread
 def start_flask():
@@ -365,6 +455,9 @@ if __name__ == '__main__':
     flask_thread = threading.Thread(target=start_flask)
     flask_thread.daemon = True
     flask_thread.start()
+
+    # Start the background task
+    start_printer_status_pushing()
 
     # Get the current directory
     current_dir = os.path.dirname(os.path.abspath(__file__))
