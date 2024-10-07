@@ -477,8 +477,10 @@ def get_uptime():
 def get_cpu_temperature():
     if platform.system() == "Linux":
         temp = subprocess.check_output(["vcgencmd", "measure_temp"]).decode()
-        return temp.split("=")[1].strip()
+        print(f"Raw CPU temperature: {temp}")  # Debugging output
+        return temp.split("=")[1].strip()  # Only return the numerical value (like 45.0'C)
     return "N/A"
+
 
 # Function to get memory usage
 def get_memory_usage():
