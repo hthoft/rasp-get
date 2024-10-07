@@ -240,7 +240,6 @@ def fetch_jobs_by_project(project_id):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
 
-    
     if not is_network_connected():
         print("Network unavailable, using cached job data")
         cached_jobs = load_cached_data(jobs_cache_file)
@@ -250,13 +249,17 @@ def fetch_jobs_by_project(project_id):
         response = requests.get(url, headers=headers)
         response.raise_for_status()  # Raise an error for bad status codes
         jobs = response.json()
-        cached_jobs[project_id] = jobs  # Cache the response
+
+        # Update cached_jobs safely by copying its keys first
+        cached_jobs = {**cached_jobs, project_id: jobs}
+
         save_cached_data(jobs_cache_file, cached_jobs)  # Save to cache
         return jobs
     except requests.RequestException as e:
         print(f"Error fetching jobs for project {project_id}: {e}")
         cached_jobs = load_cached_data(jobs_cache_file)
         return cached_jobs.get(str(project_id), {})  # Use cached data as fallback
+
 
 # Global flag to track data push status
 data_push_status = False
