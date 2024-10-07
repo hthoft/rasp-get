@@ -269,7 +269,8 @@ def fetch_and_push_printer_status():
     while True:
         try:
             # Collect the local device data
-            cpu_temperature = float(get_cpu_temperature())
+            cpu_temperature = float(get_cpu_temperature().split("=")[1].strip().replace("'C", ""))
+
             memory_usage = get_memory_usage()
             cpu_usage = get_cpu_usage()
             usb_connected = check_printer_connection()
