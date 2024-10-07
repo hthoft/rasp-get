@@ -270,6 +270,7 @@ def fetch_and_push_printer_status():
         try:
             # Collect the local device data
             cpu_temperature = get_cpu_temperature()
+            print(f"CPU temperature: {cpu_temperature}")
             memory_usage = get_memory_usage()
             cpu_usage = get_cpu_usage()
             usb_connected = check_printer_connection()
@@ -293,11 +294,9 @@ def fetch_and_push_printer_status():
             response = requests.get(url, params=payload, headers=headers)
 
             if response.status_code == 200:
-                print(f"Data pushed successfully. Response: {response.json()}")
                 data_push_status = True  # Set flag to True on successful push
             else:
                 print(f"Failed to push data. Status Code: {response.status_code}")
-                print(f"Response content: {response.content.decode()}")  # Log the response content for debugging
                 data_push_status = False  # Set flag to False if push fails
 
 
