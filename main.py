@@ -273,8 +273,9 @@ def fetch_and_push_printer_status():
             memory_usage = get_memory_usage()
             cpu_usage = get_cpu_usage()
             usb_connected = check_printer_connection()
+            printer_sn = os.getenv('PRINTER_SN')
             # API endpoint for updating printer info
-            url = f"https://portal.maprova.dk/api/printer/updateAndGetPrinter.php?printer_sn={printer_sn}&apiKey={api_key}&customerID={customer_id}"
+            url = f"https://portal.maprova.dk/api/printers/updateAndGetPrinter.php?printer_sn={printer_sn}&apiKey={api_key}&customerID={customer_id}"
             
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -289,7 +290,6 @@ def fetch_and_push_printer_status():
                 'usb_connected': int(usb_connected)  # Convert boolean to 0 or 1
             }
 
-            # Send the data as a GET request
             response = requests.get(url, params=payload, headers=headers)
 
             if response.status_code == 200:
@@ -297,7 +297,9 @@ def fetch_and_push_printer_status():
                 data_push_status = True  # Set flag to True on successful push
             else:
                 print(f"Failed to push data. Status Code: {response.status_code}")
+                print(f"Response content: {response.content.decode()}")  # Log the response content for debugging
                 data_push_status = False  # Set flag to False if push fails
+
 
         except Exception as e:
             print(f"Error pushing printer status: {e}")
