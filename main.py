@@ -472,13 +472,12 @@ def get_uptime():
     uptime_string = str(timedelta(seconds=uptime_seconds))
     return uptime_string
 
-
 def get_cpu_temperature():
     if platform.system() == "Linux":
-        temp = subprocess.check_output(["vcgencmd", "measure_temp"]).decode()
-        # Strip the 'C' and any whitespace
-        temp_value = temp.split("=")[1].strip().replace("'C", "")
-        return float(temp_value)  # Return as a float
+        temp = subprocess.check_output(["vcgencmd", "measure_temp"]).decode().strip()
+        # The output will be something like: "temp=56.5'C"
+        temp_value = temp.split("=")[1].replace("'C", "").strip()
+        return float(temp_value)  # Return as float
     return "N/A"
 
 
