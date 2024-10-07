@@ -768,10 +768,6 @@
             success: function (projects) {
               projectsData = projects;
               setCookie("projectsData", JSON.stringify(projectsData), 1);
-
-              projects.forEach((project) => {
-                fetchJobsForProject(project.id);
-              });
             },
             error: function (xhr, status, error) {
               console.error("Error fetching projects:", error);
@@ -842,6 +838,8 @@
           event.stopPropagation();
           const projectId = this.dataset.projectId;
           const projectTitle = this.dataset.projectTitle;
+
+          fetchJobsForProject(projectId);
 
           selectedProject = projectsData.find(
             (project) => project.id == projectId
@@ -1005,7 +1003,6 @@
         });
 
         updateSelectedEntity();
-        fetchAllProjectsAndJobs();
       });
     </script>
   </body>
