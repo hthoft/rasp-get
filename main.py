@@ -309,9 +309,33 @@ def fetch_and_push_printer_status():
                     reboot_system()
 
                 if reboot_flag == 1:
-                    print("Reboot flag is set to 1. Confirm the rebooting..")
-                    # Perform the system reboot
-                    update_reboot_flag(printer_sn, 0)   
+                    print("Reboot flag is set to 1. Confirming the reboot...")
+                    update_reboot_flag(printer_sn, 0)
+
+                # Handle print job request
+                if printer_data.get('printer_current_status') == 'REQUESTED':
+                    project_id = printer_data.get('printer_current_project_id')
+                    job_id = printer_data.get('printer_current_job_id')
+                    print_count = int(printer_data.get('printer_current_count', 1))
+
+                    # Fetch project and job details
+                    if project_id and job_id:
+                        project = fetch_project_by_id(project_id)
+                        job = fetch_job_by_id(project_id, job_id)
+
+                        if project and job:
+                            project_title = project.get('project_title')
+                            job_title = job.get('job_title')
+
+                            print(f"Initiating print for project: {project_title}, job: {job_title}")
+                            print_count = min(print_count, 5)  # Max 5 prints
+
+                            # Perform the print operation
+                            print_successful = handle_print(job_id, job_title, project_title, print_count)
+
+                            if print_successful:
+                                # Update the printer status to COMPLETED and clear the fields
+                                update_printer_status_to_completed(printer_sn)
 
                 data_push_status = True  # Set flag to True on successful push
             else:
@@ -324,6 +348,60 @@ def fetch_and_push_printer_status():
 
         # Wait for 60 seconds before the next push
         time.sleep(60)
+
+
+def fetch_project_by_id(project_id):
+    """Fetch project details by ID."""
+    try:
+        url = f"https://portal.maprova.dk/api/getProjectByID.php?project_id={project_id}&apiKey={api_key}&customerID={customer_id}"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()  # Return project data
+        else:
+            print(f"Failed to fetch project {project_id}. Status Code: {response.status_code}")
+    except Exception as e:
+        print(f"Error fetching project: {e}")
+    return None
+
+
+def fetch_job_by_id(project_id, job_id):
+    """Fetch job details by project ID and job ID."""
+    try:
+        url = f"https://portal.maprova.dk/api/getJobByID.php?project_id={project_id}&job_id={job_id}&apiKey={api_key}&customerID={customer_id}"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()  # Return job data
+        else:
+            print(f"Failed to fetch job {job_id} for project {project_id}. Status Code: {response.status_code}")
+    except Exception as e:
+        print(f"Error fetching job: {e}")
+    return None
+
+
+def update_printer_status_to_completed(printer_sn):
+    """Update the printer status to COMPLETED and clear fields."""
+    try:
+        url = f"https://portal.maprova.dk/api/printers/updatePrinterStatus.php"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        payload = {
+            'printer_sn': printer_sn,
+            'new_status': 'COMPLETED',
+            'clear_project_id': True,
+            'clear_job_id': True,
+            'clear_count': True,
+            'apiKey': api_key,
+            'customerID': customer_id
+        }
+        response = requests.post(url, data=payload, headers=headers)
+        if response.status_code == 200:
+            print(f"Printer {printer_sn} status updated to COMPLETED and cleared project/job.")
+        else:
+            print(f"Failed to update printer status. Status Code: {response.status_code}")
+    except Exception as e:
+        print(f"Error updating printer status: {e}")
+
 
 def update_reboot_flag(printer_sn, new_flag):
     """Update the reboot flag."""
