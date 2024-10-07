@@ -397,6 +397,10 @@
       // Set up an interval to check printer connection every 10 seconds
       setInterval(checkSystemConnections, 10000); // 10,000 milliseconds = 10 seconds
 
+      let initialFetchDone = false; // Flag to track if the initial fetch has been done
+      let lastFullFetchTime = null; // Timestamp for the last full fetch
+      const twoHoursInMillis = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+
       document.addEventListener("DOMContentLoaded", function () {
         const splashLink = document.getElementById("splashLink");
         const splashImage = document.getElementById("splashImage");
@@ -657,7 +661,13 @@
             vaegQRContainer.style.display = "block";
             nextContainer.style.display = "none";
             resetTimer();
-            fetchAllProjectsAndJobs(); // Fetch projects and jobs when splashContainer is clicked
+
+            // Check if the first fetch has been done or if 2 hours have passed
+            if (!initialFetchDone || canRunFullFetch()) {
+              fetchAllProjectsAndJobs(); // Full fetch of projects and jobs
+            } else {
+              fetchAllProjects(); // Only fetch projects
+            }
           });
 
         document
@@ -779,6 +789,29 @@
           });
         }
 
+        function fetchAllProjects() {
+          if (projectsData && Object.keys(jobsData).length > 0) {
+            console.log("Using cached project and job data.");
+            return;
+          }
+
+          console.log("Fetching project and job data...");
+
+          // Fetch all projects
+          $.ajax({
+            url: "http://127.0.0.1:5000/api/projects", // Replace with actual API URL
+            type: "GET",
+            dataType: "json",
+            success: function (projects) {
+              projectsData = projects;
+              setCookie("projectsData", JSON.stringify(projectsData), 1);
+            },
+            error: function (xhr, status, error) {
+              console.error("Error fetching projects:", error);
+            },
+          });
+        }
+
         // Fetch jobs for a given project and store them
         function fetchJobsForProject(projectId) {
           $.ajax({
@@ -842,6 +875,8 @@
           event.stopPropagation();
           const projectId = this.dataset.projectId;
           const projectTitle = this.dataset.projectTitle;
+
+          fetchJobsForProject(projectId);
 
           selectedProject = projectsData.find(
             (project) => project.id == projectId
