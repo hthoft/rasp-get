@@ -292,16 +292,9 @@ def fetch_and_push_printer_status():
                 'usb_connected': int(usb_connected)  # Convert boolean to 0 or 1
             }
 
-            # Log the payload
-            print(f"Payload being sent: {payload}")
 
             # Send the request
             response = requests.get(url, params=payload, headers=headers)
-
-            # Log the full response for debugging
-            print(f"Request URL: {response.url}")
-            print(f"Response Status Code: {response.status_code}")
-            print(f"Response Content: {response.text}")
 
             if response.status_code == 200:
                 data_push_status = True  # Set flag to True on successful push
