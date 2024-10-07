@@ -444,9 +444,6 @@
             popup: "fullscreen", // Custom class for full screen
             confirmButton: "btn-maprova-green", // Custom class for confirm button
           },
-          willClose: () => {
-            fetchAllProjectsAndJobs(); // Fetch projects and jobs when splashContainer is clicked
-          },
           buttonsStyling: false, // Disable default button styling
         });
 
@@ -660,7 +657,7 @@
             vaegQRContainer.style.display = "block";
             nextContainer.style.display = "none";
             resetTimer();
-            fetchAllProjects(); // Fetch projects and jobs when splashContainer is clicked
+            fetchAllProjectsAndJobs(); // Fetch projects and jobs when splashContainer is clicked
           });
 
         document
@@ -782,29 +779,6 @@
           });
         }
 
-        function fetchAllProjects() {
-          if (projectsData && Object.keys(jobsData).length > 0) {
-            console.log("Using cached project and job data.");
-            return;
-          }
-
-          console.log("Fetching project and job data...");
-
-          // Fetch all projects
-          $.ajax({
-            url: "http://127.0.0.1:5000/api/projects", // Replace with actual API URL
-            type: "GET",
-            dataType: "json",
-            success: function (projects) {
-              projectsData = projects;
-              setCookie("projectsData", JSON.stringify(projectsData), 1);
-            },
-            error: function (xhr, status, error) {
-              console.error("Error fetching projects:", error);
-            },
-          });
-        }
-
         // Fetch jobs for a given project and store them
         function fetchJobsForProject(projectId) {
           $.ajax({
@@ -868,8 +842,6 @@
           event.stopPropagation();
           const projectId = this.dataset.projectId;
           const projectTitle = this.dataset.projectTitle;
-
-          fetchJobsForProject(projectId);
 
           selectedProject = projectsData.find(
             (project) => project.id == projectId
