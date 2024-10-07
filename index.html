@@ -435,6 +435,14 @@
         let countdownTimer;
         const countdownTime = 10000; // 10 seconds in milliseconds
 
+        function canRunFullFetch() {
+          const currentTime = new Date().getTime();
+          return (
+            !lastFullFetchTime ||
+            currentTime - lastFullFetchTime >= twoHoursInMillis
+          );
+        }
+
         Swal.fire({
           color: "#ffffff",
           title: "Sørg for at printeren er klar!",
