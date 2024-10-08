@@ -46,7 +46,7 @@ read -p "Please enter your new Printer Serial Number (PRINTER_SN): " printer_sn
 # Clone rasp-get repository and create .env file
 echo "Step 8: Cloning rasp-get repository and setting up environment variables..."
 cd ~
-git clone https://github.com/hthoft/rasp-get
+git clone https://github.com/hthoft/rasp-get.git
 cd rasp-get
 cat <<EOT >> .env
 API_KEY=e9093525cd653c631b6740e76ff2578c81867e5ab5b12aa36723ad791e264e8b
