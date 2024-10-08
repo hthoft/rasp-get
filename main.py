@@ -30,8 +30,11 @@ printer_sn = os.getenv('PRINTER_SN')
 app = Flask(__name__)
 CORS(app)  # Apply CORS to the entire app
 
-# Initialize SocketIO
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+@app.route('/')
+def index():
+    return "Socket.IO server is running!"
 
 # Cache Directory and Files
 cache_dir = './cache'
