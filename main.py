@@ -425,7 +425,7 @@ def update_printer_status_to_completed(printer_sn):
         print(f"Error updating printer status: {e}")
 
 def update_printer_status_to_failed(printer_sn):
-    """Update the printer status to COMPLETED and clear fields."""
+    """Update the printer status to FAILED and show response."""
     try:
         url = f"https://portal.maprova.dk/api/printers/updatePrinterStatus.php"
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
@@ -439,12 +439,19 @@ def update_printer_status_to_failed(printer_sn):
             'customerID': customer_id
         }
         response = requests.post(url, data=payload, headers=headers)
+        
+        # Print response status and content
+        print(f"Status Code: {response.status_code}")
+        print(f"Response Content: {response.text}")  # or use response.json() if expecting JSON
+        
         if response.status_code == 200:
-            print(f"Printer {printer_sn} status updated to FAILED and cleared project/job.")
+            print(f"Printer {printer_sn} status updated to FAILED successfully.")
         else:
             print(f"Failed to update printer status. Status Code: {response.status_code}")
+    
     except Exception as e:
         print(f"Error updating printer status: {e}")
+
 
 
 def update_reboot_flag(printer_sn, new_flag):
