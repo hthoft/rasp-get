@@ -446,10 +446,6 @@ def update_printer_status_to_completed(printer_sn):
         
         response = requests.get(url, params=params, headers=headers)
 
-        # Print the full response for debugging
-        print(f"Response status code: {response.status_code}")
-        print(f"Response content: {response.content.decode('utf-8')}")
-
         if response.status_code == 200:
             print(f"Printer {printer_sn} status updated to COMPLETED and cleared project/job.")
         else:
