@@ -11,7 +11,7 @@ echo "Starting the Raspberry Pi setup..."
 # Step 1: Update System and Install Dependencies
 echo "Step 1: Updating system and installing dependencies..."
 sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git unclutter xserver-xorg x11-xserver-utils xinit openbox chromium-browser
+sudo apt-get install -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser
 
 # Step 2: Disable Splash and Default RPi Features
 echo "Step 2: Disabling splash screen and reducing default output for faster boot..."
@@ -37,7 +37,8 @@ sudo sed -i '/MatchIsTouchscreen "on"/a Option "TransformationMatrix" "0 -1 1 1 
 
 # Step 6: Install Python Dependencies
 echo "Step 6: Installing necessary Python libraries..."
-pip3 install brother_ql pyusb dotenv pillow psutil fcntl flask flask_socketio
+pip3 install brother_ql pyusb dotenv pillow psutil fcntl flask flask_socketio requests flask_cors qrcode pywebview
+
 
 # Step 7: Setup Printer Environment
 echo "Step 7: Setting up Brother QL-700 printer..."
@@ -87,7 +88,6 @@ echo "Step 11: Setting up Kiosk mode and script autostart..."
 echo "Setting up Openbox autostart..."
 mkdir -p /etc/xdg/openbox
 echo "python3 ~/rasp-get/main.py &" >> /etc/xdg/openbox/autostart
-echo "unclutter -idle 0 &" >> /etc/xdg/openbox/autostart
 
 # Modify .bashrc to autostart X without a cursor
 echo "Adding autostart to .bashrc for non-GUI mode..."
@@ -99,7 +99,7 @@ EOT
 
 # Step 12: Modify /etc/rc.local for script autostart
 echo "Step 12: Modifying /etc/rc.local for script autostart..."
-sudo sed -i '/exit 0/i python3 /home/pi/rasp-get/main.py &' /etc/rc.local
+sudo sed -i '/exit 0/i [[ -z "\$DISPLAY" && "\$XDG_VTNR" -eq 1 ]] && startx -- -nocursor' /etc/rc.local
 
 # Step 13: Final Reboot
 echo "Step 13: Rebooting to apply all changes..."
