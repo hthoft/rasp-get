@@ -271,21 +271,35 @@ def fetch_jobs_by_project(project_id):
 # Global flag to track data push status
 data_push_status = False
 
-# Notify print failure
-def notify_print_failure(message):
+# Notify print failure with detailed job and project info
+def notify_print_failure(message, job_id, job_title, project_id, project_title, project_color):
     """Emit print failure notification with error handling."""
     try:
-        socketio.emit('print_failure', {'message': message}, room=None)
-        print("Print failure notification sent successfully.")
+        socketio.emit('print_failure', {
+            'message': message,
+            'job_id': job_id,
+            'job_title': job_title,
+            'project_id': project_id,
+            'project_title': project_title,
+            'project_color': project_color
+        }, room=None)
+        print(f"Print failure notification sent for job '{job_title}' in project '{project_title}'.")
     except Exception as e:
         print(f"Error sending print failure notification: {e}")
 
-# Notify print success
-def notify_print_success(message):
-    """Emit print success notification with error handling."""
+# Notify print success with similar structure (optional)
+def notify_print_success(message, job_id, job_title, project_id, project_title, project_color):
+    """Emit print success notification with detailed job and project info."""
     try:
-        socketio.emit('print_success', {'message': message}, room=None)
-        print("Print success notification sent successfully.")
+        socketio.emit('print_success', {
+            'message': message,
+            'job_id': job_id,
+            'job_title': job_title,
+            'project_id': project_id,
+            'project_title': project_title,
+            'project_color': project_color
+        }, room=None)
+        print(f"Print success notification sent for job '{job_title}' in project '{project_title}'.")
     except Exception as e:
         print(f"Error sending print success notification: {e}")
 
@@ -345,30 +359,29 @@ def fetch_and_push_printer_status():
                     job_id = printer_data.get('printer_current_job_id')
                     print_count = int(printer_data.get('printer_current_count', 1))
 
-                    # Fetch project and job details
                     if project_id and job_id:
                         project = fetch_project_by_id(project_id)
                         job = fetch_job_by_id(project_id, job_id)
 
                         if project and job:
                             project_title = project.get('project_title')
+                            project_color = project.get('project_color', '#ffffff')  # default to white if no color
                             job_title = job.get('job_title')
 
                             print(f"Initiating print for project: {project_title}, job: {job_title}")
-                            print_count = min(print_count, 5)  # Max 5 prints
+                            print_count = min(print_count, 5)
 
                             # Perform the print operation
                             print_successful = handle_print(job_id, job_title, project_title, print_count)
 
                             if print_successful:
-                                # Update the printer status to COMPLETED and clear the fields
+                                # Update the printer status to COMPLETED
                                 update_printer_status_to_completed(printer_sn)
-                                notify_print_success("Automatisk udskrivning er fuldført")
-
+                                notify_print_success("Automatisk udskrivning er fuldført", job_id, job_title, project_id, project_title, project_color)
                             else:
                                 # Update the printer status to FAILED
                                 update_printer_status_to_failed(printer_sn)
-                                notify_print_failure("Automatisk udskrivning mislykkedes. Prøv igen.")
+                                notify_print_failure("Automatisk udskrivning mislykkedes. Prøv igen.", job_id, job_title, project_id, project_title, project_color)
 
                 data_push_status = True  # Set flag to True on successful push
             else:

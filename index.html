@@ -402,16 +402,72 @@
         Swal.fire({
           icon: "error",
           title: "Print Error",
-          text: data.message,
+          html: `
+              <h2 class='badge mt-4 fs-2 mb-0 fw-light' style='background-color: ${data.project_color};'>
+                ${data.project_title}
+              </h2>
+              <h1 class='fw-bolder'>${data.job_title}</h1>
+              <p>${data.message}</p>
+              <button id='retryBtn' class='btn btn-lg btn-danger'>Prøv igen</button>
+            `,
+          showConfirmButton: false, // We use a custom "Try Again" button instead
+          allowOutsideClick: false,
         });
+
+        // Add event listener for the "Try Again" button
+        document
+          .getElementById("retryBtn")
+          .addEventListener("click", function () {
+            Swal.close(); // Close the current alert
+            // Trigger the print job again (you can adjust the logic here)
+            fetch("http://127.0.0.1:5000/api/print", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                job_id: data.job_id,
+                job_title: data.job_title,
+                project_title: data.project_title,
+                print_count: 1,
+              }),
+            })
+              .then((response) => response.json())
+              .then((result) => {
+                if (result.status === "success") {
+                  Swal.fire({
+                    icon: "success",
+                    title: "Print job successfully retried!",
+                    timer: 2000,
+                    showConfirmButton: false,
+                  });
+                } else {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Retry failed",
+                    text: "Unable to retry the print job. Please try again later.",
+                  });
+                }
+              })
+              .catch((error) => {
+                console.error("Retry print job error:", error);
+              });
+          });
       });
 
       socket.on("print_success", function (data) {
         // Display a SweetAlert with the message from the server
         Swal.fire({
+          color: "#ffffff",
+          title: "Fuldført",
+          html: "<span class='fs-2'>Printjob afsluttet</span>",
           icon: "success",
-          title: "Print Success",
-          text: data.message,
+          timer: 2000,
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          willClose: () => {
+            resetTimer();
+          },
         });
       });
 
@@ -729,53 +785,55 @@
                   color: "#ffffff",
                   title: "Indstillinger",
                   html: `
-  <div class="container">
-    <div class="row">
-      <div class="col-6">
-        <h3 class="fw-bold text-center">Netværksinfo</h3>
-        <p class="fs-4 text-start"><strong>SSID:</strong> ${data.ssid}</p>
-        <p class="fs-4 text-start"><strong>Netværksstatus:</strong> ${
-          data.network_state
-        }</p>
-        <p class="fs-4 text-start"><strong>IP-adresse:</strong> ${
-          data.ip_address
-        }</p>
-        <p class="fs-4 text-start"><strong>MAC-adresse:</strong> ${
-          data.mac_address
-        }</p>
-        <br />
-        <h3 class="fw-bold text-center">Hardware Info</h3>
-                <p class="fs-4 text-start"><strong>Serienummer:</strong> ${
-                  data.serial_number
-                }</p>
-                <p class="fs-4 text-start"><strong>Model:</strong> PRPI-5</p>
-                <p class="fs-4 text-start"><strong>Version:</strong> 1.0</p>
-      </div>
-      <div class="col-6">
-        <h3 class="fw-bold text-center">Systeminfo</h3>
-        <p class="fs-4 text-start"><strong>Printer tilsluttet:</strong> ${
-          data.printer_connected ? "Ja" : "Nej"
-        }</p>
-        <p class="fs-4 text-start"><strong>Oppetid:</strong> ${data.uptime}</p>
-        <p class="fs-4 text-start"><strong>CPU temperatur:</strong> ${
-          data.cpu_temp
-        }</p>
-        <p class="fs-4 text-start"><strong>Hukommelsesforbrug:</strong> ${
-          data.memory_usage
-        }%</p>
-        <p class="fs-4 text-start"><strong>Push status:</strong> ${
-          data.push_status
-        }</p>
-      </div>
-    </div>
-    <div class="text-center mt-4">
-      <button id="rebootBtn" class="btn btn-warning" 
-        style="background-color: #ff8800; color: white; padding: 10px 20px; font-size: 20px; border-radius: 5px;">
-        Genstart
-      </button>
-    </div>
-  </div>
-`,
+        <div class="container">
+          <div class="row">
+            <div class="col-6">
+              <h3 class="fw-bold text-center">Netværksinfo</h3>
+              <p class="fs-4 text-start"><strong>SSID:</strong> ${data.ssid}</p>
+              <p class="fs-4 text-start"><strong>Netværksstatus:</strong> ${
+                data.network_state
+              }</p>
+              <p class="fs-4 text-start"><strong>IP-adresse:</strong> ${
+                data.ip_address
+              }</p>
+              <p class="fs-4 text-start"><strong>MAC-adresse:</strong> ${
+                data.mac_address
+              }</p>
+              <br />
+              <h3 class="fw-bold text-center">Hardware Info</h3>
+                      <p class="fs-4 text-start"><strong>Serienummer:</strong> ${
+                        data.serial_number
+                      }</p>
+                      <p class="fs-4 text-start"><strong>Model:</strong> PRPI-5</p>
+                      <p class="fs-4 text-start"><strong>Version:</strong> 1.0</p>
+            </div>
+            <div class="col-6">
+              <h3 class="fw-bold text-center">Systeminfo</h3>
+              <p class="fs-4 text-start"><strong>Printer tilsluttet:</strong> ${
+                data.printer_connected ? "Ja" : "Nej"
+              }</p>
+              <p class="fs-4 text-start"><strong>Oppetid:</strong> ${
+                data.uptime
+              }</p>
+              <p class="fs-4 text-start"><strong>CPU temperatur:</strong> ${
+                data.cpu_temp
+              }</p>
+              <p class="fs-4 text-start"><strong>Hukommelsesforbrug:</strong> ${
+                data.memory_usage
+              }%</p>
+              <p class="fs-4 text-start"><strong>Push status:</strong> ${
+                data.push_status
+              }</p>
+            </div>
+          </div>
+          <div class="text-center mt-4">
+            <button id="rebootBtn" class="btn btn-warning"
+              style="background-color: #ff8800; color: white; padding: 10px 20px; font-size: 20px; border-radius: 5px;">
+              Genstart
+            </button>
+          </div>
+        </div>
+      `,
                   confirmButtonColor: "#3ad244",
                   confirmButtonText: "Fortsæt",
                   customClass: {
@@ -1094,9 +1152,9 @@
           const jobTitle = entity.job?.job_title || "Ingen job valgt";
           const projectColor = entity.project?.project_color || "grey";
           selectedEntity.innerHTML = `
-      <h2 class="badge mt-4 fs-2 mb-0 fw-light" style="background-color: ${projectColor}">${projectTitle}</h2>
-      <h1 class="fw-bolder">${jobTitle}</h1>
-    `;
+            <h2 class="badge mt-4 fs-2 mb-0 fw-light" style="background-color: ${projectColor}">${projectTitle}</h2>
+            <h1 class="fw-bolder">${jobTitle}</h1>
+          `;
           projectEntity.textContent = projectTitle;
           projectEntity.style.backgroundColor =
             entity.project?.project_color || "grey";
