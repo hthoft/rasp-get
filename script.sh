@@ -22,7 +22,7 @@ sudo apt-get install --no-install-recommends -y \
     python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git \
     xserver-xorg x11-xserver-utils xinit openbox chromium-browser \
     libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev \
-    libwebkit2gtk-4.0-dev qt5-default python3-pyqt5
+    libwebkit2gtk-4.0-dev qt5-default python3-pyqt5 
 
 # Step 4: Disable Splash and Default RPi Features
 echo "Step 4: Disabling splash screen and reducing default output for faster boot..."
@@ -50,13 +50,16 @@ fi
 
 # Step 8: Install Python Dependencies
 echo "Step 8: Installing necessary Python libraries..."
-pip3 install brother-ql requests Flask flask-cors threading psutil platform Pillow rcode flask-socketio python-dotenv pywebview[qt]
+pip3 install requests Flask flask-cors threading psutil platform Pillow rcode flask-socketio python-dotenv pywebview[qt] --break-system-packages
+
+pip3 install brother_ql --break-system-packages
+pip3 install pyusb --break-system-packages
 
 # Step 9: Clone rasp-get repository and create .env file
 echo "Step 9: Cloning rasp-get repository and setting up environment variables..."
 cat <<EOT >> .env
 API_KEY=c552aca5def31c26f81dcd9d0f0ea8f36c0d43497f8701561855b85ffc47d7f1
-CUSTOMER_ID=e9093525cd653c631b6740e76ff2578c81867e5ab5b12aa36723ad791e264e8b
+CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
 PRINTER_SN=139132
 EOT
 
