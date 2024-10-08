@@ -433,22 +433,30 @@ def update_printer_status_to_completed(printer_sn):
     try:
         url = f"https://portal.maprova.dk/api/printers/updatePrinterStatus.php"
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-        payload = {
+        # For GET requests, we use params instead of data
+        params = {
             'printer_sn': printer_sn,
             'new_status': 'COMPLETED',
-            'clear_project_id': 'true',
+            'clear_project_id': 'true',  # Ensure these are strings for GET request
             'clear_job_id': 'true',
             'clear_count': 'true',
             'apiKey': api_key,
             'customerID': customer_id
         }
-        response = requests.get(url, data=payload, headers=headers)
+        
+        response = requests.get(url, params=params, headers=headers)
+
+        # Print the full response for debugging
+        print(f"Response status code: {response.status_code}")
+        print(f"Response content: {response.content.decode('utf-8')}")
+
         if response.status_code == 200:
             print(f"Printer {printer_sn} status updated to COMPLETED and cleared project/job.")
         else:
             print(f"Failed to update printer status. Status Code: {response.status_code}")
     except Exception as e:
         print(f"Error updating printer status: {e}")
+
 
 def update_printer_status_to_failed(printer_sn):
     """Update the printer status to FAILED and clear fields using GET."""
