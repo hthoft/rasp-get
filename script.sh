@@ -11,7 +11,7 @@ echo "Starting the Raspberry Pi setup..."
 # Step 1: Update System and Install Dependencies
 echo "Step 1: Updating system and installing dependencies..."
 sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser
+sudo apt-get install --no-install-recommends -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser
 
 # Step 2: Disable Splash and Default RPi Features
 echo "Step 2: Disabling splash screen and reducing default output for faster boot..."
@@ -29,20 +29,25 @@ echo "display_lcd_rotate=3" | sudo tee -a /boot/firmware/config.txt
 sudo sed -i '/MatchIsTouchscreen "on"/a Option "TransformationMatrix" "0 -1 1 1 0 0 0 0 1"' /usr/share/X11/xorg.conf.d/40-libinput.conf
 
 
+# Step 4: Install Brother QL-710W Driver
+echo "Step 4: Installing Brother QL-710W printer driver..."
+if [ -f "./ql710wpdrv-2.1.4-0.armhf.deb" ]; then
+    sudo dpkg -i ./ql710wpdrv-2.1.4-0.armhf.deb
+else
+    echo "Error: Brother QL-710W driver package not found. Please ensure 'ql710wpdrv-2.1.4-0.armhf.deb' is in the current directory."
+    exit 1
+fi
+
 # Step 5: Install Python Dependencies
 echo "Step 5: Installing necessary Python libraries..."
-pip3 install brother_ql pyusb dotenv pillow psutil fcntl flask flask_socketio requests flask_cors qrcode pywebview --break-system-packages
-
-# Step 6: Setup Printer Environment
-echo "Step 6: Setting up Brother QL-700 printer..."
-read -p "Please enter your new Printer Serial Number (PRINTER_SN): " printer_sn
+pip3 install brother_ql pyusb dotenv pillow psutil fcntl Flask flask_socketio requests flask_cors qrcode pywebview --break-system-packages
 
 # Clone rasp-get repository and create .env file
 echo "Step 7: Cloning rasp-get repository and setting up environment variables..."
 cat <<EOT >> .env
 API_KEY=c552aca5def31c26f81dcd9d0f0ea8f36c0d43497f8701561855b85ffc47d7f1
 CUSTOMER_ID=e9093525cd653c631b6740e76ff2578c81867e5ab5b12aa36723ad791e264e8b
-PRINTER_SN=$printer_sn
+PRINTER_SN=139132
 EOT
 
 # Set up Brother QL-700 Printer Environment Variables
@@ -76,16 +81,10 @@ echo "Step 10: Setting up Kiosk mode and script autostart..."
 
 # Add autostart for openbox
 echo "Setting up Openbox autostart..."
-mkdir -p /etc/xdg/openbox
-echo "python3 ~/rasp-get/main.py &" >> /etc/xdg/openbox/autostart
+sudo printf "xset s off\nxset s noblank\nxset -dpms\nsetxkbmap -option terminate:ctrl_alt_bksp\ncd rasp-get/\npython3 main.py" | sudo tee /etc/xdg/openbox/autostart
 
 # Modify .bashrc to autostart X without a cursor
 echo "Adding autostart to .bashrc for non-GUI mode..."
-cat <<EOT >> ~/.bashrc
-if [ -z "\$DISPLAY" ] && [ "\$XDG_VTNR" -eq 1 ]; then
-    startx -- -nocursor
-fi
-EOT
 
 # Step 11: Modify /etc/rc.local for script autostart
 echo "Step 11: Modifying /etc/rc.local for script autostart..."
@@ -93,4 +92,3 @@ sudo printf "[[ -z \$DISPLAY && \$XDG_VTNR -eq 1 ]] && startx -- -nocursor" | su
 
 # Step 12: Final Reboot
 echo "Step 12: Rebooting to apply all changes..."
-sudo reboot
