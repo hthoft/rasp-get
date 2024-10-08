@@ -699,18 +699,7 @@
               Swal.fire({
                 color: "#ffffff",
                 title: "Printer labels",
-                html: `
-      <div style='display: flex; justify-content: center; overflow-x: hidden;'>
-        <h2 class='badge mt-4 fs-2 mb-0 fw-light' 
-            style='background-color: ${data.project_color}; text-align: center; white-space: nowrap;'>
-          ${data.project_title}
-        </h2>
-      </div>
-      <div style='text-align: center;'>
-        <h1 class='fw-bolder'>${data.job_title}</h1>
-        <span class='fw-bold'>Vent venligst mens printjobbet behandles...</span>
-      </div>
-    `,
+                html: "<span class='fw-bold'>Vent venligst mens printjobbet behandles...</span>",
                 allowOutsideClick: false,
                 didOpen: () => {
                   Swal.showLoading();
