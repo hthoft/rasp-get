@@ -314,7 +314,8 @@
     <script src="js/socket.io.js"></script>
     <script src="js/sweetalert.js"></script>
     <script>
-      var socket = io();
+      var socket = io.connect("http://127.0.0.1:5000");
+
       // Function to set a cookie
       function setCookie(name, value, days) {
         const date = new Date();
