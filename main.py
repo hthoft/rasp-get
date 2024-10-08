@@ -270,12 +270,22 @@ data_push_status = False
 
 # Notify print failure
 def notify_print_failure(message):
-    """Emit print failure notification."""
-    socketio.emit('print_failure', {'message': message}, room=None)
+    """Emit print failure notification with error handling."""
+    try:
+        socketio.emit('print_failure', {'message': message}, room=None)
+        print("Print failure notification sent successfully.")
+    except Exception as e:
+        print(f"Error sending print failure notification: {e}")
 
+# Notify print success
 def notify_print_success(message):
-    """Emit print success notification."""
-    socketio.emit('print_success', {'message': message}, room=None)
+    """Emit print success notification with error handling."""
+    try:
+        socketio.emit('print_success', {'message': message}, room=None)
+        print("Print success notification sent successfully.")
+    except Exception as e:
+        print(f"Error sending print success notification: {e}")
+
 
 
 def fetch_and_push_printer_status():

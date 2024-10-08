@@ -414,6 +414,26 @@
         });
       });
 
+      socket.on("connect_error", (err) => {
+        console.error("Socket connection error:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Connection Error",
+          text: "Failed to connect to the server.",
+        });
+      });
+
+      socket.on("reconnect", (attemptNumber) => {
+        console.log(
+          "Reconnected successfully after",
+          attemptNumber,
+          "attempt(s)."
+        );
+      });
+      socket.on("reconnect_error", (err) => {
+        console.error("Reconnection failed:", err);
+      });
+
       // Set up an interval to check printer connection every 10 seconds
       setInterval(checkSystemConnections, 10000); // 10,000 milliseconds = 10 seconds
 
