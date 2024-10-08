@@ -311,8 +311,10 @@
     <!-- Optional: Include Bootstrap JS and jQuery -->
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/socket.io.js"></script>
     <script src="js/sweetalert.js"></script>
     <script>
+      var socket = io();
       // Function to set a cookie
       function setCookie(name, value, days) {
         const date = new Date();
@@ -393,6 +395,24 @@
             console.error("Error fetching system connection status:", error);
           });
       }
+
+      socket.on("print_failure", function (data) {
+        // Display a SweetAlert with the message from the server
+        Swal.fire({
+          icon: "error",
+          title: "Print Error",
+          text: data.message,
+        });
+      });
+
+      socket.on("print_success", function (data) {
+        // Display a SweetAlert with the message from the server
+        Swal.fire({
+          icon: "success",
+          title: "Print Success",
+          text: data.message,
+        });
+      });
 
       // Set up an interval to check printer connection every 10 seconds
       setInterval(checkSystemConnections, 10000); // 10,000 milliseconds = 10 seconds

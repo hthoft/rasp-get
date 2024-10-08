@@ -12,6 +12,7 @@ import subprocess
 import json
 import qrcode
 from PIL import Image, ImageDraw, ImageFont
+from flask_socketio import SocketIO  
 import subprocess
 import socket
 import uuid
@@ -28,6 +29,9 @@ printer_sn = os.getenv('PRINTER_SN')
 
 app = Flask(__name__)
 CORS(app)  # Apply CORS to the entire app
+
+# Initialize SocketIO
+socketio = SocketIO(app)
 
 # Cache Directory and Files
 cache_dir = './cache'
@@ -264,6 +268,12 @@ def fetch_jobs_by_project(project_id):
 # Global flag to track data push status
 data_push_status = False
 
+def notify_print_failure(message):
+    socketio.emit('print_failure', {'message': message}, broadcast=True)
+
+def notify_print_success(message):
+    socketio.emit('print_success', {'message': message}, broadcast=True)
+
 def fetch_and_push_printer_status():
     global data_push_status
     while True:
@@ -336,6 +346,12 @@ def fetch_and_push_printer_status():
                             if print_successful:
                                 # Update the printer status to COMPLETED and clear the fields
                                 update_printer_status_to_completed(printer_sn)
+                                notify_print_success("Automatisk udskrivning er fuldført")
+
+                            else:
+                                # Update the printer status to FAILED
+                                update_printer_status_to_failed(printer_sn)
+                                notify_print_failure("Automatisk udskrivning mislykkedes. Prøv igen.")
 
                 data_push_status = True  # Set flag to True on successful push
             else:
@@ -393,6 +409,28 @@ def update_printer_status_to_completed(printer_sn):
             'clear_project_id': True,
             'clear_job_id': True,
             'clear_count': True,
+            'apiKey': api_key,
+            'customerID': customer_id
+        }
+        response = requests.post(url, data=payload, headers=headers)
+        if response.status_code == 200:
+            print(f"Printer {printer_sn} status updated to COMPLETED and cleared project/job.")
+        else:
+            print(f"Failed to update printer status. Status Code: {response.status_code}")
+    except Exception as e:
+        print(f"Error updating printer status: {e}")
+
+def update_printer_status_to_failed(printer_sn):
+    """Update the printer status to COMPLETED and clear fields."""
+    try:
+        url = f"https://portal.maprova.dk/api/printers/updatePrinterStatus.php"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        payload = {
+            'printer_sn': printer_sn,
+            'new_status': 'FAiLED',
+            'clear_project_id': False,
+            'clear_job_id': False,
+            'clear_count': False,
             'apiKey': api_key,
             'customerID': customer_id
         }
@@ -592,11 +630,14 @@ def get_uptime():
 
 def get_cpu_temperature():
     if platform.system() == "Linux":
-        temp = subprocess.check_output(["vcgencmd", "measure_temp"]).decode().strip()
-        # The output will be something like: "temp=56.5'C"
-        temp_value = temp.split("=")[1].replace("'C", "").strip()
-        return float(temp_value)  # Return as float
-    return "N/A"
+        try:
+            temp = subprocess.check_output(["vcgencmd", "measure_temp"]).decode().strip()
+            temp_value = temp.split("=")[1].replace("'C", "").strip()
+            return float(temp_value)  # Return as float
+        except Exception as e:
+            print(f"Error getting CPU temperature: {e}")
+            return 0.0  # Return default value if there's an error
+    return 0.0  # Return 0.0 if not on Linux
 
 
 # Function to get memory usage
@@ -610,7 +651,9 @@ def get_cpu_usage():
 
 # Function to start Flask in a separate thread
 def start_flask():
-    app.run(debug=True, host='0.0.0.0', use_reloader=False)
+    # Allow the unsafe use of Werkzeug for development
+    socketio.run(app, debug=True, host='0.0.0.0', use_reloader=False, allow_unsafe_werkzeug=True)
+
 
 
 if __name__ == '__main__':
