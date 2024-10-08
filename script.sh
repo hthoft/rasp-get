@@ -94,7 +94,7 @@ echo "Step 13: Setting up Kiosk mode and script autostart..."
 
 # Add autostart for openbox
 echo "Setting up Openbox autostart..."
-sudo printf "xset s off\nxset s noblank\nxset -dpms\nsetxkbmap -option terminate:ctrl_alt_bksp\ncd rasp-get/\npython3 main.py" | sudo tee /etc/xdg/openbox/autostart
+sudo printf "xset s off\nxset s noblank\nxset -dpms\nxrandr --output DPI-1 --rotate left\nsetxkbmap -option terminate:ctrl_alt_bksp\ncd rasp-get/\npython3 main.py" | sudo tee /etc/xdg/openbox/autostart
 
 # Modify .bashrc to autostart X without a cursor
 echo "Adding autostart to .bashrc for non-GUI mode..."
