@@ -106,7 +106,22 @@ echo "Adding autostart to .bashrc for non-GUI mode..."
 
 # Step 14: Modify /etc/rc.local for script autostart
 echo "Step 14: Modifying /etc/rc.local for script autostart..."
-sudo printf "[[ -z \$DISPLAY && \$XDG_VTNR -eq 1 ]] && startx -- -nocursor" | sudo tee .bash_profile
+
+# Check if the rc.local file exists, create it if not
+if [ ! -f /etc/rc.local ]; then
+    sudo tee /etc/rc.local > /dev/null <<EOT
+#!/bin/sh -e
+# rc.local
+# This script is executed at the end of each multiuser runlevel.
+
+exit 0
+EOT
+    sudo chmod +x /etc/rc.local
+fi
+
+# Add the startx command to /etc/rc.local
+sudo sed -i '$i [[ -z "$DISPLAY" && "$XDG_VTNR" -eq 1 ]] && startx -- -nocursor\n' /etc/rc.local
+
 
 # Step 15: Final Reboot
 echo "Step 15: Rebooting to apply all changes..."
