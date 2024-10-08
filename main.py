@@ -349,11 +349,11 @@ def fetch_and_push_printer_status():
         # Wait for 60 seconds before the next push
         time.sleep(60)
 
-
 def fetch_project_by_id(project_id):
     """Fetch project details by ID."""
     try:
-        url = f"https://portal.maprova.dk/api/getProjectByID.php?project_id={project_id}&apiKey={api_key}&customerID={customer_id}"
+        # Use 'id' instead of 'project_id' to match the PHP script
+        url = f"https://portal.maprova.dk/api/getProjectByID.php?id={project_id}&apiKey={api_key}&customerID={customer_id}"
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
@@ -368,7 +368,8 @@ def fetch_project_by_id(project_id):
 def fetch_job_by_id(project_id, job_id):
     """Fetch job details by project ID and job ID."""
     try:
-        url = f"https://portal.maprova.dk/api/getJobByID.php?project_id={project_id}&job_id={job_id}&apiKey={api_key}&customerID={customer_id}"
+        # Use 'jobID' instead of 'job_id' to match the PHP script
+        url = f"https://portal.maprova.dk/api/getJobByID.php?jobID={job_id}&apiKey={api_key}&customerID={customer_id}"
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
@@ -378,6 +379,7 @@ def fetch_job_by_id(project_id, job_id):
     except Exception as e:
         print(f"Error fetching job: {e}")
     return None
+
 
 
 def update_printer_status_to_completed(printer_sn):
