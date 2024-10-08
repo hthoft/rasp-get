@@ -822,8 +822,11 @@
               <p class="fs-4 text-start"><strong>Hukommelsesforbrug:</strong> ${
                 data.memory_usage
               }%</p>
-              <p class="fs-4 text-start"><strong>Push status:</strong> ${
-                data.push_status
+              <p class="fs-4 text-start"><strong>Ekstern server:</strong> ${
+                data.push_status ? "Forbundet" : "Frakoblet"
+              }</p>
+              <p class="fs-4 text-start"><strong>Intern server:</strong> ${
+                socket.connected ? "Forbundet" : "Frakoblet"
               }</p>
             </div>
           </div>
