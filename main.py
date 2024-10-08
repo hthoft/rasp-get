@@ -270,13 +270,12 @@ data_push_status = False
 
 # Notify print failure
 def notify_print_failure(message):
-    with app.app_context():
-        socketio.emit('print_failure', {'message': message}, room=None, include_self=False)
+    """Emit print failure notification."""
+    socketio.emit('print_failure', {'message': message}, room=None)
 
-# Notify print success
 def notify_print_success(message):
-    with app.app_context():
-        socketio.emit('print_success', {'message': message}, room=None, include_self=False)
+    """Emit print success notification."""
+    socketio.emit('print_success', {'message': message}, room=None)
 
 
 def fetch_and_push_printer_status():
@@ -472,9 +471,7 @@ def reboot_system():
 
 # Start the thread to fetch and push printer status every 60 seconds
 def start_printer_status_pushing():
-    thread = threading.Thread(target=fetch_and_push_printer_status)
-    thread.daemon = True
-    thread.start()
+    socketio.start_background_task(target=fetch_and_push_printer_status)
 
 
 # Flask route to serve project data
