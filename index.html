@@ -456,6 +456,7 @@
       });
 
       socket.on("print_success", function (data) {
+        Swal.close(); // Close the current alert
         // Display a SweetAlert with the message from the server
         Swal.fire({
           color: "#ffffff",
