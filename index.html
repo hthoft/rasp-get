@@ -677,6 +677,7 @@
               const job_id = selectedEntity?.job?.id;
               const job_title = selectedEntity?.job?.job_title;
               const project_title = selectedEntity?.project?.project_title;
+              const project_color = selectedEntity?.project?.project_color;
 
               if (!job_id || !job_title) {
                 console.error("Job ID or title is missing.");
@@ -698,7 +699,18 @@
               Swal.fire({
                 color: "#ffffff",
                 title: "Printer labels",
-                html: "<span class='fw-bold'>Vent venligst mens printjobbet behandles...</span>",
+                html: `
+      <div style='display: flex; justify-content: center; overflow-x: hidden;'>
+        <h2 class='badge mt-4 fs-2 mb-0 fw-light' 
+            style='background-color: ${data.project_color}; text-align: center; white-space: nowrap;'>
+          ${data.project_title}
+        </h2>
+      </div>
+      <div style='text-align: center;'>
+        <h1 class='fw-bolder'>${data.job_title}</h1>
+        <span class='fw-bold'>Vent venligst mens printjobbet behandles...</span>
+      </div>
+    `,
                 allowOutsideClick: false,
                 didOpen: () => {
                   Swal.showLoading();
