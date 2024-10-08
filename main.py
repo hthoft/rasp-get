@@ -431,7 +431,7 @@ def update_printer_status_to_failed(printer_sn):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
         payload = {
             'printer_sn': printer_sn,
-            'new_status': 'FAiLED',
+            'new_status': 'FAILED',
             'clear_project_id': False,
             'clear_job_id': False,
             'clear_count': False,
