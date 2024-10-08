@@ -37,7 +37,7 @@ sudo sed -i '/MatchIsTouchscreen "on"/a Option "TransformationMatrix" "0 -1 1 1 
 
 # Step 6: Install Python Dependencies
 echo "Step 6: Installing necessary Python libraries..."
-pip3 install brother_ql pyusb dotenv pillow psutil fcntl flask flask_socketio requests flask_cors qrcode pywebview
+pip3 install brother_ql pyusb dotenv pillow psutil fcntl flask flask_socketio requests flask_cors qrcode pywebview --break-system-packages
 
 
 # Step 7: Setup Printer Environment
@@ -46,11 +46,8 @@ read -p "Please enter your new Printer Serial Number (PRINTER_SN): " printer_sn
 
 # Clone rasp-get repository and create .env file
 echo "Step 8: Cloning rasp-get repository and setting up environment variables..."
-cd ~
-git clone https://github.com/hthoft/rasp-get.git
-cd rasp-get
 cat <<EOT >> .env
-API_KEY=e9093525cd653c631b6740e76ff2578c81867e5ab5b12aa36723ad791e264e8b
+API_KEY=c552aca5def31c26f81dcd9d0f0ea8f36c0d43497f8701561855b85ffc47d7f1
 CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
 PRINTER_SN=$printer_sn
 EOT
