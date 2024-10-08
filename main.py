@@ -393,7 +393,7 @@ def fetch_and_push_printer_status():
             data_push_status = False  # Set flag to False on exception
 
         # Wait for 60 seconds before the next push
-        time.sleep(60)
+        time.sleep(15)
 
 def fetch_project_by_id(project_id):
     """Fetch project details by ID."""
@@ -436,9 +436,9 @@ def update_printer_status_to_completed(printer_sn):
         payload = {
             'printer_sn': printer_sn,
             'new_status': 'COMPLETED',
-            'clear_project_id': True,
-            'clear_job_id': True,
-            'clear_count': True,
+            'clear_project_id': 'true',
+            'clear_job_id': 'true',
+            'clear_count': 'true',
             'apiKey': api_key,
             'customerID': customer_id
         }
