@@ -268,11 +268,14 @@ def fetch_jobs_by_project(project_id):
 # Global flag to track data push status
 data_push_status = False
 
+# Notify print failure
 def notify_print_failure(message):
-    socketio.emit('print_failure', {'message': message}, broadcast=True)
+    socketio.emit('print_failure', {'message': message}, room=None, include_self=False)
 
+# Notify print success
 def notify_print_success(message):
-    socketio.emit('print_success', {'message': message}, broadcast=True)
+    socketio.emit('print_success', {'message': message}, room=None, include_self=False)
+
 
 def fetch_and_push_printer_status():
     global data_push_status
