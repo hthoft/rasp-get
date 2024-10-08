@@ -40,7 +40,8 @@ fi
 
 # Step 5: Install Python Dependencies
 echo "Step 5: Installing necessary Python libraries..."
-pip3 install brother_ql pyusb dotenv pillow psutil fcntl Flask flask_socketio requests flask_cors qrcode pywebview --break-system-packages
+sudo pip3 install brother_ql pyusb dotenv pillow psutil fcntl Flask flask_socketio requests flask_cors qrcode pywebview --break-system-packages
+
 
 # Clone rasp-get repository and create .env file
 echo "Step 7: Cloning rasp-get repository and setting up environment variables..."
