@@ -64,6 +64,10 @@ def custom_encode(number):
 
 
 def handle_print(job_id, job_title, project_title, print_count):
+    # If used for testing, do not print:
+    # Add a 5 second delay
+    time.sleep(5)
+    return True
     try:
         def generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm):
             # QR code generation code (same as before)
