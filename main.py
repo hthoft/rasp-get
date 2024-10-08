@@ -416,7 +416,7 @@ def update_printer_status_to_completed(printer_sn):
             'apiKey': api_key,
             'customerID': customer_id
         }
-        response = requests.post(url, data=payload, headers=headers)
+        response = requests.get(url, data=payload, headers=headers)
         if response.status_code == 200:
             print(f"Printer {printer_sn} status updated to COMPLETED and cleared project/job.")
         else:
@@ -425,25 +425,22 @@ def update_printer_status_to_completed(printer_sn):
         print(f"Error updating printer status: {e}")
 
 def update_printer_status_to_failed(printer_sn):
-    """Update the printer status to FAILED and show response."""
+    """Update the printer status to FAILED and clear fields using GET."""
     try:
         url = f"https://portal.maprova.dk/api/printers/updatePrinterStatus.php"
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
         payload = {
             'printer_sn': printer_sn,
             'new_status': 'FAILED',
-            'clear_project_id': False,
-            'clear_job_id': False,
-            'clear_count': False,
+            'clear_project_id': 'false',  # Convert boolean to string 'false' or 'true' for URL
+            'clear_job_id': 'false',
+            'clear_count': 'false',
             'apiKey': api_key,
             'customerID': customer_id
         }
-        response = requests.post(url, data=payload, headers=headers)
-        
-        # Print response status and content
-        print(f"Status Code: {response.status_code}")
-        print(f"Response Content: {response.text}")  # or use response.json() if expecting JSON
-        
+
+        # Convert payload to URL parameters
+        response = requests.get(url, params=payload, headers=headers)
         if response.status_code == 200:
             print(f"Printer {printer_sn} status updated to FAILED successfully.")
         else:
@@ -451,6 +448,7 @@ def update_printer_status_to_failed(printer_sn):
     
     except Exception as e:
         print(f"Error updating printer status: {e}")
+
 
 
 
