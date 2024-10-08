@@ -304,6 +304,21 @@ def notify_print_success(message, job_id, job_title, project_id, project_title, 
         print(f"Error sending print success notification: {e}")
 
 
+def notify_print_initiated(job_id, job_title, project_id, project_title, project_color):
+    """Emit print initiated notification with detailed job and project info."""
+    try:
+        socketio.emit('print_initiated', {
+            'job_id': job_id,
+            'job_title': job_title,
+            'project_id': project_id,
+            'project_title': project_title,
+            'project_color': project_color
+        }, room=None)
+        print(f"Print initiated notification sent for job '{job_title}' in project '{project_title}'.")
+    except Exception as e:
+        print(f"Error sending print initiated notification: {e}")
+
+
 
 def fetch_and_push_printer_status():
     global data_push_status
@@ -367,6 +382,7 @@ def fetch_and_push_printer_status():
                             project_title = project.get('project_title')
                             project_color = project.get('project_color', '#ffffff')  # default to white if no color
                             job_title = job.get('job_title')
+                            notify_print_initiated(job_id, job_title, project_id, project_title, project_color)
 
                             print(f"Initiating print for project: {project_title}, job: {job_title}")
                             print_count = min(print_count, 5)

@@ -402,6 +402,7 @@
         Swal.fire({
           icon: "error",
           title: "Print Error",
+          color: "#ffffff",
           html: `
               <h2 class='badge mt-4 fs-2 mb-0 fw-light' style='background-color: ${data.project_color};'>
                 ${data.project_title}
@@ -437,20 +438,22 @@
                 if (result.status === "success") {
                   Swal.fire({
                     icon: "success",
-                    title: "Print job successfully retried!",
+                    color: "#ffffff",
+                    title: "Printjob genoptaget",
                     timer: 2000,
                     showConfirmButton: false,
                   });
                 } else {
                   Swal.fire({
                     icon: "error",
+                    color: "#ffffff",
                     title: "Retry failed",
-                    text: "Unable to retry the print job. Please try again later.",
+                    text: "Kan ikke genoptage printjobbet. Prøv igen senere.",
                   });
                 }
               })
               .catch((error) => {
-                console.error("Retry print job error:", error);
+                console.error("Gentagelse fejlede:", error);
               });
           });
       });
@@ -468,6 +471,25 @@
           allowOutsideClick: false,
           willClose: () => {
             resetTimer();
+          },
+        });
+      });
+
+      socket.on("print_initiated", function (data) {
+        // Display a SweetAlert with the message from the server
+        Swal.fire({
+          color: "#ffffff",
+          title: "Printer labels",
+          html: `
+                        <h2 class='badge mt-4 fs-2 mb-0 fw-light' style='background-color: ${data.project_color};'>
+                ${data.project_title}
+              </h2>
+              <h1 class='fw-bolder'>${data.job_title}</h1>
+              <span class='fw-bold'>Vent venligst mens printjobbet behandles...</span>"
+          `,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
           },
         });
       });
