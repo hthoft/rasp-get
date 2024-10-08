@@ -81,13 +81,18 @@ fi
 
 # Step 12: Run a Test Print
 echo "Step 12: Running a test print..."
+# Test print using a sample image (replace with your own test image if necessary)
+echo "Running a test print..."
 test_image_path="dark-logo-white.png"
+
+# Check if test image exists, and if not, create a placeholder test image
 if [ ! -f "$test_image_path" ]; then
     echo "Creating a placeholder test image..."
     convert -size 300x300 xc:white -gravity Center -pointsize 24 -annotate +0+0 "Test Print" $test_image_path
 fi
+
+# Run the test print command
 BROTHER_QL_PRINTER=usb://0x04f9:0x2042 BROTHER_QL_MODEL=QL-700 brother_ql print -l 62 $test_image_path
-echo "Test print initiated. Please check your printer for output."
 
 # Step 13: Setup Kiosk Mode and Auto Start
 echo "Step 13: Setting up Kiosk mode and script autostart..."
