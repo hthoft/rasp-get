@@ -436,7 +436,7 @@ def update_printer_status_to_failed(printer_sn):
         }
         response = requests.post(url, data=payload, headers=headers)
         if response.status_code == 200:
-            print(f"Printer {printer_sn} status updated to COMPLETED and cleared project/job.")
+            print(f"Printer {printer_sn} status updated to FAILED and cleared project/job.")
         else:
             print(f"Failed to update printer status. Status Code: {response.status_code}")
     except Exception as e:
