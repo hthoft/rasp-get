@@ -41,7 +41,7 @@ read -p "Please enter your new Printer Serial Number (PRINTER_SN): " printer_sn
 echo "Step 7: Cloning rasp-get repository and setting up environment variables..."
 cat <<EOT >> .env
 API_KEY=c552aca5def31c26f81dcd9d0f0ea8f36c0d43497f8701561855b85ffc47d7f1
-CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
+CUSTOMER_ID=e9093525cd653c631b6740e76ff2578c81867e5ab5b12aa36723ad791e264e8b
 PRINTER_SN=$printer_sn
 EOT
 
