@@ -22,30 +22,23 @@ sudo tee -a /boot/firmware/cmdline.txt <<< "logo.nologo consoleblank=0 loglevel=
 echo "Step 3: Disabling unused services like getty@tty3..."
 sudo systemctl disable getty@tty3
 
-# Step 4: Setup Hyperpixel4 Screen
-echo "Step 4: Setting up Hyperpixel4 drivers and touchscreen configuration..."
-git clone https://github.com/pimoroni/hyperpixel4 -b pi3
-cd hyperpixel4
-sed -i 's/CONFIG="\/boot\/config.txt"/CONFIG="\/boot\/firmware\/config.txt"/g' install.sh
-sudo chmod +x install.sh
-./install.sh
-hyperpixel4-rotate inverted
-
-# Step 5: Adjust Hyperpixel4 Touchscreen Configuration
-echo "Step 5: Adjusting touchscreen rotation..."
+# Step 4: Modify /boot/firmware/config.txt
+echo "Step 4: Modifying /boot/firmware/config.txt..."
+sudo sed -i 's/dtoverlay=vc4-kms-v3d/dtoverlay=vc4-kms-dpi-hyperpixel4:rotate/g' /boot/firmware/config.txt
+echo "display_lcd_rotate=3" | sudo tee -a /boot/firmware/config.txt
 sudo sed -i '/MatchIsTouchscreen "on"/a Option "TransformationMatrix" "0 -1 1 1 0 0 0 0 1"' /usr/share/X11/xorg.conf.d/40-libinput.conf
 
-# Step 6: Install Python Dependencies
-echo "Step 6: Installing necessary Python libraries..."
+
+# Step 5: Install Python Dependencies
+echo "Step 5: Installing necessary Python libraries..."
 pip3 install brother_ql pyusb dotenv pillow psutil fcntl flask flask_socketio requests flask_cors qrcode pywebview --break-system-packages
 
-
-# Step 7: Setup Printer Environment
-echo "Step 7: Setting up Brother QL-700 printer..."
+# Step 6: Setup Printer Environment
+echo "Step 6: Setting up Brother QL-700 printer..."
 read -p "Please enter your new Printer Serial Number (PRINTER_SN): " printer_sn
 
 # Clone rasp-get repository and create .env file
-echo "Step 8: Cloning rasp-get repository and setting up environment variables..."
+echo "Step 7: Cloning rasp-get repository and setting up environment variables..."
 cat <<EOT >> .env
 API_KEY=c552aca5def31c26f81dcd9d0f0ea8f36c0d43497f8701561855b85ffc47d7f1
 CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
@@ -58,8 +51,8 @@ echo "export BROTHER_QL_PRINTER=usb://0x04f9:0x2042" >> ~/.bashrc
 echo "export BROTHER_QL_MODEL=QL-700" >> ~/.bashrc
 source ~/.bashrc
 
-# Step 9: Verify Printer Connection
-echo "Step 9: Checking if Brother QL-700 is detected..."
+# Step 8: Verify Printer Connection
+echo "Step 8: Checking if Brother QL-700 is detected..."
 lsusb | grep "04f9:2042" > /dev/null
 if [ $? -ne 0 ]; then
     echo "Brother QL-700 printer not found. Please check the connection and try again."
@@ -68,8 +61,8 @@ else
     echo "Brother QL-700 printer detected!"
 fi
 
-# Step 10: Run a Test Print
-echo "Step 10: Running a test print..."
+# Step 9: Run a Test Print
+echo "Step 9: Running a test print..."
 test_image_path="dark-logo-white.png"
 if [ ! -f "$test_image_path" ]; then
     echo "Creating a placeholder test image..."
@@ -78,8 +71,8 @@ fi
 BROTHER_QL_PRINTER=usb://0x04f9:0x2042 BROTHER_QL_MODEL=QL-700 brother_ql print -l 62 $test_image_path
 echo "Test print initiated. Please check your printer for output."
 
-# Step 11: Setup Kiosk Mode and Auto Start
-echo "Step 11: Setting up Kiosk mode and script autostart..."
+# Step 10: Setup Kiosk Mode and Auto Start
+echo "Step 10: Setting up Kiosk mode and script autostart..."
 
 # Add autostart for openbox
 echo "Setting up Openbox autostart..."
@@ -94,10 +87,10 @@ if [ -z "\$DISPLAY" ] && [ "\$XDG_VTNR" -eq 1 ]; then
 fi
 EOT
 
-# Step 12: Modify /etc/rc.local for script autostart
-echo "Step 12: Modifying /etc/rc.local for script autostart..."
-sudo sed -i '/exit 0/i [[ -z "\$DISPLAY" && "\$XDG_VTNR" -eq 1 ]] && startx -- -nocursor' /etc/rc.local
+# Step 11: Modify /etc/rc.local for script autostart
+echo "Step 11: Modifying /etc/rc.local for script autostart..."
+sudo printf "[[ -z \$DISPLAY && \$XDG_VTNR -eq 1 ]] && startx -- -nocursor" | sudo tee .bash_profile
 
-# Step 13: Final Reboot
-echo "Step 13: Rebooting to apply all changes..."
+# Step 12: Final Reboot
+echo "Step 12: Rebooting to apply all changes..."
 sudo reboot
