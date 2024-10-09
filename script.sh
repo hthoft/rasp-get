@@ -85,9 +85,17 @@ pip3 install brother_ql --break-system-packages
 pip3 install pyusb --break-system-packages
 sleep 2  # Delay
 
-# Modify conversions.py to replace antialias with lanczos
+# Modifying brother_ql conversion.py
 echo "Modifying brother_ql conversion.py..."
-python3 -c "import brother_ql.conversion; import fileinput; for line in fileinput.input(brother_ql.conversion.__file__, inplace=True): print(line.replace('Image.ANTIALIAS', 'Image.LANCZOS'), end='')"
+conversion_file=$(python3 -c "import brother_ql.conversion; print(brother_ql.conversion.__file__)")
+
+if grep -q "Image.ANTIALIAS" "$conversion_file"; then
+    sudo sed -i 's/Image.ANTIALIAS/Image.LANCZOS/g' "$conversion_file"
+    echo "Image.ANTIALIAS replaced with Image.LANCZOS in $conversion_file."
+else
+    echo "Image.ANTIALIAS not found or already replaced."
+fi
+
 sleep 2  # Delay
 
 # Step 9: Clone rasp-get repository and create .env file
@@ -145,24 +153,32 @@ sleep 2  # Delay
 echo "Adding autostart to .bashrc for non-GUI mode..."
 sleep 2  # Delay
 
-# Step 14: Modify /etc/rc.local for script autostart
-echo "Step 14: Modifying /etc/rc.local for script autostart..."
+# Step 14: Creating a systemd service for starting X on boot
+echo "Step 14: Creating a systemd service to run startx on boot..."
 
-# Check if the rc.local file exists, create it if not
-if [ ! -f /etc/rc.local ]; then
-    sudo tee /etc/rc.local > /dev/null <<EOT
-#!/bin/sh -e
-# rc.local
-# This script is executed at the end of each multiuser runlevel.
+# Create a new systemd service file
+sudo tee /etc/systemd/system/startx.service > /dev/null <<EOT
+[Unit]
+Description=Start X on boot
+After=multi-user.target
 
-exit 0
+[Service]
+User=RPI-5  # Replace 'pi' with the correct username
+WorkingDirectory=/home/RPI-5 # Adjust to your correct working directory
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/startx -- -nocursor
+
+[Install]
+WantedBy=multi-user.target
 EOT
-    sudo chmod +x /etc/rc.local
-fi
 
-# Add the startx command to /etc/rc.local
-sudo sed -i '$i [[ -z "$DISPLAY" && "$XDG_VTNR" -eq 1 ]] && startx -- -nocursor\n' /etc/rc.local
+# Reload systemd, enable the service, and start it
+sudo systemctl daemon-reload
+sudo systemctl enable startx.service
+sudo systemctl start startx.service
+
 sleep 2  # Delay
+
 
 # Step 15: Final Reboot
 echo "Step 15: Rebooting to apply all changes..."
