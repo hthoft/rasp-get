@@ -155,29 +155,21 @@ sleep 2  # Delay
 
 # Step 14: Creating a systemd service for starting X on boot
 echo "Step 14: Creating a systemd service to run startx on boot..."
+# Append the startx command to /home/RPI-5/.bashrc if it's not already there
+bashrc_file="/home/RPI-5/.bashrc"
+if ! grep -q "startx -- -nocursor" "$bashrc_file"; then
+    echo -e "\n# Start X when logging in on tty1\nif [ -z \"\$DISPLAY\" ] && [ \"\$(tty)\" = \"/dev/tty1\" ]; then\n    startx -- -nocursor\nfi" | tee -a "$bashrc_file"
+    echo "startx added to .bashrc"
+else
+    echo "startx is already in .bashrc"
+fi
 
-# Create a new systemd service file
-sudo tee /etc/systemd/system/startx.service > /dev/null <<EOT
-[Unit]
-Description=Start X on boot
-After=multi-user.target
-
-[Service]
-User=RPI-5  # Replace 'pi' with the correct username
-WorkingDirectory=/home/RPI-5 # Adjust to your correct working directory
-Environment=DISPLAY=:0
-ExecStart=/usr/bin/startx -- -nocursor
-
-[Install]
-WantedBy=multi-user.target
-EOT
-
-# Reload systemd, enable the service, and start it
-sudo systemctl daemon-reload
-sudo systemctl enable startx.service
-sudo systemctl start startx.service
+# Ensure permissions are correct for .bashrc
+chown RPI-5:RPI-5 "$bashrc_file"
+chmod 644 "$bashrc_file"
 
 sleep 2  # Delay
+
 
 
 # Step 15: Final Reboot
