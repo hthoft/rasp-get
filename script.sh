@@ -103,7 +103,7 @@ echo "Step 9: Cloning rasp-get repository and setting up environment variables..
 cat <<EOT >> .env
 API_KEY=c552aca5def31c26f81dcd9d0f0ea8f36c0d43497f8701561855b85ffc47d7f1
 CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
-PRINTER_SN=139132
+PRINTER_SN=497055
 EOT
 sleep 2  # Delay
 
