@@ -379,7 +379,7 @@ def fetch_and_push_printer_status():
                         # Single subprocess line with terminal sleep, git pull, stop startx, and reboot
                         subprocess.run([
                             "bash", "-c",
-                            "pkill -f startx && sleep 2 && cd ~/rasp-get && git pull && sleep 2 && sudo reboot"
+                            "sudo pkill -f startx && sleep 2 && cd /home/RPI-5/rasp-get && git pull && sleep 2 && sudo reboot"
                         ])
 
                 # Handle print job request
