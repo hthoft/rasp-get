@@ -20,11 +20,7 @@ sleep 2  # Delay
 
 # Step 3: Install required packages including PyQt and Python dependencies
 echo "Step 3: Installing necessary packages..."
-sudo apt-get install --no-install-recommends -y \
-    python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git \
-    xserver-xorg x11-xserver-utils xinit openbox chromium-browser \
-    libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev \
-    libwebkit2gtk-4.0-dev qt5-default python3-pyqt5 
+sudo apt-get install --no-install-recommends -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev libwebkit2gtk-4.0-dev qt5-default python3-pyqt5 
 sleep 2  # Delay
 
 # Step 4: Disable Splash and Default RPi Features
@@ -80,9 +76,21 @@ sleep 2  # Delay
 
 # Step 8: Install Python Dependencies
 echo "Step 8: Installing necessary Python libraries..."
-pip3 install requests Flask flask-cors threading psutil platform Pillow rcode flask-socketio python-dotenv pywebview[qt] --break-system-packages
+pip3 install requests --break-system-packages
+pip3 install Flask --break-system-packages
+pip3 install flask-cors --break-system-packages
+pip3 install threading --break-system-packages
+pip3 install psutil --break-system-packages
+pip3 install platform --break-system-packages
+pip3 install Pillow --break-system-packages
+pip3 install qrcode --break-system-packages
+pip3 install flask_socketio --break-system-packages
+pip3 install python-dotenv --break-system-packages
+pip3 install pywebview --break-system-packages
 pip3 install brother_ql --break-system-packages
 pip3 install pyusb --break-system-packages
+
+
 sleep 2  # Delay
 
 # Modifying brother_ql conversion.py
@@ -101,9 +109,9 @@ sleep 2  # Delay
 # Step 9: Clone rasp-get repository and create .env file
 echo "Step 9: Cloning rasp-get repository and setting up environment variables..."
 cat <<EOT >> .env
-API_KEY=c552aca5def31c26f81dcd9d0f0ea8f36c0d43497f8701561855b85ffc47d7f1
+API_KEY=7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44
 CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
-PRINTER_SN=497055
+PRINTER_SN=036284
 EOT
 sleep 2  # Delay
 
