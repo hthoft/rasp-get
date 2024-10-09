@@ -373,14 +373,23 @@ def fetch_and_push_printer_status():
                     update_reboot_flag(printer_sn, 0)
 
                 if reboot_flag == 3:
-                        print("Reboot flag is set to 3. Shutting down the script, performing update, and rebooting...")
-                        update_reboot_flag(printer_sn, 1)
+                    print("Reboot flag is set to 3. Shutting down the script, performing update, and rebooting...")
+                    update_reboot_flag(printer_sn, 1)
 
-                        # Single subprocess line with terminal sleep, git pull, stop startx, and reboot
-                        subprocess.run([
-                            "bash", "-c",
-                            "sudo pkill -f startx && sleep 2 && cd /home/RPI-5/rasp-get && git pull && sleep 2 && sudo reboot"
-                        ])
+                    try:
+                        # Run the subprocess command and ensure it raises an exception if it fails
+                        result = subprocess.run(
+                            ["bash", "-c", "cd /home/RPI-5/rasp-get && git pull && sleep 2 && sudo reboot"],
+                            check=True,
+                            stderr=subprocess.PIPE,
+                            stdout=subprocess.PIPE
+                        )
+                        print("Command executed successfully")
+                    
+                    except subprocess.CalledProcessError as e:
+                        # Print the error status and message
+                        print(f"Command failed with return code {e.returncode}")
+                        print(f"Error message: {e.stderr.decode()}")
 
                 # Handle print job request
                 if printer_data.get('printer_current_status') == 'REQUESTED':
