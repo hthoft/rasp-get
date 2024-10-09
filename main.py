@@ -49,6 +49,21 @@ cached_jobs = {}
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
 
+def update_printer_count(printer_sn, value):
+    url = f"https://portal.maprova.dk/api/updatePrinterCount.php?apiKey={api_key}&customerID={customer_id}&printer_sn={printer_sn}&value={value}"
+    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an error for bad status codes
+        return response.json()  # Return the response in JSON format
+    except requests.RequestException as e:
+        print(f"Error updating printer count: {e}")
+        return None  # Return None in case of error
+
 
 def custom_encode(number):
     # Convert the number to a hexadecimal string
@@ -63,13 +78,13 @@ def custom_encode(number):
     return obfuscated
 
 
-def handle_print(job_id, job_title, project_title, print_count):
+def handle_print(job_id, job_title, project_title, project_id, print_count):
     # If used for testing, do not print:
     # Add a 5 second delay
     # time.sleep(5)
     # return True
     try:
-        def generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm):
+        def generate_qr_code(data, logo_path, output_path, author, job_title, project_title, project_id, max_width_mm):
             # QR code generation code (same as before)
             qr = qrcode.QRCode(
                 version=1,
@@ -118,8 +133,10 @@ def handle_print(job_id, job_title, project_title, print_count):
             job_title_pos = ((max_width_pixels - job_title_bbox[2]) // 2, logo_height - 40)
             draw.text(job_title_pos, job_title, font=job_title_font, fill='black')
 
+            combined_text = f"{project_id} - {project_title}"
+
             project_title_pos = ((max_width_pixels - project_title_bbox[2]) // 2, logo_height + job_title_height - 20)
-            draw.text(project_title_pos, project_title, font=project_title_font, fill='black')
+            draw.text(project_title_pos, combined_text, font=project_title_font, fill='black')
 
             # Draw the QR code below the job title
             qr_img = qr_img.resize((qr_size, qr_size), Image.LANCZOS)
@@ -163,9 +180,9 @@ def handle_print(job_id, job_title, project_title, print_count):
         logo_path = "dark-logo-white.png"
         #output_path = f"qrcode_{job_id}.png"
         output_path = f"/tmp/qrcode_{job_id}.png"
-        author = "Label Printer Hal 7"
+        author = f"Label Printer + {printer_sn}"
         max_width_mm = 62  # Maximum width of the roll in mm
-        generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm)
+        generate_qr_code(data, logo_path, output_path, author, job_title, project_title, project_id, max_width_mm)
 
         for i in range(print_count):
             print_command = (
@@ -181,6 +198,14 @@ def handle_print(job_id, job_title, project_title, print_count):
                 return False  # Return False if any print job fails
 
             print(f"Printing {i + 1}/{print_count} QR codes")
+            
+        # Call the update printer count API
+        update_response = update_printer_count(printer_sn, print_count)
+        
+        if update_response and update_response.get('new_count') is not None:
+            print(f"Successfully updated printer count to {update_response['new_count']}")
+        else:
+            print("Failed to update printer count.")
 
         return True  # If everything worked fine
 
@@ -411,7 +436,7 @@ def fetch_and_push_printer_status():
                             print_count = min(print_count, 5)
 
                             # Perform the print operation
-                            print_successful = handle_print(job_id, job_title, project_title, print_count)
+                            print_successful = handle_print(job_id, job_title, project_title, project_id, print_count)
 
                             if print_successful:
                                 # Update the printer status to COMPLETED
@@ -569,13 +594,14 @@ def print_qr_code():
     job_id = data.get('job_id')
     job_title = data.get('job_title')
     project_title = data.get('project_title')
+    project_id = data.get('project_id')
     print_count = int(data.get('print_count', 1))  # Default to 1 if not provided
 
     if not job_id or not job_title:
         return jsonify({"status": "error", "message": "Missing job_id or job_title"}), 400
 
     try:
-        print_successful = handle_print(job_id, job_title, project_title, print_count)
+        print_successful = handle_print(job_id, job_title, project_title, project_id, print_count)
 
         if print_successful:
             return jsonify({"status": "success", "message": "Print job completed successfully"}), 200
