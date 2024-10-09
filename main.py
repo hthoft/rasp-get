@@ -163,7 +163,7 @@ def handle_print(job_id, job_title, project_title, print_count):
         logo_path = "dark-logo-white.png"
         #output_path = f"qrcode_{job_id}.png"
         output_path = f"/tmp/qrcode_{job_id}.png"
-        author = "Label Printer Hal Primo"
+        author = "Label Printer Hal 7"
         max_width_mm = 62  # Maximum width of the roll in mm
         generate_qr_code(data, logo_path, output_path, author, job_title, project_title, max_width_mm)
 
