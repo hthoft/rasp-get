@@ -372,6 +372,16 @@ def fetch_and_push_printer_status():
                     print("Reboot flag is set to 1. Confirming the reboot...")
                     update_reboot_flag(printer_sn, 0)
 
+                if reboot_flag == 3:
+                        print("Reboot flag is set to 3. Shutting down the script, performing update, and rebooting...")
+                        update_reboot_flag(printer_sn, 1)
+
+                        # Single subprocess line with terminal sleep, git pull, stop startx, and reboot
+                        subprocess.run([
+                            "bash", "-c",
+                            "pkill -f startx && sleep 2 && cd ~/rasp-get && git pull && sleep 2 && sudo reboot"
+                        ])
+
                 # Handle print job request
                 if printer_data.get('printer_current_status') == 'REQUESTED':
                     project_id = printer_data.get('printer_current_project_id')
@@ -413,7 +423,7 @@ def fetch_and_push_printer_status():
             data_push_status = False  # Set flag to False on exception
 
         # Wait for 60 seconds before the next push
-        time.sleep(15)
+        time.sleep(30)
 
 def fetch_project_by_id(project_id):
     """Fetch project details by ID."""
