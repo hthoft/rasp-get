@@ -9,7 +9,7 @@ git reset --hard origin/main
 git clean -f -d
 
 chmod +x script.sh
-chmod +x setup.sh
+chmod +x update.sh
 
 
 # Wait for a couple of seconds
