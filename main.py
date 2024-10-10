@@ -352,6 +352,7 @@ def notify_print_initiated(job_id, job_title, project_id, project_title, project
 def fetch_and_push_printer_status():
     global data_push_status
     while True:
+        print("Fetching and pushing printer status...")
         try:
             # Collect the local device data
             cpu_temperature = float(get_cpu_temperature())  # Ensure it's a float
@@ -402,14 +403,14 @@ def fetch_and_push_printer_status():
                     update_reboot_flag(printer_sn, 1)
 
                     try:
-                        # Run the subprocess command and ensure it raises an exception if it fails
+                        # Execute the shell script
                         subprocess.Popen(
-                            ["bash", "-c", "cd /home/RPI-5/rasp-get && kill -9 $(pgrep -f main.py) && git pull --rebase --exclude=setup.sh && sleep 2 && sudo reboot"],
+                            ["bash", "/home/RPI-5/rasp-get/update.sh"],
                             stdout=subprocess.PIPE,  # Redirect output to console (if desired)
                             stderr=subprocess.PIPE,  # Redirect errors to console (if desired)
                             shell=False
                         )
-                        print("Command executed successfully")
+                        print("Shell script executed successfully")
                     
                     except subprocess.CalledProcessError as e:
                         # Print the error status and message
