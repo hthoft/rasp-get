@@ -15,5 +15,4 @@ chmod +x update.sh
 # Wait for a couple of seconds
 sleep 2
 
-cd /home/RPI-5/rasp-get/
-python3 main.py &
+startx -- -nocursor
