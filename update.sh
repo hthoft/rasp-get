@@ -4,7 +4,13 @@
 kill -9 $(pgrep -f main.py)
 
 # Pull the latest changes from the git repository, excluding setup.sh
-git pull 
+git fetch --all
+git reset --hard origin/main
+git clean -f -d
+
+chmod +x script.sh
+chmod +x setup.sh
+
 
 # Wait for a couple of seconds
 sleep 2
