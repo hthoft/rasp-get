@@ -20,7 +20,7 @@ sleep 2  # Delay
 
 # Step 3: Install required packages including PyQt and Python dependencies
 echo "Step 3: Installing necessary packages..."
-sudo apt-get install --no-install-recommends -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev libwebkit2gtk-4.0-dev qt5-default python3-pyqt5 
+sudo apt-get install --no-install-recommends -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev libwebkit2gtk-4.0-dev python3-pyqt5 
 sleep 2  # Delay
 
 # Step 4: Disable Splash and Default RPi Features
@@ -109,9 +109,13 @@ sleep 2  # Delay
 # Step 9: Clone rasp-get repository and create .env file
 echo "Step 9: Cloning rasp-get repository and setting up environment variables..."
 cat <<EOT >> .env
-API_KEY=7fd67c060bff8fad72e3b82206d3e49020727b214e1b5bf7cf9df3ceb9a28f44
+API_KEY=773c3b54186fd7b97b45887f7ee4726b2018c781e6a4c5f6a3e157a1a6d4b46e
 CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
-PRINTER_SN=036284
+PRINTER_SN=584081
+PRINTER_MODEL=QL-700
+PRINTER_NAME=Brother_QL-700
+LOCATION_ID=0
+LOCATION_NAME=Maprova
 EOT
 sleep 2  # Delay
 
