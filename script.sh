@@ -119,7 +119,7 @@ PRINTER_NAME=Brother_QL-700
 LOCATION_ID=0
 LOCATION_NAME=Maprova
 EOT
-sleep 2  # Delay
+sleep 2  # Delay 
 
 # Step 10: Set up Brother QL-700 Printer Environment Variables
 echo "Setting up environment variables for Brother QL-700..."
