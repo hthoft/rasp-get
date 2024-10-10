@@ -20,7 +20,7 @@ sleep 2  # Delay
 
 # Step 3: Install required packages including PyQt and Python dependencies
 echo "Step 3: Installing necessary packages..."
-sudo apt-get install --no-install-recommends -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev libwebkit2gtk-4.0-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools python3-pyqt5 
+sudo apt-get install --no-install-recommends -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev libwebkit2gtk-4.0-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools python3-pyqt5 python3-gi python3-gi-cairo gir1.2-gtk-3.0
 sleep 2  # Delay
 
 # Step 4: Disable Splash and Default RPi Features
@@ -89,6 +89,8 @@ pip3 install python-dotenv --break-system-packages
 pip3 install pywebview --break-system-packages
 pip3 install brother_ql --break-system-packages
 pip3 install pyusb --break-system-packages
+pip3 install PyGObject --break-system-packages
+
 
 
 sleep 2  # Delay
