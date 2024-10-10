@@ -472,6 +472,7 @@
             if (data.printer_connected) {
               printerConnected = true;
               printerAlertShown = false;
+              setUsbIconColor("limegreen"); // Set USB icon color to green
             } else {
               // If printer is disconnected and the alert hasn't been shown yet, show the alert
               if (!printerAlertShown) {
@@ -485,8 +486,6 @@
                   allowOutsideClick: false,
                 });
                 printerAlertShown = true; // Ensure the alert is only shown once
-              } else {
-                setUsbIconColor("limegreen"); // Set USB icon color to red
               }
               printerConnected = false;
             }
@@ -688,6 +687,7 @@
 
       // Set up an interval to check printer connection every 10 seconds
       setInterval(checkSystemConnections, 10000); // 10,000 milliseconds = 10 seconds
+      checkSystemConnections(); // Initial check when the page loads
 
       let initialFetchDone = false; // Flag to track if the initial fetch has been done
       let lastFullFetchTime = null; // Timestamp for the last full fetch
