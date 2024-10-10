@@ -55,7 +55,7 @@
       }
       #settingsIcon {
         position: absolute;
-        top: 10px;
+        top: 420px;
         right: 10px;
         width: 50px;
         height: 50px;
@@ -475,6 +475,7 @@
             } else {
               // If printer is disconnected and the alert hasn't been shown yet, show the alert
               if (!printerAlertShown) {
+                setUsbIconColor("#f94f5f"); // Set USB icon color to red
                 Swal.fire({
                   color: "#ffffff",
                   html: "<span class='fs-2'>Printeren er frakoblet!</span>",
@@ -484,15 +485,19 @@
                   allowOutsideClick: false,
                 });
                 printerAlertShown = true; // Ensure the alert is only shown once
+              } else {
+                setUsbIconColor("limegreen"); // Set USB icon color to red
               }
               printerConnected = false;
             }
 
             // Check network connection status
             if (data.network_state === "Connected") {
+              setWifiIconColor("limegreen"); // Set WiFi icon color to green
               networkConnected = true;
               networkAlertShown = false;
             } else {
+              setWifiIconColor("#f94f5f"); // Set WiFi icon color to red
               // If the network is disconnected and the alert hasn't been shown yet, show the alert
               if (!networkAlertShown) {
                 Swal.fire({
@@ -623,6 +628,7 @@
       let connectionAlertShown = false; // Flag to track if the alert has been shown
 
       socket.on("connect_error", (err) => {
+        setServerIconColor("#f94f5f"); // Set Server icon color to red
         console.error("Socket connection error:", err);
 
         if (!connectionAlertShown) {
@@ -661,6 +667,12 @@
                 .catch((error) => console.error("Error:", error));
             });
         }
+      });
+
+      socket.on("connect", () => {
+        console.log("Connected to the server.");
+        setServerIconColor("limegreen"); // Set Server icon color to green
+        connectionAlertShown = false; // Reset the flag when the connection is restored
       });
 
       socket.on("reconnect", (attemptNumber) => {
