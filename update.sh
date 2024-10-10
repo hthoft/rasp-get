@@ -15,4 +15,4 @@ chmod +x update.sh
 # Wait for a couple of seconds
 sleep 2
 
-startx -- -nocursor
+sudo reboot
