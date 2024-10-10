@@ -34,5 +34,5 @@ chmod +x update.sh
 # Wait for a couple of seconds
 sleep 2
 
-# Reboot the system
+# Reboot the system 
 sudo reboot
