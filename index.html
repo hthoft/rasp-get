@@ -142,10 +142,6 @@
       .btn-maprova-green:hover {
         background-color: #2f9e3b !important; /* Darker shade for hover effect */
       }
-
-      :focus-visible {
-        outline: -webkit-focus-ring-color auto 0px;
-      }
     </style>
   </head>
   <body>
@@ -504,13 +500,47 @@
         });
       });
 
+      let connectionAlertShown = false; // Flag to track if the alert has been shown
+
       socket.on("connect_error", (err) => {
         console.error("Socket connection error:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Connection Error",
-          text: "Failed to connect to the server.",
-        });
+
+        if (!connectionAlertShown) {
+          Swal.fire({
+            icon: "error",
+            title: "Serverfejl",
+            html: "Kunne ikke oprette forbindelse til den interne server<br>Genstart enheden og prøv igen",
+            color: "#ffffff",
+            showCancelButton: false, // Disable the cancel button
+            allowOutsideClick: false, // Prevent closing by clicking outside
+            allowEscapeKey: false, // Prevent closing by pressing the Escape key
+            allowEnterKey: false, // Prevent closing by pressing the Enter key
+            confirmButtonText: "Genstart enhed",
+            confirmButtonColor: "#ff3838", // Set Maprova orange color
+            didRender: function () {
+              const confirmBtn = document.querySelector(".swal2-confirm");
+              confirmBtn.setAttribute("id", "rebootBtn"); // Assign the button an ID
+            },
+          });
+
+          connectionAlertShown = true; // Set the flag to true after showing the alert
+
+          document
+            .getElementById("rebootBtn")
+            .addEventListener("click", function () {
+              fetch("http://127.0.0.1:5000/api/reboot", {
+                method: "POST",
+              })
+                .then((response) => {
+                  if (response.ok) {
+                    console.log("Reboot request sent successfully.");
+                  } else {
+                    console.error("Failed to send reboot request.");
+                  }
+                })
+                .catch((error) => console.error("Error:", error));
+            });
+        }
       });
 
       socket.on("reconnect", (attemptNumber) => {
@@ -579,14 +609,11 @@
           text: "Tænd printeren, tjek labelrulle og tryk for at starte",
           imageUrl: "config.gif",
           imageWidth: 230,
-          color: "#ffffff",
-          confirmButtonColor: "#3ad244", // Set Maprova green color
           confirmButtonText: "Bekræft og fortsæt",
+          confirmButtonColor: "#2f9e3b", // Set Maprova orange color
           customClass: {
             popup: "fullscreen", // Custom class for full screen
-            confirmButton: "btn-maprova-green", // Custom class for confirm button
           },
-          buttonsStyling: false, // Disable default button styling
         });
 
         function resetTimer() {
