@@ -352,6 +352,7 @@ def notify_print_initiated(job_id, job_title, project_id, project_title, project
 def fetch_and_push_printer_status():
     global data_push_status
     while True:
+        print("Fetching and pushing printer status...")
         try:
             # Collect the local device data
             cpu_temperature = float(get_cpu_temperature())  # Ensure it's a float
