@@ -404,7 +404,7 @@ def fetch_and_push_printer_status():
                     try:
                         # Run the subprocess command and ensure it raises an exception if it fails
                         subprocess.Popen(
-                            ["bash", "-c", "cd /home/RPI-5/rasp-get && git pull --rebase --exclude=setup.sh && sleep 2 && sudo reboot"],
+                            ["bash", "-c", "cd /home/RPI-5/rasp-get && kill -9 $(pgrep -f main.py) && git pull --rebase --exclude=setup.sh && sleep 2 && sudo reboot"],
                             stdout=subprocess.PIPE,  # Redirect output to console (if desired)
                             stderr=subprocess.PIPE,  # Redirect errors to console (if desired)
                             shell=False
