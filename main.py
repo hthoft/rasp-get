@@ -399,7 +399,7 @@ def fetch_and_push_printer_status():
 
                 if reboot_flag == 3:
                     print("Reboot flag is set to 3. Shutting down the script, performing update, and rebooting...")
-                    update_reboot_flag(printer_sn, 4)
+                    update_reboot_flag(printer_sn, 1)
 
                     try:
                         # Run the subprocess command and ensure it raises an exception if it fails
