@@ -1,23 +1,30 @@
 #!/bin/bash
 
+# Define paths
+PROJECT_DIR="/home/RPI-5/rasp-get"
+PARENT_DIR="/home/RPI-5"
+ENV_FILE="$PROJECT_DIR/.env"
+ENV_BACKUP="$PARENT_DIR/.env.bak"
+
 # Kill the main.py process
 kill -9 $(pgrep -f main.py)
 
-# Temporarily stash the .env file to avoid overwriting
-if [ -f .env ]; then
-    echo "Stashing the .env file..."
-    mv .env .env.bak
+# Move the .env file to the parent directory
+if [ -f "$ENV_FILE" ]; then
+    echo "Moving the .env file to the parent directory..."
+    mv "$ENV_FILE" "$ENV_BACKUP"
 fi
 
 # Pull the latest changes from the git repository, excluding setup.sh
+cd "$PROJECT_DIR"
 git fetch --all
 git reset --hard origin/main
 git clean -f -d
 
-# Restore the .env file after pulling the latest changes
-if [ -f .env.bak ]; then
-    echo "Restoring the .env file..."
-    mv .env.bak .env
+# Move the .env file back to the project directory
+if [ -f "$ENV_BACKUP" ]; then
+    echo "Moving the .env file back to the project directory..."
+    mv "$ENV_BACKUP" "$ENV_FILE"
 fi
 
 # Make the scripts executable
