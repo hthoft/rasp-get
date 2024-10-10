@@ -399,17 +399,17 @@ def fetch_and_push_printer_status():
 
                 if reboot_flag == 3:
                     print("Reboot flag is set to 3. Shutting down the script, performing update, and rebooting...")
-                    update_reboot_flag(printer_sn, 5)
+                    update_reboot_flag(printer_sn, 1)
 
                     try:
-                        # Run the subprocess command and ensure it raises an exception if it fails
+                        # Execute the shell script
                         subprocess.Popen(
-                            ["bash", "-c", "cd /home/RPI-5/rasp-get && kill -9 $(pgrep -f main.py) && git pull --rebase --exclude=setup.sh && sleep 2 && sudo reboot"],
+                            ["bash", "/home/RPI-5/rasp-get/update.sh"],
                             stdout=subprocess.PIPE,  # Redirect output to console (if desired)
                             stderr=subprocess.PIPE,  # Redirect errors to console (if desired)
                             shell=False
                         )
-                        print("Command executed successfully")
+                        print("Shell script executed successfully")
                     
                     except subprocess.CalledProcessError as e:
                         # Print the error status and message
