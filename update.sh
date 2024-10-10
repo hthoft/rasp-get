@@ -15,5 +15,5 @@ chmod +x update.sh
 # Wait for a couple of seconds
 sleep 2
 
-# Reboot the system
-sudo reboot
+cd /home/RPI-5/rasp-get/
+python3 main.py &
