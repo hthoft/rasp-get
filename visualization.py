@@ -36,11 +36,13 @@ cache_dir = './cache'
 projects_cache_file = os.path.join(cache_dir, 'projects_cache.json')
 jobs_cache_file = os.path.join(cache_dir, 'jobs_cache.json')
 departments_cache_file = os.path.join(cache_dir, 'departments_cache.json')
+message_cache_file = os.path.join(cache_dir, 'messages_cache.json')
 
 # In-memory cache for projects, jobs, and departments
 cached_projects = None
 cached_jobs = {}
 departments_cache = {}
+cached_messages = {}
 
 # Create cache directory if it doesn't exist
 if not os.path.exists(cache_dir):
@@ -73,6 +75,9 @@ def load_all_caches():
     # Load departments cache
     departments_cache = load_cached_data(departments_cache_file)
 
+    # Load messages cache
+    cached_messages = load_cached_data(message_cache_file)
+
 
 # Save all caches when needed
 def save_all_caches():
@@ -84,6 +89,9 @@ def save_all_caches():
 
     # Save departments cache
     save_cached_data(departments_cache_file, departments_cache)
+
+    # Save messages cache
+    save_cached_data(message_cache_file, cached_messages)
 
 
 # Load caches at startup
@@ -108,13 +116,114 @@ def reboot_system():
         return jsonify({"status": "error", "message": "Failed to reboot the system", "details": str(e)}), 500
     
 
-@app.route('/get_departments', methods=['GET'])
+@app.route('/api/get_departments', methods=['GET'])
 def get_departments():
     """
     Return the cached department data in JSON format.
     """
-    global departments_cache
+    departments_cache = load_cached_data(departments_cache_file)
     return jsonify(departments_cache)
+
+@app.route('/api/get_job_tasks', methods=['GET'])
+def get_job_tasks():
+    """
+    Fetch job tasks from the external API based on department_id, with caching.
+    """
+    department_id = request.args.get('department_id')
+
+    if not department_id:
+        return jsonify({"error": "department_id is required"}), 400
+
+    # Check if the job tasks for this department_id are already in cache
+    if department_id in cached_jobs:
+        print(f"Returning cached data for department {department_id}")
+        return jsonify(cached_jobs[department_id]), 200
+
+    # External API endpoint to fetch job tasks
+    url = f"https://portal.maprova.dk/api/jobTasks/getJobsAndTasks.php"
+
+    # Prepare the payload for the request
+    params = {
+        'departmentID': department_id,
+        'apiKey': api_key,  # Your API key from environment variables
+        'customerID': customer_id  # Your customer ID from environment variables
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+
+    try:
+        # Send a GET request to the external API
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+
+        # If the response is successful, cache the data and return it
+        if response.status_code == 200:
+            job_tasks = response.json()
+            
+            # Cache the result
+            cached_jobs[department_id] = job_tasks
+            save_cached_data(jobs_cache_file, cached_jobs)  # Save to disk
+            
+            return jsonify(job_tasks), 200
+        else:
+            return jsonify({"error": f"Failed to fetch job tasks, status code: {response.status_code}"}), response.status_code
+
+    except ConnectionError:
+        return jsonify({"error": "Failed to connect to the external API"}), 500
+
+    except Timeout:
+        return jsonify({"error": "The request to the external API timed out"}), 500
+
+    except RequestException as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    
+
+@app.route('/api/get_messages', methods=['GET'])
+def get_messages():
+    """
+    Fetch messages from the external API with caching.
+    """
+
+
+    # External API endpoint to fetch job tasks
+    url = f"https://portal.maprova.dk/api/messages/getAllMessages.php"
+
+    # Prepare the payload for the request
+    params = {
+        'apiKey': api_key,  # Your API key from environment variables
+        'customerID': customer_id  # Your customer ID from environment variables
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+
+    try:
+        # Send a GET request to the external API
+        response = requests.get(url, params=params, headers=headers, timeout=10)
+
+        # If the response is successful, cache the data and return it
+        if response.status_code == 200:
+            messages = response.json()
+            
+            # Cache the result
+            cached_messages = messages
+            save_cached_data(message_cache_file, cached_messages)  # Save to disk
+            
+            return jsonify(messages), 200
+        else:
+            return jsonify({"error": f"Failed to fetch job tasks, status code: {response.status_code}"}), response.status_code
+
+    except ConnectionError:
+        return jsonify({"error": "Failed to connect to the external API"}), 500
+
+    except Timeout:
+        return jsonify({"error": "The request to the external API timed out"}), 500
+
+    except RequestException as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
 
 
 
@@ -130,6 +239,9 @@ def fetch_and_push_device_status():
     while True:
         retry_count = 0
         success = False
+
+        # Load the cached device data  
+        cached_device_data = load_cached_data(departments_cache_file)
 
         while retry_count < max_retries and not success:
             try:
@@ -161,6 +273,15 @@ def fetch_and_push_device_status():
                         print(response.json())  # Print the device data
                         data_push_status = True  # Flag successful push
                         success = True  # Set success to True to break out of the retry loop
+
+                        # Compare the new data with the cached data
+                        if device_data != cached_device_data:
+                            print("Data has changed. Updating cache...")
+                            # Update the cache
+                            save_cached_data(departments_cache_file, device_data)
+                        else:
+                            print("No change in data. Cache remains the same.")
+
                     else:
                         print(f"Failed to push data. Status Code: {response.status_code}")
                         data_push_status = False  # Flag failure

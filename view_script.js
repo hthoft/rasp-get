@@ -1,147 +1,44 @@
 console.log("loaded");
-function getDepartmentsFromDevice(deviceSN) {
+function getDepartmentsFromDevice() {
   // First, get the system information from the local server
   $.ajax({
-    url: "http://localhost:3000",
+    url: "http://127.0.0.1:5000/api/get_departments", // Flask route to get department data
     type: "GET",
-    success: function (systemRes) {
-      let systemData;
+    success: function (updateRes) {
       try {
-        systemData = systemRes;
-        console.log(systemData);
-      } catch (e) {
-        console.error("Fejl ved parsing af systeminformation: ", e); // Danish error message
-        systemData = {};
-      }
+        // Parse the returned department data
+        const updateData = updateRes;
+        console.log(updateData);
 
-      const cpuTemperature = systemData.cpuTemperature || null;
-      const memoryUsage = systemData.memoryUsage
-        ? systemData.memoryUsage.used
-        : null;
-      const cpuUsage = systemData.cpuUsage || null;
+        // Store the department views in an array
+        var departments = [
+          updateData.department_view_1,
+          updateData.department_view_2,
+          updateData.department_view_3,
+        ];
 
-      // Now call the update API with the system information and device SN
-      $.ajax({
-        url: "/api/devices/updateAndGetDevice.php",
-        type: "GET",
-        data: {
-          device_sn: deviceSN,
-          cpu_temperature: cpuTemperature,
-          memory_usage: memoryUsage,
-          cpu_usage: cpuUsage,
-        },
-        success: function (updateRes) {
-          const updateData = JSON.parse(updateRes);
-
-          // Store the department views in an array
-          var departments = [
-            updateData.department_view_1,
-            updateData.department_view_2,
-            updateData.department_view_3,
-          ];
-
-          // Iterate over the departments and call generateDepartmentSection for each
-          departments.forEach(function (deptID) {
-            if (deptID) {
-              // Check if deptID is not null or undefined
-              console.log("Department ID:", deptID);
-              generateDepartmentSection(deptID, true);
-            }
-          });
-
-          // Check if the API response indicates a need to reboot
-          if (updateData.reboot) {
-            // Call the reboot endpoint
-            $.ajax({
-              url: "/api/devices/updateRebootFlag.php",
-              type: "GET",
-              data: {
-                device_sn: deviceSN,
-                reboot_flag: 2,
-              },
-              success: function (response) {
-                // Corrected this line
-                $.ajax({
-                  url: "http://localhost:3000/reboot",
-                  type: "GET",
-                  success: function () {
-                    console.log("Reboot initiated");
-                  },
-                  error: function (xhr, status, error) {
-                    console.error(
-                      "An AJAX error occurred when trying to reboot:",
-                      error
-                    );
-                  },
-                });
-              },
-              error: function (xhr, status, error) {
-                // Handle error for the outer AJAX call
-                console.error(
-                  "An AJAX error occurred when trying to update the reboot flag:",
-                  error
-                );
-              },
-            });
+        // Iterate over the departments and call generateDepartmentSection for each
+        departments.forEach(function (deptID) {
+          if (deptID) {
+            // Check if deptID is not null or undefined
+            console.log("Department ID:", deptID);
+            generateDepartmentSection(deptID, true); // Assuming generateDepartmentSection is defined elsewhere
           }
-        },
-        error: function (xhr, status, error) {
-          console.error(
-            "An AJAX error occurred during the update API call:",
-            error
-          );
-        },
-      });
+        });
+      } catch (e) {
+        console.error("Error parsing department data: ", e);
+      }
     },
     error: function (xhr, status, error) {
-      console.error("En AJAX-fejl opstod ved hentning af systeminfo:", error); // Danish error message
-      // Proceed with fallback data if the local server is unreachable
-      $.ajax({
-        url: "/api/devices/updateAndGetDevice.php",
-        type: "GET",
-        data: {
-          device_sn: deviceSN,
-          cpu_temperature: null,
-          memory_usage: null,
-          cpu_usage: null,
-        },
-        success: function (updateRes) {
-          const updateData = JSON.parse(updateRes);
-          // Store the department views in an array
-          var departments = [
-            updateData.department_view_1,
-            updateData.department_view_2,
-            updateData.department_view_3,
-          ];
-
-          // Iterate over the departments and call generateDepartmentSection for each
-          departments.forEach(function (deptID) {
-            if (deptID) {
-              // Check if deptID is not null or undefined
-              console.log("Department ID:", deptID);
-              generateDepartmentSection(deptID, true);
-            }
-          });
-        },
-        error: function (xhr, status, error) {
-          console.error(
-            "En AJAX-fejl opstod under opdaterings-API-kaldet uden systemdata:",
-            error
-          ); // Danish error message
-        },
-      });
+      console.error(
+        "An AJAX error occurred during the department data call:",
+        error
+      );
     },
   });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  const urlParams = new URLSearchParams(window.location.search);
-  const projectID = urlParams.get("projectID");
-  const stageID = urlParams.get("stageID");
-  const departmentID = urlParams.get("departmentID");
-
-  const deviceSN = urlParams.get("deviceTag");
-
   const updateTimer = document.getElementById("updateTimer");
   let countdown = 30;
 
@@ -157,77 +54,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Check if projectID and stageID are present
-  if (deviceSN) {
-    console.log("Found deviceTag");
-    // If deviceSN is present, fetch department views from the device
-    getDepartmentsFromDevice(deviceSN);
-  } else if (projectID && stageID) {
-    // If departmentID is also present
-    if (departmentID) {
-      generateDepartmentSection(departmentID, false);
-      getJobsAndTasks(projectID, stageID, departmentID);
-    } else {
-      console.error(
-        "Project ID and Stage ID are present but Department ID is missing"
-      );
-    }
-  } else if (departmentID) {
-    // Only departmentID is present
-    generateDepartmentSection(departmentID, true);
-  } else {
-    // Check for multiple departments if the single departmentID isn't present
-    let departments = [];
-    for (let i = 1; i <= 3; i++) {
-      const deptID = urlParams.get(`departmentID${i}`);
-      if (deptID) {
-        departments.push(deptID);
-      }
-    }
-
-    if (departments.length > 0) {
-      departments.forEach((deptID) => {
-        generateDepartmentSection(deptID, true);
-      });
-    } else {
-      console.error("No department IDs provided in the URL");
-    }
-  }
+  getDepartmentsFromDevice();
 
   function refresh() {
-    if (deviceSN) {
-      // If deviceSN is present, fetch department views from the device
-      getDepartmentsFromDevice(deviceSN);
-    } else if (projectID && stageID) {
-      // If departmentID is also present
-      if (departmentID) {
-        getJobsAndTasks(projectID, stageID, departmentID);
-      } else {
-        console.error(
-          "Project ID and Stage ID are present but Department ID is missing"
-        );
-      }
-    } else if (departmentID) {
-      // Only departmentID is present
-      getJobsAndTasks(null, null, departmentID);
-    } else {
-      // Check for multiple departments if the single departmentID isn't present
-      let departments = [];
-      for (let i = 1; i <= 3; i++) {
-        const deptID = urlParams.get(`departmentID${i}`);
-        if (deptID) {
-          departments.push(deptID);
-        }
-      }
-
-      if (departments.length > 0) {
-        departments.forEach((deptID) => {
-          getJobsAndTasks(null, null, deptID);
-        });
-      } else {
-        console.error("No department IDs provided in the URL");
-      }
-    }
+    // If deviceSN is present, fetch department views from the device
+    getDepartmentsFromDevice();
   }
   setInterval(updateCountdown, 1000);
 });
@@ -284,53 +115,6 @@ function generateDepartmentSection(departmentID, generation) {
   }
 }
 
-function getProjectTitle(projectID, departmentID) {
-  $.ajax({
-    url: "/api/getProjectByID.php",
-    type: "GET",
-    data: {
-      id: projectID,
-    },
-    success: function (data) {
-      const projectData = JSON.parse(data);
-      const jobsTableHead = document.getElementById(
-        `jobsTableHead${departmentID}`
-      );
-
-      const titleRow = document.createElement("tr");
-      const titleHeader = document.createElement("th");
-
-      // This will make the header span all columns
-      titleHeader.setAttribute("colspan", "100%");
-      titleHeader.classList.add("text-center", "fw-bold", "fs-6", "s-bg"); // Add some classes for styling
-
-      // Create the span for the project title
-      const projectSpan = document.createElement("span");
-      projectSpan.classList.add(
-        "project-badge",
-        "rounded-5",
-        "px-4",
-        "py-1",
-        "shadow"
-      ); // A class to style the badge
-      projectSpan.style.backgroundColor = projectData.project_color; // Set the background color
-      projectSpan.textContent = `${
-        projectData.project_id ? `${projectData.project_id} - ` : ""
-      }${projectData.project_title} `;
-
-      // Append the projectSpan to the titleHeader, and then to the titleRow
-      titleHeader.appendChild(projectSpan);
-      titleRow.appendChild(titleHeader);
-
-      // Insert the new row at the beginning of the table head
-      jobsTableHead.insertBefore(titleRow, jobsTableHead.firstChild);
-    },
-    error: function (err) {
-      console.error(err);
-    },
-  });
-}
-
 function getCancellationIcon(cancelReason) {
   let iconClass;
   switch (cancelReason) {
@@ -356,35 +140,14 @@ function getCancellationIcon(cancelReason) {
 }
 
 function getJobsAndTasks(projectID, stageID, departmentID) {
-  let apiUrl = "/api/jobTasks/";
-  let dataParams = {};
-
-  if (projectID && stageID && departmentID) {
-    // All parameters are provided
-    apiUrl += "getJobsAndTasks.php";
-    dataParams = {
-      projectID: projectID,
-      stageID: stageID,
-      departmentID: departmentID,
-    };
-  } else if (departmentID && !projectID && !stageID) {
-    // Only departmentID is provided
-    apiUrl += "getJobsAndTasks.php";
-    dataParams = {
-      departmentID: departmentID,
-    };
-  } else {
-    // Invalid parameter combination
-    console.error("Invalid parameter combination for the request");
-    return;
-  }
-
   $.ajax({
-    url: apiUrl,
+    url: "http://127.0.0.1:5000/api/get_job_tasks", // Flask route to get department data
     type: "GET",
-    data: dataParams,
+    data: {
+      department_id: departmentID,
+    },
     success: function (data) {
-      const jobs = JSON.parse(data);
+      const jobs = data;
       const tableBody = document.getElementById(`jobsTableBody${departmentID}`);
       const tableHead = document.getElementById(`jobsTableHead${departmentID}`);
       const departmentTitle = document.getElementById(
@@ -392,6 +155,7 @@ function getJobsAndTasks(projectID, stageID, departmentID) {
       );
       tableBody.innerHTML = ""; // Clear existing table rows
       tableHead.innerHTML = "";
+      console.log(jobs);
       // After calculating the sum of active users
       let sum = 0;
       let activeUsers = []; // Array to store all active user names
@@ -501,54 +265,18 @@ function getJobsAndTasks(projectID, stageID, departmentID) {
 
       const sortedJobs = completedJobs.concat(remainingJobs);
 
-      if (projectID) {
-        getProjectTitle(projectID, departmentID);
-      } else {
-        const uniqueProjects = new Set(
-          sortedJobs.map((job) => job.project_title)
+      const uniqueProjects = new Set(
+        sortedJobs.map((job) => job.project_title)
+      );
+
+      if (uniqueProjects.size === 1) {
+        // Single unique project, get its title and ID
+        const uniqueProjectTitle = uniqueProjects.values().next().value;
+        const project = sortedJobs.find(
+          (job) => job.project_title === uniqueProjectTitle
         );
 
-        if (uniqueProjects.size === 1) {
-          // Single unique project, get its title and ID
-          const uniqueProjectTitle = uniqueProjects.values().next().value;
-          const project = sortedJobs.find(
-            (job) => job.project_title === uniqueProjectTitle
-          );
-
-          if (project && project.project_id) {
-            const jobsTableHead = document.getElementById(
-              `jobsTableHead${departmentID}`
-            );
-            const titleRow = document.createElement("tr");
-            const titleHeader = document.createElement("th");
-
-            // This will make the header span all columns
-            titleHeader.setAttribute("colspan", "100%");
-            titleHeader.classList.add("text-center", "fw-bold", "fs-6", "s-bg"); // Add some classes for styling
-
-            // Create the span for the project title
-            const projectSpan = document.createElement("span");
-            projectSpan.classList.add(
-              "project-badge",
-              "rounded-5",
-              "px-4",
-              "py-1",
-              "shadow"
-            ); // Class to style the badge
-            projectSpan.style.backgroundColor = project.project_color; // Set the background color
-            projectSpan.textContent = `${
-              project.project_case_id ? `${project.project_case_id} - ` : ""
-            }${uniqueProjectTitle} `;
-
-            // Append the projectSpan to the titleHeader
-            titleHeader.appendChild(projectSpan);
-
-            // Append the titleHeader to the titleRow, and then titleRow to jobsTableHead
-            titleRow.appendChild(titleHeader);
-            jobsTableHead.appendChild(titleRow);
-          }
-        } else {
-          // Multiple unique projects, display each with a color in a single row
+        if (project && project.project_id) {
           const jobsTableHead = document.getElementById(
             `jobsTableHead${departmentID}`
           );
@@ -559,76 +287,108 @@ function getJobsAndTasks(projectID, stageID, departmentID) {
           titleHeader.setAttribute("colspan", "100%");
           titleHeader.classList.add("text-center", "fw-bold", "fs-6", "s-bg"); // Add some classes for styling
 
-          uniqueProjects.forEach((projectTitle) => {
-            const project = sortedJobs.find(
-              (job) => job.project_title === projectTitle
-            );
+          // Create the span for the project title
+          const projectSpan = document.createElement("span");
+          projectSpan.classList.add(
+            "project-badge",
+            "rounded-5",
+            "px-4",
+            "py-1",
+            "shadow"
+          ); // Class to style the badge
+          projectSpan.style.backgroundColor = project.project_color; // Set the background color
+          projectSpan.textContent = `${
+            project.project_case_id ? `${project.project_case_id} - ` : ""
+          }${uniqueProjectTitle} `;
 
-            // Create the span for the project title
-            const projectSpan = document.createElement("span");
-            projectSpan.classList.add(
-              "project-badge",
-              "rounded-5",
-              "px-4",
-              "py-1",
-              "shadow"
-            ); // Class to style the badge
-            projectSpan.style.backgroundColor = project.project_color; // Set the background color
-            projectSpan.textContent = `${
-              project.project_case_id ? `${project.project_case_id} - ` : ""
-            }${projectTitle} `;
-
-            // Append the projectSpan to the titleHeader
-            titleHeader.appendChild(projectSpan);
-
-            // Add spacing or a separator between project badges if desired
-            const separator = document.createElement("span");
-            separator.innerHTML = "&nbsp;"; // Non-breaking space as a separator
-            titleHeader.appendChild(separator);
-          });
+          // Append the projectSpan to the titleHeader
+          titleHeader.appendChild(projectSpan);
 
           // Append the titleHeader to the titleRow, and then titleRow to jobsTableHead
           titleRow.appendChild(titleHeader);
           jobsTableHead.appendChild(titleRow);
         }
-        const activeUsersRow = document.createElement("tr");
-        const activeUsersCell = document.createElement("td");
-        activeUsersCell.setAttribute("colspan", "100%"); // Span all columns
-        activeUsersCell.classList.add(
-          "text-center",
-          "fw-bold",
-          "fs-6",
-          "p-2",
-          "s-bg",
-          "py-1"
-        ); // Add some classes for styling
-        activeUsersCell.style.height = "40px"; // Set height to auto to allow wrapping
+      } else {
+        // Multiple unique projects, display each with a color in a single row
+        const jobsTableHead = document.getElementById(
+          `jobsTableHead${departmentID}`
+        );
+        const titleRow = document.createElement("tr");
+        const titleHeader = document.createElement("th");
 
-        // Check if there are active users
-        if (activeUsers.length) {
-          // Loop through each active user and create a badge for them
-          activeUsers.forEach((user) => {
-            const userBadge = document.createElement("span");
-            userBadge.classList.add(
-              "badge",
-              "bg-dark",
-              "mx-1",
-              "px-2",
-              "py-1",
-              "fs-4"
-            ); // Add badge classes for styling
-            userBadge.textContent = user; // Set the user's name as the badge content
-            activeUsersCell.appendChild(userBadge); // Append the badge to the cell
-          });
-        } else {
-          // If no active users, display 'No active users'
-          activeUsersCell.textContent = "No active users";
-        }
+        // This will make the header span all columns
+        titleHeader.setAttribute("colspan", "100%");
+        titleHeader.classList.add("text-center", "fw-bold", "fs-6", "s-bg"); // Add some classes for styling
 
-        // Append the active users row to the table head
-        activeUsersRow.appendChild(activeUsersCell);
-        tableHead.appendChild(activeUsersRow);
+        uniqueProjects.forEach((projectTitle) => {
+          const project = sortedJobs.find(
+            (job) => job.project_title === projectTitle
+          );
+
+          // Create the span for the project title
+          const projectSpan = document.createElement("span");
+          projectSpan.classList.add(
+            "project-badge",
+            "rounded-5",
+            "px-4",
+            "py-1",
+            "shadow"
+          ); // Class to style the badge
+          projectSpan.style.backgroundColor = project.project_color; // Set the background color
+          projectSpan.textContent = `${
+            project.project_case_id ? `${project.project_case_id} - ` : ""
+          }${projectTitle} `;
+
+          // Append the projectSpan to the titleHeader
+          titleHeader.appendChild(projectSpan);
+
+          // Add spacing or a separator between project badges if desired
+          const separator = document.createElement("span");
+          separator.innerHTML = "&nbsp;"; // Non-breaking space as a separator
+          titleHeader.appendChild(separator);
+        });
+
+        // Append the titleHeader to the titleRow, and then titleRow to jobsTableHead
+        titleRow.appendChild(titleHeader);
+        jobsTableHead.appendChild(titleRow);
       }
+      const activeUsersRow = document.createElement("tr");
+      const activeUsersCell = document.createElement("td");
+      activeUsersCell.setAttribute("colspan", "100%"); // Span all columns
+      activeUsersCell.classList.add(
+        "text-center",
+        "fw-bold",
+        "fs-6",
+        "p-2",
+        "s-bg",
+        "py-1"
+      ); // Add some classes for styling
+      activeUsersCell.style.height = "40px"; // Set height to auto to allow wrapping
+
+      // Check if there are active users
+      if (activeUsers.length) {
+        // Loop through each active user and create a badge for them
+        activeUsers.forEach((user) => {
+          const userBadge = document.createElement("span");
+          userBadge.classList.add(
+            "badge",
+            "bg-dark",
+            "mx-1",
+            "px-2",
+            "py-1",
+            "fs-4"
+          ); // Add badge classes for styling
+          userBadge.textContent = user; // Set the user's name as the badge content
+          activeUsersCell.appendChild(userBadge); // Append the badge to the cell
+        });
+      } else {
+        // If no active users, display 'No active users'
+        activeUsersCell.textContent = "No active users";
+      }
+
+      // Append the active users row to the table head
+      activeUsersRow.appendChild(activeUsersCell);
+      tableHead.appendChild(activeUsersRow);
 
       let taskCounts = {};
       sortedJobs.forEach((job) => {

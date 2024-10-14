@@ -4,9 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visualization Page</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/visualization.min.css" rel="stylesheet" />
     <link href="css/sweetalert-dark.css" rel="stylesheet" />
-    <link rel="stylesheet" href="view_style.css" />
+    <link rel="stylesheet" href="css/view_style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css"
+    />
+
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -199,7 +204,7 @@
         }
 
         function loadData() {
-          fetch("/api/messages/getAllMessages.php")
+          fetch("http://127.0.0.1:5000/api/get_messages")
             .then((res) => res.json())
             .then((data) => {
               const messages = data.map((item) => ({
