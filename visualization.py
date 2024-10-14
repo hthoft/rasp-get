@@ -130,38 +130,40 @@ def fetch_and_push_device_status():
     while True:
         retry_count = 0
         success = False
-        
+
         while retry_count < max_retries and not success:
             try:
-                # Collect the local device data
-                cpu_temperature = float(get_cpu_temperature())  # Ensure it's a float
-                memory_usage = get_memory_usage()
-                cpu_usage = get_cpu_usage()
+                # Use a session and close it after each request to force DNS lookup refresh
+                with requests.Session() as session:
+                    # Collect the local device data
+                    cpu_temperature = float(get_cpu_temperature())  # Ensure it's a float
+                    memory_usage = get_memory_usage()
+                    cpu_usage = get_cpu_usage()
 
-                # API endpoint for updating device info
-                url = f"https://portal.maprova.dk/api/devices/updateAndGetDevice.php?device_sn={device_sn}&apiKey={api_key}&customerID={customer_id}"
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                }
+                    # API endpoint for updating device info
+                    url = f"https://portal.maprova.dk/api/devices/updateAndGetDevice.php?device_sn={device_sn}&apiKey={api_key}&customerID={customer_id}"
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
 
-                payload = {
-                    'cpu_temperature': cpu_temperature,
-                    'memory_usage': memory_usage,
-                    'cpu_usage': cpu_usage,
-                }
+                    payload = {
+                        'cpu_temperature': cpu_temperature,
+                        'memory_usage': memory_usage,
+                        'cpu_usage': cpu_usage,
+                    }
 
-                # Send the request to fetch the device status with a timeout
-                response = requests.get(url, params=payload, headers=headers, timeout=10)
+                    # Send the request to fetch the device status with a timeout
+                    response = session.get(url, params=payload, headers=headers, timeout=10)
 
-                if response.status_code == 200:
-                    device_data = response.json()  # Get the device data
-                    handle_reboot_flags(device_data)  # Handle reboot if necessary
-                    print(response.json())  # Print the device data
-                    data_push_status = True  # Flag successful push
-                    success = True  # Set success to True to break out of the retry loop
-                else:
-                    print(f"Failed to push data. Status Code: {response.status_code}")
-                    data_push_status = False  # Flag failure
+                    if response.status_code == 200:
+                        device_data = response.json()  # Get the device data
+                        handle_reboot_flags(device_data)  # Handle reboot if necessary
+                        print(response.json())  # Print the device data
+                        data_push_status = True  # Flag successful push
+                        success = True  # Set success to True to break out of the retry loop
+                    else:
+                        print(f"Failed to push data. Status Code: {response.status_code}")
+                        data_push_status = False  # Flag failure
 
             except ConnectionError:
                 print(f"Error: Failed to connect to the server (Attempt {retry_count + 1}/{max_retries}). Retrying...")
@@ -186,6 +188,7 @@ def fetch_and_push_device_status():
 
         # Wait before the next push
         time.sleep(30)
+
 
 def update_department_cache(device_data):
     """
