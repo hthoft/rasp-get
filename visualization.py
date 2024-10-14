@@ -122,6 +122,7 @@ def fetch_and_push_device_status():
     Fetch and push device status to external API in intervals.
     """
     global data_push_status
+
     while True:
         try:
             # Collect the local device data
@@ -141,24 +142,32 @@ def fetch_and_push_device_status():
                 'cpu_usage': cpu_usage,
             }
 
-            # Send the request to fetch the device status
-            response = requests.get(url, params=payload, headers=headers)
+            # Send the request to fetch the device status with a timeout
+            response = requests.get(url, params=payload, headers=headers, timeout=10)
+
             if response.status_code == 200:
                 device_data = response.json()  # Get the device data
                 handle_reboot_flags(device_data)  # Handle reboot if necessary
-
-                # Update the department cache globally
-                update_department_cache(device_data)
-
                 print(response.json())  # Print the device data
                 data_push_status = True  # Flag successful push
             else:
                 print(f"Failed to push data. Status Code: {response.status_code}")
                 data_push_status = False  # Flag failure
-        except Exception as e:
-            print(f"Error pushing device status: {e}")
-            data_push_status = False  # Flag exception
-        time.sleep(30)  # Wait before next push
+
+        except ConnectionError:
+            print("Error: Failed to connect to the server. Please check your network connection.")
+            data_push_status = False  # Flag connection error
+
+        except Timeout:
+            print("Error: The request timed out. Retrying...")
+            data_push_status = False  # Flag timeout error
+
+        except RequestException as e:
+            print(f"Error: An unexpected error occurred: {e}")
+            data_push_status = False  # Flag general request exception
+
+        # Wait before the next push
+        time.sleep(30)
 
 
 def update_department_cache(device_data):
