@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualization Page</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/sweetalert-dark.css" rel="stylesheet" />
+    <link rel="stylesheet" href="view_style.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f4f4f4;
+      }
+
+      /* topbar styles */
+      .topbar {
+        background: linear-gradient(to right, #79ff7d, #04cf5c);
+        margin: 0;
+        /* Remove margin */
+        position: fixed;
+        width: 100%;
+        text-align: center;
+        padding: 20px 0rem;
+        height: 55px;
+        font-family: "Titillium Web", sans-serif;
+        top: 0;
+        left: 0;
+        z-index: 10;
+      }
+
+      .topbar img {
+        width: 150px;
+        /* Adjust the width as needed */
+        height: auto;
+      }
+
+      /* Center the logo */
+      .topbar img {
+        display: block;
+        margin: -5px auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      class="topbar shadow-lg d-flex justify-content-between align-items-center mb-5"
+    >
+      <a class="flex-grow-1 text-center">
+        <img
+          src="dark-logo.png"
+          alt="Logo"
+          style="max-width: 100%; height: auto"
+        />
+      </a>
+    </div>
+
+    <div id="visualizations" class="mt-5"></div>
+
+    <div id="breakingNewsBar" class="breaking-news-bar">
+      <div class="news-icon-container">
+        <div
+          class="news-icon d-flex align-items-center justify-content-center fw-bolder"
+          id="newsIcon"
+        ></div>
+      </div>
+      <div class="news-content-container">
+        <div class="news-time fw-bold" id="newsTime"></div>
+        <div id="systemInfo"></div>
+        <div class="update-time fw-bold" id="updateTimer">
+          Opdaterer om 60 sekunder
+        </div>
+      </div>
+      <div class="news-content fw-bold" id="newsContent"></div>
+    </div>
+
+    <script src="view_script.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/socket.io.js"></script>
+    <script src="js/sweetalert.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        let messageQueue = [];
+        let displayTimeout;
+
+        const newsIcon = document.getElementById("newsIcon");
+        const newsContent = document.getElementById("newsContent");
+        const newsTime = document.getElementById("newsTime");
+        const breakingNewsBar = document.getElementById("breakingNewsBar");
+
+        // Estimate the maximum number of characters that can fit in the message display area
+        function estimateMaxChars(sampleText, fontSize, fontFamily) {
+          const containerWidth = window.innerWidth - 200;
+          const span = document.createElement("span");
+          document.body.appendChild(span);
+          span.style.fontSize = fontSize;
+          span.style.fontFamily = fontFamily;
+          span.style.visibility = "hidden";
+          span.textContent = sampleText;
+          const sampleTextWidth = span.offsetWidth;
+          const maxChars = Math.floor(
+            (containerWidth / sampleTextWidth) * sampleText.length
+          );
+          document.body.removeChild(span);
+          return maxChars;
+        }
+
+        const maxMessageLength = estimateMaxChars(
+          "Sample Text",
+          "60px",
+          "Arial"
+        );
+
+        function updateDateTime() {
+          const now = new Date();
+          const options = {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          };
+          let formattedDate = now.toLocaleDateString("da-DK", options);
+          const formattedTime = now.toLocaleTimeString("da-DK", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          formattedDate =
+            formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+          newsTime.textContent = `${formattedDate} - ${formattedTime}`;
+        }
+
+        function splitMessage(message, color, icon) {
+          let parts = [];
+          while (message.length > 0) {
+            let end = Math.min(message.length, maxMessageLength);
+            // Adjust the end index to avoid splitting in the middle of a word
+            end =
+              end < message.length && message[end] !== " "
+                ? message.lastIndexOf(" ", end) + 1
+                : end;
+            let part = message.slice(0, end).trim();
+            // Include the icon along with each message part
+            parts.push({
+              icon: icon,
+              message: part + (end < message.length ? " ..." : ""),
+              color: color,
+            });
+            message = message.slice(end);
+          }
+          return parts;
+        }
+
+        function prepareMessages(messages) {
+          messages.forEach((item) => {
+            if (item.message.length > maxMessageLength) {
+              // Pass the icon along with the message and color
+              splitMessage(item.message, item.color, item.icon).forEach(
+                (part) => messageQueue.push(part)
+              );
+            } else {
+              messageQueue.push(item);
+            }
+          });
+        }
+
+        function showMessage() {
+          if (messageQueue.length === 0) {
+            return;
+          }
+
+          const { icon, message, color } = messageQueue.shift();
+          newsIcon.innerHTML = `<span class="mdi mdi-${icon}"></span>`;
+          newsContent.textContent = message;
+          newsIcon.style.backgroundColor = color;
+          breakingNewsBar.style.backgroundColor = color;
+
+          breakingNewsBar.style.bottom = "0px";
+          newsIcon.style.opacity = "1";
+          newsTime.style.paddingLeft = "125px";
+
+          if (messageQueue.length === 0) {
+            setTimeout(() => {
+              breakingNewsBar.style.bottom = "-100px";
+              newsIcon.style.opacity = "0";
+              newsTime.style.paddingLeft = "15px";
+              displayTimeout = setTimeout(loadData, 10000); // Restart the cycle
+            }, 5000);
+          } else {
+            displayTimeout = setTimeout(showMessage, 7000); // Show the next message
+          }
+        }
+
+        function loadData() {
+          fetch("/api/messages/getAllMessages.php")
+            .then((res) => res.json())
+            .then((data) => {
+              const messages = data.map((item) => ({
+                icon: item.message_icon,
+                message: item.message_text,
+                color: item.message_color,
+              }));
+              prepareMessages(messages);
+              showMessage(); // Start showing messages after preparation
+            })
+            .catch((err) => console.error(err));
+        }
+
+        loadData();
+        setInterval(updateDateTime, 1000);
+      });
+    </script>
+  </body>
+</html>
