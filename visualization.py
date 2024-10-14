@@ -121,56 +121,71 @@ def get_departments():
 # ============== Device Status and Data Fetching ==============
 def fetch_and_push_device_status():
     """
-    Fetch and push device status to external API in intervals.
+    Fetch and push device status to external API in intervals with manual retry logic.
     """
     global data_push_status
+    max_retries = 5  # Maximum number of retries
+    retry_delay = 5  # Time in seconds to wait before retrying
 
     while True:
-        try:
-            # Collect the local device data
-            cpu_temperature = float(get_cpu_temperature())  # Ensure it's a float
-            memory_usage = get_memory_usage()
-            cpu_usage = get_cpu_usage()
+        retry_count = 0
+        success = False
+        
+        while retry_count < max_retries and not success:
+            try:
+                # Collect the local device data
+                cpu_temperature = float(get_cpu_temperature())  # Ensure it's a float
+                memory_usage = get_memory_usage()
+                cpu_usage = get_cpu_usage()
 
-            # API endpoint for updating device info
-            url = f"https://portal.maprova.dk/api/devices/updateAndGetDevice.php?device_sn={device_sn}&apiKey={api_key}&customerID={customer_id}"
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
+                # API endpoint for updating device info
+                url = f"https://portal.maprova.dk/api/devices/updateAndGetDevice.php?device_sn={device_sn}&apiKey={api_key}&customerID={customer_id}"
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
 
-            payload = {
-                'cpu_temperature': cpu_temperature,
-                'memory_usage': memory_usage,
-                'cpu_usage': cpu_usage,
-            }
+                payload = {
+                    'cpu_temperature': cpu_temperature,
+                    'memory_usage': memory_usage,
+                    'cpu_usage': cpu_usage,
+                }
 
-            # Send the request to fetch the device status with a timeout
-            response = requests.get(url, params=payload, headers=headers, timeout=10)
+                # Send the request to fetch the device status with a timeout
+                response = requests.get(url, params=payload, headers=headers, timeout=10)
 
-            if response.status_code == 200:
-                device_data = response.json()  # Get the device data
-                handle_reboot_flags(device_data)  # Handle reboot if necessary
-                print(response.json())  # Print the device data
-                data_push_status = True  # Flag successful push
-            else:
-                print(f"Failed to push data. Status Code: {response.status_code}")
-                data_push_status = False  # Flag failure
+                if response.status_code == 200:
+                    device_data = response.json()  # Get the device data
+                    handle_reboot_flags(device_data)  # Handle reboot if necessary
+                    print(response.json())  # Print the device data
+                    data_push_status = True  # Flag successful push
+                    success = True  # Set success to True to break out of the retry loop
+                else:
+                    print(f"Failed to push data. Status Code: {response.status_code}")
+                    data_push_status = False  # Flag failure
 
-        except ConnectionError:
-            print("Error: Failed to connect to the server. Please check your network connection.")
-            data_push_status = False  # Flag connection error
+            except ConnectionError:
+                print(f"Error: Failed to connect to the server (Attempt {retry_count + 1}/{max_retries}). Retrying...")
+                data_push_status = False  # Flag connection error
 
-        except Timeout:
-            print("Error: The request timed out. Retrying...")
-            data_push_status = False  # Flag timeout error
+            except Timeout:
+                print(f"Error: The request timed out (Attempt {retry_count + 1}/{max_retries}). Retrying...")
+                data_push_status = False  # Flag timeout error
 
-        except RequestException as e:
-            print(f"Error: An unexpected error occurred: {e}")
-            data_push_status = False  # Flag general request exception
+            except RequestException as e:
+                print(f"Error: An unexpected error occurred (Attempt {retry_count + 1}/{max_retries}): {e}")
+                data_push_status = False  # Flag general request exception
+
+            # Increment the retry count and delay the next attempt if not successful
+            retry_count += 1
+            if not success and retry_count < max_retries:
+                time.sleep(retry_delay)
+
+        # If the loop completes without success, log a failure and move to the next interval
+        if not success:
+            print(f"Failed to push data after {max_retries} attempts. Moving to the next interval...")
 
         # Wait before the next push
         time.sleep(30)
-
 
 def update_department_cache(device_data):
     """
