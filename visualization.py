@@ -1,4 +1,6 @@
 import requests
+from requests.exceptions import ConnectionError, Timeout, RequestException
+
 from flask import Flask, jsonify, request, render_template_string
 from flask_cors import CORS
 import threading
