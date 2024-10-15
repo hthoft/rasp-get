@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic QR Code with Timestamp</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- SweetAlert Dark Theme CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #container {
+        width: 800px;
+        height: 480px;
+        background-image: url("maprova-bg.png");
+        background-size: cover;
+        padding: 20px;
+        color: white;
+      }
+
+      .content-container {
+        display: flex;
+        height: 100%;
+      }
+
+      .left-col {
+        flex: 0 0 40%; /* col-5 */
+        padding-right: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-right: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .right-col {
+        flex: 0 0 60%; /* col-7 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #current-time {
+        font-size: 1.5rem;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+
+      #qr-code {
+        box-shadow: 0 0rem 6rem rgb(0 255 61 / 50%) !important;
+      }
+
+      #topBar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 10;
+        color: white;
+        padding: 5px 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .icon-container {
+        position: absolute;
+        left: 10px;
+        display: flex;
+        gap: 10px;
+      }
+
+      #clock {
+        color: white;
+        font-size: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="topBar" class="d-flex justify-content-between align-items-center">
+      <div class="icon-container">
+        <div id="usbIcon" class="icon" title="USB Status">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="#f94f5f"
+          >
+            <path
+              d="M15,7V11H16V13H13V5H15L12,1L9,5H11V13H8V10.93C8.7,10.56 9.2,9.85 9.2,9C9.2,7.78 8.21,6.8 7,6.8C5.78,6.8 4.8,7.78 4.8,9C4.8,9.85 5.3,10.56 6,10.93V13A2,2 0 0,0 8,15H11V18.05C10.29,18.41 9.8,19.15 9.8,20A2.2,2.2 0 0,0 12,22.2A2.2,2.2 0 0,0 14.2,20C14.2,19.15 13.71,18.41 13,18.05V15H16A2,2 0 0,0 18,13V11H19V7H15Z"
+            />
+          </svg>
+        </div>
+
+        <div id="wifiIcon" class="icon" title="WiFi Status">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="#f94f5f"
+          >
+            <path
+              d="M12,21L15.6,16.2C14.6,15.45 13.35,15 12,15C10.65,15 9.4,15.45 8.4,16.2L12,21M12,3C7.95,3 4.21,4.34 1.2,6.6L3,9C5.5,7.12 8.62,6 12,6C15.38,6 18.5,7.12 21,9L22.8,6.6C19.79,4.34 16.05,3 12,3M12,9C9.3,9 6.81,9.89 4.8,11.4L6.6,13.8C8.1,12.67 9.97,12 12,12C14.03,12 15.9,12.67 17.4,13.8L19.2,11.4C17.19,9.89 14.7,9 12,9Z"
+            />
+          </svg>
+        </div>
+
+        <div id="serverIcon" class="icon" title="Server Status">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="#f94f5f"
+          >
+            <path
+              d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+            />
+          </svg>
+        </div>
+      </div>
+      <div id="clock" class="text-center fw-light w-100">TERMINAL</div>
+    </div>
+
+    <div id="container">
+      <div class="content-container">
+        <!-- Left Column (col-5) -->
+        <div class="left-col">
+          <h2>Godmorgen!</h2>
+          <p>Scan QR koden med Maprova for at registrere møde/gå tidspunkt.</p>
+          <p>
+            Dette system gør det nemt at registrere arbejdstid og
+            tilstedeværelse ved at scanne QR koden.
+          </p>
+          <p>
+            For at begynde, skal du blot åbne Maprova appen og scanne koden til
+            højre.
+          </p>
+        </div>
+
+        <!-- Right Column (col-7) -->
+        <div class="right-col pt-5">
+          <canvas id="qr-code"></canvas>
+          <div class="fw-bolder fs-4" id="current-time"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/socket.io.js"></script>
+    <script src="js/sweetalert.js"></script>
+    <script>
+      function obfuscateTimestamp(timestamp) {
+        const hexTimestamp = timestamp.toString(16);
+        const obfuscated = hexTimestamp.split("").reverse().join("");
+        return obfuscated;
+      }
+
+      function formatDateTime() {
+        const now = new Date();
+        const options = {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        };
+        return now.toLocaleString("en-GB", options);
+      }
+
+      function updateQRCode() {
+        const timestamp = Date.now();
+        const obfuscatedTimestamp = obfuscateTimestamp(timestamp);
+
+        const qr = new QRious({
+          element: document.getElementById("qr-code"),
+          value: obfuscatedTimestamp,
+          size: 350,
+        });
+
+        document.getElementById("current-time").textContent = formatDateTime();
+      }
+
+      setInterval(updateQRCode, 1000);
+      updateQRCode();
+    </script>
+  </body>
+</html>
