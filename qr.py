@@ -32,5 +32,5 @@ if __name__ == '__main__':
     html_file = os.path.join(current_dir, 'qr_display.html')
 
     # Create a WebView window to open the local HTML file
-    webview.create_window('QR Code Display', html_file, fullscreen=False)
+    webview.create_window('QR Code Display', html_file, fullscreen=True)
     webview.start()
