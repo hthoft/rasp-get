@@ -60,9 +60,8 @@
       }
 
       #current-time {
-        font-size: 1.5rem;
-        margin-top: 10px;
-        font-weight: bold;
+        font-size: 2.5rem;
+        font-weight: bolder;
       }
 
       #qr-code {
@@ -149,22 +148,16 @@
       <div class="content-container">
         <!-- Left Column (col-5) -->
         <div class="left-col">
-          <h2>Godmorgen!</h2>
-          <p>Scan QR koden med Maprova for at registrere møde/gå tidspunkt.</p>
-          <p>
-            Dette system gør det nemt at registrere arbejdstid og
-            tilstedeværelse ved at scanne QR koden.
-          </p>
-          <p>
-            For at begynde, skal du blot åbne Maprova appen og scanne koden til
-            højre.
+          <h1>Velkommen!</h1>
+          <p style="font-size: 1.5rem">
+            Scan QR koden med Maprova for at registrere kom/gå tidspunkt.
           </p>
         </div>
 
         <!-- Right Column (col-7) -->
         <div class="right-col pt-5">
           <canvas id="qr-code"></canvas>
-          <div class="fw-bolder fs-4" id="current-time"></div>
+          <div id="current-time"></div>
         </div>
       </div>
     </div>
@@ -189,7 +182,7 @@
           hour: "2-digit",
           minute: "2-digit",
         };
-        return now.toLocaleString("en-GB", options);
+        return now.toLocaleString("en-GB", options).replace(",", "  -");
       }
 
       function updateQRCode() {
