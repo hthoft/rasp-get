@@ -186,9 +186,8 @@
         };
         return now.toLocaleString("en-GB", options).replace(",", "  -");
       }
-
       function updateQRCode() {
-        const timestamp = Date.now();
+        const timestamp = Math.floor(Date.now() / 1000); // Convert to seconds
         const obfuscatedTimestamp = obfuscateTimestamp(timestamp);
 
         const qr = new QRious({
