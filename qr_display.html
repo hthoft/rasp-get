@@ -5,15 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dynamic QR Code with Timestamp</title>
     <!-- Bootstrap CSS -->
-    <link
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- SweetAlert Dark Theme CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css"
-      rel="stylesheet"
-    />
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/sweetalert-dark.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
     <style>
       body,
@@ -57,6 +50,10 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
+      }
+
+      .swal2-popup.swal2-toast {
+        background: #282828 !important;
       }
 
       #current-time {
@@ -201,6 +198,22 @@
 
       setInterval(updateQRCode, 1000);
       updateQRCode();
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "bottom-start", // Change position to bottom-left
+        showConfirmButton: false, // Show a confirm button to allow dismissal
+        showCloseButton: false, // Add a close button for convenience
+        width: "40%",
+        didOpen: (toast) => {
+          toast.onclick = () => Swal.close(); // Make it dismissible by clicking anywhere
+        },
+      });
+
+      Toast.fire({
+        icon: "error", // Indicate an error
+        title: "Fejl - Vent venligst", // Change message to indicate error
+      });
     </script>
   </body>
 </html>
