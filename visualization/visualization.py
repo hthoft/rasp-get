@@ -170,7 +170,7 @@ def get_job_tasks():
             if department_id in cached_jobs:
                 cached_data = cached_jobs[department_id]
                 if not data_changed(job_tasks, cached_data):
-                    print(f"No changes in job tasks for department {department_id}. Using cached data.")
+                    
                     return jsonify(cached_data), 200
 
             # If data has changed, or if there's no cached data, update the cache
@@ -193,9 +193,8 @@ def get_job_tasks():
 @app.route('/api/get_messages', methods=['GET'])
 def get_messages():
     """
-    Fetch messages from the external API with caching.
+    Fetch messages from the external API with caching and remove expired messages.
     """
-
 
     # External API endpoint to fetch job tasks
     url = f"https://portal.maprova.dk/api/messages/getAllMessages.php"
@@ -217,12 +216,19 @@ def get_messages():
         # If the response is successful, cache the data and return it
         if response.status_code == 200:
             messages = response.json()
-            
-            # Cache the result
-            cached_messages = messages
+
+            # Filter out expired messages
+            today = datetime.now().date()
+            filtered_messages = [
+                message for message in messages 
+                if 'message_expire' not in message or datetime.strptime(message['message_expire'], "%Y-%m-%d").date() >= today
+            ]
+
+            # Cache the filtered result
+            cached_messages = filtered_messages
             save_cached_data(message_cache_file, cached_messages)  # Save to disk
-            
-            return jsonify(messages), 200
+
+            return jsonify(filtered_messages), 200
         else:
             return jsonify({"error": f"Failed to fetch job tasks, status code: {response.status_code}"}), response.status_code
 
@@ -234,7 +240,6 @@ def get_messages():
 
     except RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
 
 
 
@@ -307,14 +312,11 @@ def fetch_and_push_device_status():
                     if response.status_code == 200:
                         device_data = response.json()  # Get the device data
                         handle_reboot_flags(device_data)  # Handle reboot if necessary
-                        print(response.json())  # Print the device data
+                        
                         data_push_status = True  # Flag successful push
                         success = True  # Set success to True to break out of the retry loop
 
                         if data_changed(device_data, cached_device_data):
-                            print("Data has changed. Updating cache...")
-                            print(f"New data: {device_data}")
-                            print(f"Cached data: {cached_device_data}")
                             # Update the cache
                             save_cached_data(departments_cache_file, device_data)
                         else:
@@ -322,7 +324,7 @@ def fetch_and_push_device_status():
 
 
                     else:
-                        print(f"Failed to push data. Status Code: {response.status_code}")
+                        print(f"Error: Failed to push data. Status Code: {response.status_code}")
                         data_push_status = False  # Flag failure
 
             except ConnectionError:

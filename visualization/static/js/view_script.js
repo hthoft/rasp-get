@@ -97,7 +97,7 @@ function generateDepartmentSection(
 
     // If the title element exists, compare the current title with the new title
     if (currentTitleElement) {
-      const currentID = currentIDElement.id;
+      const currentID = currentTitleElement.id;
       const newID = `departmentTitle${departmentID}`;
       // If the current content matches the new content, skip updating
       if (currentID === newID) {
