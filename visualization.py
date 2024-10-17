@@ -493,21 +493,11 @@ def get_cpu_usage():
 
 
 # ============== Flask and Webview Initialization ==============
-def run_flask():
-    """
-    Run Flask server with SocketIO.
-    """
-    socketio.run(app, host='127.0.0.1', port=5000, allow_unsafe_werkzeug=True)
-
 def start_device_status_pushing():
     socketio.start_background_task(target=fetch_and_push_device_status)
 
-
 if __name__ == '__main__':
-    # Start Flask server in a background thread
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.daemon = True
-    flask_thread.start()
 
     # Start the device status pushing thread
     start_device_status_pushing()
+    socketio.run(app, host='127.0.0.1', port=5000, allow_unsafe_werkzeug=True)
