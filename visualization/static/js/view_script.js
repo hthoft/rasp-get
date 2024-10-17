@@ -1,6 +1,4 @@
-console.log("loaded");
 function getDepartmentsFromDevice() {
-  // First, get the system information from the local server
   $.ajax({
     url: "http://127.0.0.1:5000/api/get_departments", // Flask route to get department data
     type: "GET",
@@ -11,20 +9,26 @@ function getDepartmentsFromDevice() {
         console.log(updateData);
 
         // Store the department views in an array
-        var departments = [
-          updateData.department_view_1,
-          updateData.department_view_2,
-          updateData.department_view_3,
+        const departments = [
+          {
+            id: updateData.department_view_1,
+            title: updateData.department_title_1,
+            jobTasks: updateData.job_tasks_1,
+          },
+          {
+            id: updateData.department_view_2,
+            title: updateData.department_title_2,
+            jobTasks: updateData.job_tasks_2,
+          },
+          {
+            id: updateData.department_view_3,
+            title: updateData.department_title_3,
+            jobTasks: updateData.job_tasks_3,
+          },
         ];
 
-        // Iterate over the departments and call generateDepartmentSection for each
-        departments.forEach(function (deptID) {
-          if (deptID) {
-            // Check if deptID is not null or undefined
-            console.log("Department ID:", deptID);
-            generateDepartmentSection(deptID, true); // Assuming generateDepartmentSection is defined elsewhere
-          }
-        });
+        // Handle the visualization containers for up to 3 departments
+        handleVisualizations(departments);
       } catch (e) {
         console.error("Error parsing department data: ", e);
       }
@@ -57,61 +61,100 @@ document.addEventListener("DOMContentLoaded", function () {
   getDepartmentsFromDevice();
 
   function refresh() {
-    // If deviceSN is present, fetch department views from the device
+    // Fetch department views from the device
     getDepartmentsFromDevice();
   }
   setInterval(updateCountdown, 1000);
 });
 
-function generateDepartmentSection(departmentID, generation) {
-  // Use the department ID to form a unique ID for the container
-  const containerID = `departmentContainer${departmentID}`;
-  let container = document.getElementById(containerID);
-
-  // Check if the container already exists
-  if (!container) {
-    // Create the container div if it does not exist
-    container = document.createElement("div");
-    container.className = "container mb-5";
-    container.id = containerID; // Set the unique ID
-
-    // Create the row div
-    let row = document.createElement("div");
-    row.className = "row justify-content-center";
-
-    // Create the column div
-    let col = document.createElement("div");
-    col.className = "col-md-12";
-    col.style = "min-width: 95vw; margin-top: 20px;";
-
-    // Add the headers and table
-    col.innerHTML = `
-      <h1 class="text-white text-center" id="departmentTitle${departmentID}"></h1>
-      <table id="jobsTable${departmentID}" class="center-table border-bottom border-3 border-light shadow-lg" style="min-width:93vw;">
-        <thead id="jobsTableHead${departmentID}">
-          <!-- Headers will be added dynamically here -->
-        </thead>
-        <tbody id="jobsTableBody${departmentID}">
-          <!-- Rows will be added dynamically here -->
-        </tbody>
-      </table>`;
-
-    // Append the column to the row, and the row to the container
-    row.appendChild(col);
-    container.appendChild(row);
-
-    // Find the 'visualizations' div and append the container to it
-    const visualizationsDiv = document.getElementById("visualizations");
-    if (visualizationsDiv) {
-      visualizationsDiv.appendChild(container);
+function handleVisualizations(departments) {
+  // Loop through each department and generate the corresponding visualization container
+  departments.forEach((dept, index) => {
+    if (dept.id) {
+      // Determine the container ID (vizcon1, vizcon2, or vizcon3)
+      const vizContainerID = `vizcon${index + 1}`;
+      generateDepartmentSection(dept.id, dept, vizContainerID); // Pass the department data and container ID
     } else {
-      console.error('Div with id "visualizations" not found.');
+      // If the department data is missing, clear the corresponding container
+      const vizContainerID = `vizcon${index + 1}`;
+      removeVisualizationContainer(vizContainerID);
     }
+  });
+}
+
+function generateDepartmentSection(
+  departmentID,
+  departmentData,
+  vizContainerID
+) {
+  // Get the corresponding vizcon container (vizcon1, vizcon2, vizcon3)
+  const container = document.getElementById(vizContainerID);
+
+  // If the vizcon container exists, check if the content needs updating
+  if (container) {
+    const currentTitleElement = document.getElementById(
+      `departmentTitle${departmentID}`
+    );
+
+    // If the title element exists, compare the current title with the new title
+    if (currentTitleElement) {
+      const currentID = currentIDElement.id;
+      const newID = `departmentTitle${departmentID}`;
+      // If the current content matches the new content, skip updating
+      if (currentID === newID) {
+        console.log(`No update needed for department ${departmentID}`);
+        getJobsAndTasks(null, null, departmentID);
+        return; // Skip re-rendering if the content is the same
+      }
+    }
+
+    // If the content is different, clear the container and update its content
+    container.innerHTML = ""; // Clear existing content
+  } else {
+    console.error(`Div with id "${vizContainerID}" not found.`);
+    return; // If the container does not exist, return early
   }
 
-  // Call the function to populate the data whether it's a new or existing container
-  if (generation) {
-    getJobsAndTasks(null, null, departmentID);
+  // Create the row div
+  let row = document.createElement("div");
+  row.className = "row justify-content-center";
+
+  // Create the column div
+  let col = document.createElement("div");
+  col.className = "col-md-12";
+  col.style = "min-width: 95vw; margin-top: 20px;";
+
+  // Add the headers and table for department
+  col.innerHTML = `
+    <h1 class="text-white text-center" id="departmentTitle${departmentID}">${
+    departmentData.title || `Afdeling ${departmentID}`
+  }</h1>
+    <table id="jobsTable${departmentID}" class="center-table border-bottom border-3 border-light shadow-lg" style="min-width:93vw;">
+      <thead id="jobsTableHead${departmentID}">
+        <!-- Headers will be added dynamically here -->
+      </thead>
+      <tbody id="jobsTableBody${departmentID}">
+        <!-- Rows will be added dynamically here -->
+      </tbody>
+    </table>`;
+
+  // Append the column to the row, and the row to the vizcon container
+  row.appendChild(col);
+  container.appendChild(row);
+
+  if (vizContainerID === "vizcon2" || vizContainerID === "vizcon3") {
+    container.classList.add("mt-5");
+  }
+
+  // Call getJobsAndTasks to populate the job tasks
+  getJobsAndTasks(null, null, departmentID);
+}
+
+// Remove the container if no department data is available
+function removeVisualizationContainer(vizContainerID) {
+  const container = document.getElementById(vizContainerID);
+  if (container) {
+    container.innerHTML = ""; // Clear the content
   }
 }
 
@@ -571,7 +614,7 @@ function getJobsAndTasks(projectID, stageID, departmentID) {
                   tasks[i].job_task_label ? "ms-1" : ""
                 }`;
                 const icon = document.createElement("i");
-                icon.className = "bi bi-person-fill";
+                icon.className = "mdi mdi-account";
                 countDiv.appendChild(icon);
                 const countText = document.createTextNode(
                   ` ${tasks[i].active_users_count}`

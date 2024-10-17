@@ -144,11 +144,6 @@ def get_job_tasks():
     if not department_id:
         return jsonify({"error": "department_id is required"}), 400
 
-    # Check if the job tasks for this department_id are already in cache
-    if department_id in cached_jobs:
-        print(f"Returning cached data for department {department_id}")
-        return jsonify(cached_jobs[department_id]), 200
-
     # External API endpoint to fetch job tasks
     url = f"https://portal.maprova.dk/api/jobTasks/getJobsAndTasks.php"
 
@@ -167,14 +162,22 @@ def get_job_tasks():
         # Send a GET request to the external API
         response = requests.get(url, params=params, headers=headers, timeout=10)
 
-        # If the response is successful, cache the data and return it
+        # If the response is successful, process the data
         if response.status_code == 200:
             job_tasks = response.json()
-            
-            # Cache the result
+
+            # If there's cached data for the department, compare it with the new data
+            if department_id in cached_jobs:
+                cached_data = cached_jobs[department_id]
+                if not data_changed(job_tasks, cached_data):
+                    print(f"No changes in job tasks for department {department_id}. Using cached data.")
+                    return jsonify(cached_data), 200
+
+            # If data has changed, or if there's no cached data, update the cache
+            print(f"Data has changed or no cached data for department {department_id}. Updating cache.")
             cached_jobs[department_id] = job_tasks
             save_cached_data(jobs_cache_file, cached_jobs)  # Save to disk
-            
+
             return jsonify(job_tasks), 200
         else:
             return jsonify({"error": f"Failed to fetch job tasks, status code: {response.status_code}"}), response.status_code
@@ -187,8 +190,6 @@ def get_job_tasks():
 
     except RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-    
-
 @app.route('/api/get_messages', methods=['GET'])
 def get_messages():
     """
@@ -239,9 +240,29 @@ def get_messages():
 
 # ============== Device Status and Data Fetching ==============
 
+def filter_irrelevant_fields(data):
+    """
+    Remove fields that should not be considered when checking if data has changed.
+    """
+    # Make a copy of the data to avoid modifying the original
+    filtered_data = data.copy()
+
+    # Remove fields that are irrelevant for the comparison, like timestamps
+    if 'device_last_update' in filtered_data:
+        del filtered_data['device_last_update']
+
+    return filtered_data
+
 def data_changed(new_data, cached_data):
-    # Convert both datasets to JSON strings and compare
-    return json.dumps(new_data, sort_keys=True) != json.dumps(cached_data, sort_keys=True)
+    """
+    Compare the filtered new data with the cached data, excluding irrelevant fields.
+    """
+    # Filter out the irrelevant fields before comparison
+    filtered_new_data = filter_irrelevant_fields(new_data)
+    filtered_cached_data = filter_irrelevant_fields(cached_data)
+
+    # Compare the two datasets
+    return json.dumps(filtered_new_data, sort_keys=True) != json.dumps(filtered_cached_data, sort_keys=True)
 
 
 def fetch_and_push_device_status():
