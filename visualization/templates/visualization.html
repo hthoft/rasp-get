@@ -4,9 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visualization Page</title>
-    <link href="css/visualization.min.css" rel="stylesheet" />
-    <link href="css/sweetalert-dark.css" rel="stylesheet" />
-    <link rel="stylesheet" href="css/view_style.css" />
+    <link
+      href="{{ url_for('static', filename='css/visualization.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/sweetalert-dark.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/view_style.css') }}"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css"
@@ -85,11 +94,11 @@
       <div class="news-content fw-bold" id="newsContent"></div>
     </div>
 
-    <script src="view_script.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/jquery-3.6.0.min.js"></script>
-    <script src="js/socket.io.js"></script>
-    <script src="js/sweetalert.js"></script>
+    <script src="{{ url_for('static', filename='js/view_script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/socket.io.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sweetalert.js') }}"></script>
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
