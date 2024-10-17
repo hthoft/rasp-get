@@ -1,7 +1,7 @@
 import requests
 from requests.exceptions import ConnectionError, Timeout, RequestException
 
-from flask import Flask, jsonify, request, render_template_string
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import threading
 import os
@@ -106,9 +106,10 @@ def index():
 @app.route('/visualization')
 def visualization():
     """
-    Serve the visualization.html file.
+    Serve the visualization.html file from the templates directory.
     """
-    return render_template_string(open('visualization.html').read())
+    return render_template('visualization.html')
+
 
 
 
