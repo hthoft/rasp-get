@@ -91,27 +91,31 @@
         <!-- USB icon -->
         <div
           id="usbIcon"
-          class="icon mdi mdi-usb text-danger fs-6"
+          class="icon mdi mdi-usb fs-6"
           title="USB Status"
         ></div>
 
         <!-- WiFi icon -->
         <div
           id="wifiIcon"
-          class="icon mdi mdi-wifi text-danger fs-6"
+          class="icon mdi mdi-wifi fs-6"
           title="WiFi Status"
         ></div>
 
         <!-- Server icon -->
         <div
           id="serverIcon"
-          class="icon mdi mdi-circle text-danger fs-6"
+          class="icon mdi mdi-circle fs-6"
           title="Server Status"
         ></div>
 
         <!-- CPU percentage -->
-        <div class="icon mdi mdi-monitor text-danger fs-6" title="CPU Usage">
-          <span id="cpuUsage">0%</span>
+        <div
+          class="icon mdi mdi-monitor fs-6 ms-4"
+          title="CPU Usage"
+          id="cpuClass"
+        >
+          <span class="ms-2" id="cpuUsage">0%</span>
         </div>
       </div>
 
@@ -201,6 +205,14 @@
 
             // Update CPU usage percentage
             document.querySelector("#cpuUsage").textContent = `${cpu_usage}%`;
+            // set color of CPU
+            if (cpu_usage < 50) {
+              document.querySelector("#cpuClass").style.color = "green";
+            } else if (cpu_usage >= 50 && cpu_usage < 80) {
+              document.querySelector("#cpuClass").style.color = "yellow";
+            } else {
+              document.querySelector("#cpuClass").style.color = "red";
+            }
           })
           .catch((error) => {
             console.error("Error fetching system info:", error);
