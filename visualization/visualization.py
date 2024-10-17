@@ -64,7 +64,7 @@ def load_cached_data(filename):
 
 # Load all caches on startup
 def load_all_caches():
-    global cached_projects, cached_jobs, departments_cache
+    global cached_projects, cached_jobs, departments_cache, cached_messages
 
     # Load project cache
     cached_projects = load_cached_data(projects_cache_file)
@@ -238,6 +238,12 @@ def get_messages():
 
 
 # ============== Device Status and Data Fetching ==============
+
+def data_changed(new_data, cached_data):
+    # Convert both datasets to JSON strings and compare
+    return json.dumps(new_data, sort_keys=True) != json.dumps(cached_data, sort_keys=True)
+
+
 def fetch_and_push_device_status():
     """
     Fetch and push device status to external API in intervals with manual retry logic.
@@ -284,13 +290,15 @@ def fetch_and_push_device_status():
                         data_push_status = True  # Flag successful push
                         success = True  # Set success to True to break out of the retry loop
 
-                        # Compare the new data with the cached data
-                        if device_data != cached_device_data:
+                        if data_changed(device_data, cached_device_data):
                             print("Data has changed. Updating cache...")
+                            print(f"New data: {device_data}")
+                            print(f"Cached data: {cached_device_data}")
                             # Update the cache
                             save_cached_data(departments_cache_file, device_data)
                         else:
                             print("No change in data. Cache remains the same.")
+
 
                     else:
                         print(f"Failed to push data. Status Code: {response.status_code}")
