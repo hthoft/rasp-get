@@ -456,28 +456,28 @@ def run_update_script():
 # ============== Utility Functions ==============
 def get_ip_address():
     """
-    Get the IP address of the machine.
+    Returns the current IP address of the system.
     """
     try:
-        hostname = socket.gethostname()
-        return socket.gethostbyname(hostname)
+        # Use hostname to retrieve the IP address
+        ip_address = subprocess.check_output(["hostname", "-I"]).decode().strip()
+        if ip_address:
+            return ip_address
     except Exception as e:
         print(f"Error getting IP address: {e}")
-        return "N/A"
-
+    return "N/A"
 
 def get_mac_address():
     """
-    Get the MAC address of the machine.
+    Returns the MAC address of the system.
     """
     try:
-        mac_address = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff) 
-                                for elements in range(0, 2*6, 8)][::-1])
+        # For Linux, get MAC address of eth0 or wlan0
+        mac_address = subprocess.check_output(["cat", "/sys/class/net/wlan0/address"]).decode().strip()
         return mac_address
     except Exception as e:
         print(f"Error getting MAC address: {e}")
-        return "N/A"
-
+    return "N/A"
 
 def get_network_info():
     """
@@ -487,10 +487,16 @@ def get_network_info():
     try:
         # For Linux, get the SSID
         if platform.system() == "Linux":
-            ssid = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
-            state = "Connected" if ssid else "Disconnected"
+            try:
+                ssid = subprocess.check_output(["iwgetid", "-r"], stderr=subprocess.STDOUT).decode().strip()
+                state = "Connected" if ssid else "Disconnected"
+            except subprocess.CalledProcessError as e:
+                # Handle error if iwgetid is not available or fails
+                print(f"Error running iwgetid: {e}")
+                ssid = "N/A"
+                state = "Disconnected"
         else:
-            # Windows and other platforms
+            # Windows or other platforms
             ssid = "N/A"
             state = "Connected"  # Assume connected if IP is obtained
 
