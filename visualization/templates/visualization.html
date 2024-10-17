@@ -91,23 +91,28 @@
         <!-- USB icon -->
         <div
           id="usbIcon"
-          class="icon mdi mdi-usb text-danger"
+          class="icon mdi mdi-usb text-danger fs-6"
           title="USB Status"
         ></div>
 
         <!-- WiFi icon -->
         <div
           id="wifiIcon"
-          class="icon mdi mdi-wifi text-danger"
+          class="icon mdi mdi-wifi text-danger fs-6"
           title="WiFi Status"
         ></div>
 
         <!-- Server icon -->
         <div
           id="serverIcon"
-          class="icon mdi mdi-circle text-danger"
+          class="icon mdi mdi-circle text-danger fs-6"
           title="Server Status"
         ></div>
+
+        <!-- CPU percentage -->
+        <div class="icon mdi mdi-monitor text-danger fs-6" title="CPU Usage">
+          <span id="cpuUsage">0%</span>
+        </div>
       </div>
 
       <!-- Centered logo -->
@@ -144,10 +149,69 @@
         document.querySelector("#serverIcon").classList.add(color);
       }
 
-      // Example usage: set the color to either "text-danger" or "text-success"
-      setUsbIconColor("text-danger"); // Set USB icon to red
-      setWifiIconColor("text-success"); // Set WiFi icon to green
-      setServerIconColor("text-danger"); // Set Server icon to red
+      // Function to set Server icon heatmap color for CPU temperature
+      function setCpuTempHeatmap(temp) {
+        const serverIcon = document.querySelector("#serverIcon");
+
+        // Define temperature range and corresponding colors
+        if (temp < 40) {
+          serverIcon.style.color = "blue"; // Cold temperature
+        } else if (temp >= 40 && temp <= 60) {
+          serverIcon.style.color = "green"; // Moderate temperature
+        } else if (temp > 60 && temp <= 80) {
+          serverIcon.style.color = "yellow"; // Warm temperature
+        } else {
+          serverIcon.style.color = "red"; // Hot temperature
+        }
+
+        // Optionally add temperature value as percentage
+        serverIcon.title = `CPU Temp: ${temp}°C`;
+      }
+
+      // Function to periodically fetch system info and update the icons
+      function updateSystemInfo() {
+        fetch("/api/system_info")
+          .then((response) => response.json())
+          .then((data) => {
+            const {
+              ssid,
+              network_state,
+              push_status,
+              cpu_temp,
+              memory_usage,
+              cpu_usage,
+            } = data;
+
+            // Set WiFi icon color based on network state
+            if (network_state === "connected") {
+              setWifiIconColor("text-success");
+            } else {
+              setWifiIconColor("text-danger");
+            }
+
+            // Set USB icon color based on push status
+            if (push_status === true) {
+              setUsbIconColor("text-success");
+            } else {
+              setUsbIconColor("text-danger");
+            }
+
+            // Set Server icon heatmap color based on CPU temperature
+            setCpuTempHeatmap(cpu_temp);
+
+            // Update CPU usage percentage
+            document.querySelector("#cpuUsage").textContent = `${cpu_usage}%`;
+          })
+          .catch((error) => {
+            console.error("Error fetching system info:", error);
+          });
+      }
+
+      // Call updateSystemInfo every 5 seconds
+      setInterval(updateSystemInfo, 10000);
+
+      // Initial call to fetch and update system info
+      updateSystemInfo();
     </script>
 
     <div id="visualizations" class="mt-5">
