@@ -481,21 +481,27 @@ def get_mac_address():
 
 def get_network_info():
     """
-    Returns network details like SSID, network state, IP address, and MAC address.
+    Returns SSID (if applicable), network state, IP address, and MAC address.
+    Cross-platform version.
     """
     try:
+        # For Linux, get the SSID
         if platform.system() == "Linux":
             ssid = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
             state = "Connected" if ssid else "Disconnected"
         else:
+            # Windows and other platforms
             ssid = "N/A"
-            state = "Connected"
+            state = "Connected"  # Assume connected if IP is obtained
 
         ip_address = get_ip_address()
         mac_address = get_mac_address()
 
     except Exception as e:
-        ssid, state, ip_address, mac_address = "Error", "Error", "N/A", "N/A"
+        ssid = "Error"
+        state = "Error"
+        ip_address = "N/A"
+        mac_address = "N/A"
         print(f"Error in get_network_info: {e}")
 
     return ssid, state, ip_address, mac_address

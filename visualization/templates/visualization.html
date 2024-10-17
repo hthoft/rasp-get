@@ -131,26 +131,20 @@
     <script>
       // Function to set USB icon color
       function setUsbIconColor(color) {
-        document
-          .querySelector("#usbIcon")
-          .classList.remove("text-danger", "text-success");
-        document.querySelector("#usbIcon").classList.add(color);
+        const usbIcon = document.querySelector("#usbIcon");
+        usbIcon.style.color = color; // Set the icon color directly
       }
 
       // Function to set WiFi icon color
       function setWifiIconColor(color) {
-        document
-          .querySelector("#wifiIcon")
-          .classList.remove("text-danger", "text-success");
-        document.querySelector("#wifiIcon").classList.add(color);
+        const wifiIcon = document.querySelector("#wifiIcon");
+        wifiIcon.style.color = color; // Set the icon color directly
       }
 
       // Function to set Server icon color
       function setServerIconColor(color) {
-        document
-          .querySelector("#serverIcon")
-          .classList.remove("text-danger", "text-success");
-        document.querySelector("#serverIcon").classList.add(color);
+        const serverIcon = document.querySelector("#serverIcon");
+        serverIcon.style.color = color; // Set the icon color directly
       }
 
       // Function to set Server icon heatmap color for CPU temperature
@@ -188,16 +182,16 @@
 
             // Set WiFi icon color based on network state
             if (network_state === "connected") {
-              setWifiIconColor("text-success");
+              setWifiIconColor("green"); // Green for connected
             } else {
-              setWifiIconColor("text-danger");
+              setWifiIconColor("red"); // Red for disconnected
             }
 
             // Set USB icon color based on push status
             if (push_status === true) {
-              setUsbIconColor("text-success");
+              setUsbIconColor("green"); // Green for active
             } else {
-              setUsbIconColor("text-danger");
+              setUsbIconColor("red"); // Red for inactive
             }
 
             // Set Server icon heatmap color based on CPU temperature
@@ -205,13 +199,15 @@
 
             // Update CPU usage percentage
             document.querySelector("#cpuUsage").textContent = `${cpu_usage}%`;
-            // set color of CPU
+
+            // Set the color of CPU usage percentage based on the value
+            const cpuClass = document.querySelector("#cpuClass");
             if (cpu_usage < 50) {
-              document.querySelector("#cpuClass").style.color = "green";
+              cpuClass.style.color = "green"; // Low usage
             } else if (cpu_usage >= 50 && cpu_usage < 80) {
-              document.querySelector("#cpuClass").style.color = "yellow";
+              cpuClass.style.color = "yellow"; // Moderate usage
             } else {
-              document.querySelector("#cpuClass").style.color = "red";
+              cpuClass.style.color = "red"; // High usage
             }
           })
           .catch((error) => {
@@ -219,7 +215,7 @@
           });
       }
 
-      // Call updateSystemInfo every 5 seconds
+      // Call updateSystemInfo every 10 seconds
       setInterval(updateSystemInfo, 10000);
 
       // Initial call to fetch and update system info
