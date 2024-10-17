@@ -30,7 +30,13 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        background: url("/static/images/maprova-bg.png") no-repeat center center
+          fixed;
+        background-size: cover;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
       }
 
       /* topbar styles */
@@ -68,7 +74,7 @@
     >
       <a class="flex-grow-1 text-center">
         <img
-          src="dark-logo.png"
+          src="{{ url_for('static', filename='images/dark-logo.png') }}"
           alt="Logo"
           style="max-width: 100%; height: auto"
         />
