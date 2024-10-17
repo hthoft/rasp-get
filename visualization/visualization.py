@@ -97,6 +97,11 @@ def save_all_caches():
 # Load caches at startup
 load_all_caches()
 
+
+# ============== SocketIO Events ==============
+
+
+
 # ============== Routes ==============
 @app.route('/')
 def index():
@@ -241,7 +246,32 @@ def get_messages():
     except RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
+@app.route('/api/system_info', methods=['GET'])
+def get_system_info():
+    ssid, state, ip_address, mac_address = get_network_info()
 
+    uptime = get_uptime()
+
+    cpu_temp = get_cpu_temperature()
+
+    memory_usage = get_memory_usage()
+
+    cpu_usage = get_cpu_usage()
+
+    push_status = data_push_status
+
+    return jsonify({
+        'ssid': ssid,
+        'network_state': state,
+        'uptime': uptime,
+        'cpu_temp': cpu_temp,
+        'memory_usage': memory_usage,
+        'cpu_usage': cpu_usage,
+        'ip_address': ip_address,
+        'mac_address': mac_address,
+        'push_status': push_status,
+        'serial_number': device_sn
+    })
 
 # ============== Device Status and Data Fetching ==============
 

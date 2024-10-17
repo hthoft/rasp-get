@@ -111,6 +111,8 @@
     <script src="{{ url_for('static', filename='js/sweetalert.js') }}"></script>
 
     <script>
+      var socket = io.connect("http://127.0.0.1:5000");
+
       document.addEventListener("DOMContentLoaded", function () {
         let messageQueue = [];
         let displayTimeout;
@@ -239,6 +241,33 @@
 
         loadData();
         setInterval(updateDateTime, 1000);
+      });
+
+      // Define a SweetAlert mixin with your desired settings
+      const toast = Swal.mixin({
+        toast: true,
+        position: "top",
+        background: "#343a40", // Dark color
+        color: "#ffffff", // White text color
+        showConfirmButton: false, // No buttons
+        timer: false, // No auto timer
+        showCloseButton: false, // No close button
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      });
+
+      // Trigger SweetAlert when the socket disconnects
+      socket.on("disconnect", function () {
+        toast.fire({
+          title: "Advarsel",
+          text: "Forbindelsen til serveren er afbrudt. Genindlæs siden.",
+          icon: "warning",
+        });
+      });
+
+      // Remove the alert when the socket connection is reinstated
+      socket.on("connect", function () {
+        Swal.close(); // This will close any active alert
       });
     </script>
   </body>
