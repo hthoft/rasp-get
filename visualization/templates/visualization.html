@@ -89,15 +89,23 @@
       <!-- Icon container on the left -->
       <div class="icon-container d-flex gap-2">
         <!-- USB icon -->
-        <div id="usbIcon" class="icon mdi mdi-usb" title="USB Status"></div>
+        <div
+          id="usbIcon"
+          class="icon mdi mdi-usb text-danger"
+          title="USB Status"
+        ></div>
 
         <!-- WiFi icon -->
-        <div id="wifiIcon" class="icon mdi mdi-wifi" title="WiFi Status"></div>
+        <div
+          id="wifiIcon"
+          class="icon mdi mdi-wifi text-danger"
+          title="WiFi Status"
+        ></div>
 
         <!-- Server icon -->
         <div
           id="serverIcon"
-          class="icon mdi mdi-circle"
+          class="icon mdi mdi-circle text-danger"
           title="Server Status"
         ></div>
       </div>
@@ -114,23 +122,32 @@
     <script>
       // Function to set USB icon color
       function setUsbIconColor(color) {
-        document.querySelector("#usbIcon").color = color;
+        document
+          .querySelector("#usbIcon")
+          .classList.remove("text-danger", "text-success");
+        document.querySelector("#usbIcon").classList.add(color);
       }
 
       // Function to set WiFi icon color
       function setWifiIconColor(color) {
-        document.querySelector("#wifiIcon").color = color;
+        document
+          .querySelector("#wifiIcon")
+          .classList.remove("text-danger", "text-success");
+        document.querySelector("#wifiIcon").classList.add(color);
       }
 
       // Function to set Server icon color
       function setServerIconColor(color) {
-        document.querySelector("#serverIcon").color = color;
+        document
+          .querySelector("#serverIcon")
+          .classList.remove("text-danger", "text-success");
+        document.querySelector("#serverIcon").classList.add(color);
       }
 
-      // Example usage: set the color to either #f94f5f or limegreen
-      setUsbIconColor("#f94f5f"); // Set USB icon to red
-      setWifiIconColor("limegreen"); // Set WiFi icon to limegreen
-      setServerIconColor("#f94f5f"); // Set Server icon to red
+      // Example usage: set the color to either "text-danger" or "text-success"
+      setUsbIconColor("text-danger"); // Set USB icon to red
+      setWifiIconColor("text-success"); // Set WiFi icon to green
+      setServerIconColor("text-danger"); // Set Server icon to red
     </script>
 
     <div id="visualizations" class="mt-5">
