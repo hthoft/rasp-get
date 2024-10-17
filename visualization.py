@@ -103,6 +103,15 @@ def index():
     return "Socket.IO server is running!"
 
 
+@app.route('/visualization')
+def visualization():
+    """
+    Serve the visualization.html file.
+    """
+    return render_template_string(open('visualization.html').read())
+
+
+
 @app.route('/api/reboot', methods=['POST'])
 def reboot_system():
     """
@@ -502,11 +511,3 @@ if __name__ == '__main__':
 
     # Start the device status pushing thread
     start_device_status_pushing()
-
-    # Get the current directory and specify the path to index.html
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    html_file = os.path.join(current_dir, 'visualization.html')
-
-    # Create a WebView window to open the local HTML file
-    webview.create_window('Maprova Projects', html_file, fullscreen=False)
-    webview.start()

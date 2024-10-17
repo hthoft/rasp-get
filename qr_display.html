@@ -52,10 +52,6 @@
         align-items: center;
       }
 
-      .swal2-popup.swal2-toast {
-        background: #282828 !important;
-      }
-
       #current-time {
         font-size: 2.5rem;
         font-weight: bolder;
@@ -205,6 +201,9 @@
         showConfirmButton: false, // Show a confirm button to allow dismissal
         showCloseButton: false, // Add a close button for convenience
         width: "40%",
+        timer: 3000,
+        timerProgressBar: true,
+        background: "#343a40",
         didOpen: (toast) => {
           toast.onclick = () => Swal.close(); // Make it dismissible by clicking anywhere
         },
