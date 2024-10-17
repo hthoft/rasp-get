@@ -6,7 +6,6 @@ function getDepartmentsFromDevice() {
       try {
         // Parse the returned department data
         const updateData = updateRes;
-        console.log(updateData);
 
         // Store the department views in an array
         const departments = [
@@ -102,7 +101,6 @@ function generateDepartmentSection(
       const newID = `departmentTitle${departmentID}`;
       // If the current content matches the new content, skip updating
       if (currentID === newID) {
-        console.log(`No update needed for department ${departmentID}`);
         getJobsAndTasks(null, null, departmentID);
         return; // Skip re-rendering if the content is the same
       }
@@ -198,7 +196,6 @@ function getJobsAndTasks(projectID, stageID, departmentID) {
       );
       tableBody.innerHTML = ""; // Clear existing table rows
       tableHead.innerHTML = "";
-      console.log(jobs);
       // After calculating the sum of active users
       let sum = 0;
       let activeUsers = []; // Array to store all active user names
@@ -213,9 +210,6 @@ function getJobsAndTasks(projectID, stageID, departmentID) {
           }
         }
       }
-
-      console.log(`Total active users count: ${sum}`);
-      console.log("Active users:", activeUsers); // Log all active user names
 
       // Check if there are any jobs and set the department title
       if (jobs.length > 0 && jobs[0].department_title) {
