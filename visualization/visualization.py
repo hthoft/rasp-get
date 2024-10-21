@@ -25,6 +25,7 @@ load_dotenv()
 api_key = os.getenv('API_KEY')
 customer_id = os.getenv('CUSTOMER_ID')
 device_sn = os.getenv('DEVICE_SN')
+current_version = os.getenv('CURRENT_VERSION')
 
 # Initialize Flask app and SocketIO
 app = Flask(__name__)
@@ -99,6 +100,82 @@ load_all_caches()
 
 
 # ============== SocketIO Events ==============
+
+
+
+# ============== Update System ==============  
+
+def check_for_updates():
+    global current_version
+
+    while True:
+        try:
+            # Update check URL
+            url = f"https://updates.maprova.dk/checkForUpdate.php?apiKey={api_key}&customerID={customer_id}&systemType=device&currentVersion={current_version}"
+
+            # POST data containing the api_key
+            data = {
+                'api_key': api_key
+            }
+
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+
+            # Make the POST request
+            response = requests.post(url, headers=headers, data=data)
+            if response.status_code == 200:
+                data = response.json()
+
+                if data.get('success'):
+                    new_version = data['latestVersion']
+                    print(f"New update available: {new_version}")
+
+                    # Notify frontend via SocketIO
+                    socketio.emit('update_available', {'new_version': new_version})
+
+                    # Download the update file and replace old files
+                    download_and_replace_update(data['updateFile'])
+
+                    # Schedule a reboot in 30 seconds
+                    print("Rebooting system in 30 seconds...")
+                    time.sleep(30)
+                    reboot_system()
+
+                else:
+                    print("Already on the latest version.")
+
+            else:
+                print(f"Error checking for updates. Status code: {response.status_code}")
+        except Exception as e:
+            print(f"Error while checking for updates: {e}")
+
+        # Check again in 1 hour
+        time.sleep(3600)
+
+
+import zipfile
+
+def download_and_replace_update(update_url):
+    try:
+        update_file = "device_update.zip"
+
+        # Download the update file
+        print(f"Downloading update from {update_url}...")
+        response = requests.get(update_url)
+        with open(update_file, 'wb') as f:
+            f.write(response.content)
+
+        # Extract and replace the old files
+        print("Extracting and replacing files...")
+        with zipfile.ZipFile(update_file, 'r') as zip_ref:
+            zip_ref.extractall("/path/to/your/application")
+
+        # Clean up
+        os.remove(update_file)
+        print("Update completed successfully.")
+    except Exception as e:
+        print(f"Error during update: {e}")
 
 
 
@@ -570,8 +647,15 @@ def get_cpu_usage():
 def start_device_status_pushing():
     socketio.start_background_task(target=fetch_and_push_device_status)
 
+
+def start_update_checking():
+    socketio.start_background_task(target=check_for_updates)
+
 if __name__ == '__main__':
 
     # Start the device status pushing thread
+    check_for_updates()
+    start_update_checking()
+
     start_device_status_pushing()
     socketio.run(app, host='127.0.0.1', port=5000, allow_unsafe_werkzeug=True)
