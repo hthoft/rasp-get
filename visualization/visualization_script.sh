@@ -20,7 +20,7 @@ sleep 2  # Delay
 
 # Step 3: Install required packages including PyQt and Python dependencies
 echo "Step 3: Installing necessary packages..."
-sudo apt-get install --no-install-recommends -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev libwebkit2gtk-4.0-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools python3-pyqt5 python3-gi python3-gi-cairo gir1.2-gtk-3.0 fbi
+sudo apt-get install --no-install-recommends -y python3-pip libusb-1.0-0-dev ttf-mscorefonts-installer git xserver-xorg x11-xserver-utils xinit openbox chromium-browser libgirepository1.0-dev gir1.2-webkit2-4.0 libgtk-3-dev libwebkit2gtk-4.0-dev qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools python3-pyqt5 python3-gi python3-gi-cairo gir1.2-gtk-3.0 plymouth-themes
 sleep 2  # Delay
 
 # Step 4: Disable Splash and Default RPi Features
@@ -45,7 +45,7 @@ else
 fi
 sleep 2  # Delay
 
-# Step 5: Set custom splash screen
+# Step 5: Set custom splash screen using Plymouth
 echo "Step 5: Setting custom splash screen..."
 
 # Copy the splash image (replace with the path to your splash.png)
@@ -57,28 +57,30 @@ else
     echo "splash.png not found in $splash_image_path"
 fi
 
-# Enable splash screen during boot using fbi
-sudo tee /etc/systemd/system/splashscreen.service > /dev/null <<EOT
-[Unit]
-Description=Splash screen during boot
-DefaultDependencies=no
-After=local-fs.target
+# Set plymouth to use the splash
+sudo plymouth-set-default-theme pix
+sudo update-initramfs -u
 
-[Service]
-ExecStart=/usr/bin/fbi -T 1 -d /dev/fb0 --noverbose -a /usr/share/plymouth/themes/pix/splash.png
-StandardInput=tty
-StandardOutput=tty
-
-[Install]
-WantedBy=sysinit.target
-EOT
-
-# Enable the service
-sudo systemctl enable splashscreen
 sleep 2  # Delay
 
-# Step 6: Disable Unnecessary System Services
-echo "Step 6: Disabling unused services like getty@tty3..."
+# Step 6: Add Xserver fbdev configuration
+echo "Step 6: Adding Xserver fbdev configuration..."
+
+# Create the X11 configuration file for fbdev
+sudo tee /etc/X11/xorg.conf.d/99-fbdev.conf > /dev/null <<EOT
+Section "Device"
+    Identifier "FBDEV"
+    Driver "fbdev"
+    Option "fbdev" "/dev/fb0"
+    BusID "PCI:0:2:0"
+EndSection
+EOT
+
+echo "fbdev configuration added successfully."
+sleep 2  # Delay
+
+# Step 7: Disable Unnecessary System Services
+echo "Step 7: Disabling unused services like getty@tty3..."
 sudo systemctl disable getty@tty3
 sleep 2  # Delay
 
