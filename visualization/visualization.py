@@ -162,20 +162,43 @@ def download_and_replace_update(update_url):
 
         # Download the update file
         print(f"Downloading update from {update_url}...")
-        response = requests.get(update_url)
-        with open(update_file, 'wb') as f:
-            f.write(response.content)
+        response = requests.get(update_url, stream=True)
 
-        # Extract and replace the old files
-        print("Extracting and replacing files...")
-        with zipfile.ZipFile(update_file, 'r') as zip_ref:
-            zip_ref.extractall("/path/to/your/application")
+        if response.status_code == 200:
+            content_type = response.headers.get('Content-Type')
+            if 'text/html' in content_type:
+                # It's an HTML page, likely an error or login page
+                print("Error: Received an HTML document instead of a zip file.")
+                print(response.text)  # Print the HTML response to inspect it
+                return
 
-        # Clean up
-        os.remove(update_file)
-        print("Update completed successfully.")
+            # Write the content to the file
+            with open(update_file, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+            
+            # Check the file type after downloading
+            if zipfile.is_zipfile(update_file):
+                print("File is a valid zip file. Extracting and replacing files...")
+                
+                # Extract and replace the old files
+                with zipfile.ZipFile(update_file, 'r') as zip_ref:
+                    zip_ref.extractall("/path/to/your/application")
+
+                # Clean up
+                os.remove(update_file)
+                print("Update completed successfully.")
+            else:
+                print("Error: The downloaded file is not a valid zip file.")
+
+        else:
+            print(f"Failed to download the update file. Status code: {response.status_code}")
+            print(response.text)  # Print the error response for debugging
+
     except Exception as e:
         print(f"Error during update: {e}")
+
 
 
 
