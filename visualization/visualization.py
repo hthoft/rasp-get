@@ -654,7 +654,6 @@ def start_update_checking():
 if __name__ == '__main__':
 
     # Start the device status pushing thread
-    check_for_updates()
     start_update_checking()
 
     start_device_status_pushing()
