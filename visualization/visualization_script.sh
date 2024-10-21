@@ -65,7 +65,7 @@ echo "Step 13: Setting up Kiosk mode and script autostart..."
 
 # Add autostart for openbox
 echo "Setting up Openbox autostart..."
-sudo printf "xset s off\nxset s noblank\nxset -dpms\nsetxkbmap -option terminate:ctrl_alt_bksp\ncd rasp-get/\npython3 visualization.py" | sudo tee /etc/xdg/openbox/autostart
+sudo printf "xset s off\nxset s noblank\nxset -dpms\nsetxkbmap -option terminate:ctrl_alt_bksp\ncd rasp-get/\npython3 visualization.py & chromium-browser --kiosk http://localhost/visualization" | sudo tee /etc/xdg/openbox/autostart
 sleep 2  # Delay
 
 # Modify .bashrc to autostart X without a cursor
