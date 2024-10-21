@@ -163,6 +163,33 @@ def check_for_updates():
 
 import zipfile
 
+def modify_env_file(env_file, action="mark"):
+    """Modify .env file to mark or restore the update status."""
+    try:
+        with open(env_file, 'r') as file:
+            lines = file.readlines()
+
+        with open(env_file, 'w') as file:
+            for line in lines:
+                if line.startswith("CURRENT_VERSION="):
+                    if action == "mark":
+                        # Mark that update is in progress
+                        current_version = line.strip().split("=")[1]
+                        file.write(f"CURRENT_VERSION={current_version}-update-in-progress\n")
+                    elif action == "restore":
+                        # Remove update mark and restore the version
+                        current_version = line.replace("-update-in-progress", "").strip()
+                        file.write(f"{current_version}\n")
+                else:
+                    file.write(line)
+
+        print(f".env file has been {'marked' if action == 'mark' else 'restored'} for update.")
+
+    except Exception as e:
+        print(f"Error modifying .env file: {e}")
+        raise
+
+
 def download_and_replace_update(update_url):
     try:
         update_file = "device_update.zip"
@@ -175,7 +202,10 @@ def download_and_replace_update(update_url):
             shutil.copyfile(env_file, backup_env_file)
             print(".env file has been backed up.")
 
-        # Download the update file
+            # Step 2: Mark the current version as 'update-in-progress' in the .env file
+            modify_env_file(env_file, action="mark")
+
+        # Step 3: Download the update file
         print(f"Downloading update from {update_url}...")
 
         headers = {
@@ -193,28 +223,43 @@ def download_and_replace_update(update_url):
                 print(response.text)  # Print the HTML response to inspect it
                 return
 
-            # Step 2: Write the content to the file
+            # Step 4: Write the content to the file
             with open(update_file, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)
             
-            # Step 3: Check if the file is a valid zip file
+            # Step 5: Check if the file is a valid zip file
             if zipfile.is_zipfile(update_file):
                 print("File is a valid zip file. Extracting and replacing files...")
 
-                # Step 4: Extract the files
+                # Step 6: Extract the files
                 with zipfile.ZipFile(update_file, 'r') as zip_ref:
                     zip_ref.extractall(extract_path)
 
-                # Step 5: Restore the backed-up .env file
+                # Step 7: Restore the backed-up .env file
                 if os.path.exists(backup_env_file):
                     shutil.copyfile(backup_env_file, env_file)
                     print(".env file has been restored from backup.")
+
+                    # Remove update marker and restore original version
+                    modify_env_file(env_file, action="restore")
+
+                    # Verify the .env file contains the correct version
+                    with open(env_file, 'r') as file:
+                        lines = file.readlines()
+                        for line in lines:
+                            if line.startswith("CURRENT_VERSION=") and "-update-in-progress" not in line:
+                                print("Verification successful: .env restored correctly.")
+                                break
+                        else:
+                            print("Error: .env file not restored correctly.")
+                            return
+
                     os.remove(backup_env_file)  # Clean up the backup
                     print("Backup .env file removed.")
 
-                # Step 6: Clean up the zip file
+                # Step 8: Clean up the zip file
                 os.remove(update_file)
                 print("Update completed successfully.")
             else:
