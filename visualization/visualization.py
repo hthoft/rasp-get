@@ -109,6 +109,25 @@ load_all_caches()
 
 # ============== Update System ==============  
 
+def update_env_version(new_version):
+    env_file = '/home/RPI-5/.env'
+    
+    # Read the existing .env file
+    with open(env_file, 'r') as file:
+        lines = file.readlines()
+    
+    # Write the new version back to the file
+    with open(env_file, 'w') as file:
+        for line in lines:
+            if line.startswith('CURRENT_VERSION='):
+                file.write(f'CURRENT_VERSION={new_version}\n')
+            else:
+                file.write(line)
+    
+    print(f".env file updated with new version: {new_version}")
+
+
+# Main function to check for updates
 def check_for_updates():
     global current_version
 
@@ -142,12 +161,19 @@ def check_for_updates():
                     socketio.emit('update_available', {'new_version': new_version})
 
                     # Download the update file and replace old files
-                    download_and_replace_update(data['updateFile'])
+                    if download_and_replace_update(data['updateFile']):
+                        # Update the CURRENT_VERSION in the .env file
+                        update_env_version(new_version)
 
-                    # Schedule a reboot in 30 seconds
-                    print("Rebooting system in 30 seconds...")
-                    time.sleep(30)
-                    reboot_system()
+                        # Load the new version into the current environment
+                        load_dotenv(dotenv_path='/home/RPI-5/.env')
+                        current_version = os.getenv('CURRENT_VERSION')
+                        print(f"Current version updated to: {current_version}")
+
+                        # Schedule a reboot in 30 seconds
+                        print("Rebooting system in 30 seconds...")
+                        time.sleep(30)
+                        reboot_system()
 
                 else:
                     print("Already on the latest version.")
@@ -161,7 +187,6 @@ def check_for_updates():
 
         # Check again in 1 hour
         time.sleep(3600)
-
 
 
 import zipfile
@@ -210,6 +235,7 @@ def download_and_replace_update(update_url):
                 # Clean up the zip file
                 os.remove(update_file)
                 print("Update completed successfully.")
+                return True
             else:
                 print("Error: The downloaded file is not a valid zip file.")
 
