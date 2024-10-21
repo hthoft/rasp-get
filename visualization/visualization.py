@@ -124,6 +124,7 @@ def check_for_updates():
 
             # Make the POST request
             response = requests.post(url, headers=headers, data=data)
+
             if response.status_code == 200:
                 data = response.json()
 
@@ -144,14 +145,17 @@ def check_for_updates():
 
                 else:
                     print("Already on the latest version.")
-
             else:
+                # Print error response and status code
                 print(f"Error checking for updates. Status code: {response.status_code}")
+                print(f"Response content: {response.text}")  # Print the response content to inspect
+
         except Exception as e:
             print(f"Error while checking for updates: {e}")
 
         # Check again in 1 hour
         time.sleep(3600)
+
 
 
 import zipfile
