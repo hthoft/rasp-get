@@ -153,7 +153,7 @@ def check_for_updates():
                     print(f"New update available: {new_version}")
 
                     # Notify frontend via SocketIO
-                    socketio.emit('update_available', {'new_version': new_version})
+                    socketio.emit('update_status', {'message': 'Henter opdatering..', 'status': 'downloading'})
 
                     # Download the update file and replace old files
                     if download_and_replace_update(data['updateFile']):
@@ -164,6 +164,7 @@ def check_for_updates():
                         load_dotenv(dotenv_path='/home/RPI-5/.env')
                         current_version = os.getenv('CURRENT_VERSION')
                         print(f"Current version updated to: {current_version}")
+                        socketio.emit('update_status', {'message': 'Opdatering fuldført', 'status': 'success'})
 
                         # Schedule a reboot in 30 seconds
                         print("Rebooting system in 30 seconds...")
@@ -181,7 +182,7 @@ def check_for_updates():
             print(f"Error while checking for updates: {e}")
 
         # Check again in 1 hour
-        time.sleep(3600)
+        time.sleep(30)
 
 
 import zipfile
@@ -232,13 +233,19 @@ def download_and_replace_update(update_url):
                 print("Update completed successfully.")
                 return True
             else:
+                socketio.emit('update_status', {'message': 'Error: The downloaded file is not a valid zip file.', 'status': 'error'})
+
                 print("Error: The downloaded file is not a valid zip file.")
 
         else:
+            socketio.emit('update_status', {'message': f'Failed to download the update. Status code: {response.status_code}', 'status': 'error'})
+
             print(f"Failed to download the update file. Status code: {response.status_code}")
             print(response.text)  # Print the error response for debugging
 
     except Exception as e:
+        socketio.emit('update_status', {'message': f'Error during update: {e}', 'status': 'error'})
+
         print(f"Error during update: {e}")
 
 

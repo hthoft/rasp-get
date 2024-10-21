@@ -384,20 +384,83 @@
         setInterval(updateDateTime, 1000);
       });
 
-      // Define a SweetAlert mixin with your desired settings
+      // Define a SweetAlert mixin with your desired settings for the base toast
       const toast = Swal.mixin({
         toast: true,
         position: "bottom-start",
         background: "#343a40", // Dark color
         color: "#ffffff", // White text color
         showConfirmButton: false, // No buttons
-        timer: false, // No auto timer
+        timerProgressBar: true, // Show a timer progress bar
         showCloseButton: false, // No close button
         allowOutsideClick: false,
         allowEscapeKey: false,
+        timer: false, // Timer will be added dynamically
       });
 
-      // Trigger SweetAlert when the socket disconnects
+      // Function to display "Henter opdatering.." with a spinner
+      function showUpdateDownloadToast() {
+        toast.fire({
+          title: "Henter opdatering..",
+          text: "Opdateringen downloades, vent venligst.",
+          icon: "info", // Show spinner-like icon
+          didOpen: () => {
+            Swal.showLoading(); // This will show a spinner
+          },
+        });
+      }
+
+      // Function to display "Genstarter om 30 sek" with a progress bar
+      function showRebootCountdownToast() {
+        let timerInterval;
+
+        toast.fire({
+          title: "Genstarter om 30 sek",
+          html: "Opdateringen er fuldført, genstartes snart.",
+          icon: "success", // Success icon for completion
+          timer: 30000, // 30-second countdown
+          timerProgressBar: true, // Enable the progress bar
+          didOpen: () => {
+            const content = Swal.getContent();
+            const $ = content.querySelector.bind(content);
+
+            // Update the content with countdown
+            timerInterval = setInterval(() => {
+              const timeLeft = Math.round(Swal.getTimerLeft() / 1000);
+              Swal.update({
+                html: `Genstarter om ${timeLeft} sekunder.`,
+              });
+            }, 1000);
+          },
+          willClose: () => {
+            clearInterval(timerInterval); // Clear the interval on close
+          },
+        });
+      }
+
+      // Socket event handling for update status
+      socket.on("update_status", function (data) {
+        if (data.status === "downloading") {
+          showUpdateDownloadToast(); // Show the spinner toast
+        } else if (data.status === "success") {
+          Swal.close(); // Close any active alerts (like the spinner)
+          showRebootCountdownToast(); // Show the countdown toast
+        } else if (data.status === "error") {
+          Swal.fire({
+            toast: true,
+            position: "bottom-start",
+            background: "#ff4444", // Red color for error
+            color: "#ffffff",
+            title: "Fejl",
+            text: data.message, // Show the error message
+            icon: "error",
+            showConfirmButton: false,
+            timer: 5000, // Auto close after 5 seconds
+          });
+        }
+      });
+
+      // Socket connection and disconnection events
       socket.on("disconnect", function () {
         toast.fire({
           title: "Advarsel",
@@ -406,22 +469,16 @@
         });
       });
 
-      // Remove the alert when the socket connection is reinstated
       socket.on("connect", function () {
-        Swal.close(); // This will close any active alert
-        Swal.mixin({
+        Swal.close(); // Close any active alert on reconnect
+        Swal.fire({
           toast: true,
           position: "bottom-start",
           background: "#343a40", // Dark color
           color: "#ffffff", // White text color
-          showConfirmButton: false, // No buttons
-          timer: false, // No auto timer
-          showCloseButton: false, // No close button
-          allowOutsideClick: false,
-          allowEscapeKey: false,
-          title: "Success",
+          title: "Forbindelsen til serveren er genoprettet.",
           icon: "success",
-          text: "Forbindelsen til serveren er genoprettet.",
+          timer: 3000, // Close automatically after 3 seconds
         });
       });
     </script>
