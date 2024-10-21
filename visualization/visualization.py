@@ -165,6 +165,7 @@ import zipfile
 def download_and_replace_update(update_url):
     try:
         update_file = "device_update.zip"
+        extract_path = "/home/RPI-5/rasp-get/"  # Correct extraction path
 
         # Download the update file
         print(f"Downloading update from {update_url}...")
@@ -193,12 +194,16 @@ def download_and_replace_update(update_url):
             # Check the file type after downloading
             if zipfile.is_zipfile(update_file):
                 print("File is a valid zip file. Extracting and replacing files...")
-                
+
+                # Ensure the extract_path exists
+                if not os.path.exists(extract_path):
+                    os.makedirs(extract_path)
+
                 # Extract and replace the old files
                 with zipfile.ZipFile(update_file, 'r') as zip_ref:
-                    zip_ref.extractall("/path/to/your/application")
+                    zip_ref.extractall(extract_path)
 
-                # Clean up
+                # Clean up the zip file
                 os.remove(update_file)
                 print("Update completed successfully.")
             else:
