@@ -108,23 +108,18 @@ load_all_caches()
 
 
 # ============== Update System ==============  
-
 def update_env_version(new_version):
     env_file = '/home/RPI-5/.env'
     
-    # Read the existing .env file
-    with open(env_file, 'r') as file:
-        lines = file.readlines()
-    
-    # Write the new version back to the file
-    with open(env_file, 'w') as file:
-        for line in lines:
-            if line.startswith('CURRENT_VERSION='):
-                file.write(f'CURRENT_VERSION={new_version}\n')
-            else:
-                file.write(line)
-    
-    print(f".env file updated with new version: {new_version}")
+    # Command to update CURRENT_VERSION using sed
+    command = f"sudo sed -i 's/^CURRENT_VERSION=.*/CURRENT_VERSION={new_version}/' {env_file}"
+
+    try:
+        # Execute the command
+        subprocess.run(command, shell=True, check=True)
+        print(f".env file updated with new version: {new_version}")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to update .env file: {e}")
 
 
 # Main function to check for updates
