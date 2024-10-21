@@ -16,6 +16,7 @@ from flask_socketio import SocketIO
 import socket
 import uuid
 from dotenv import load_dotenv
+import shutil
 
 # ============== Environment and Global Variables ==============
 # Load environment variables from .env file
@@ -166,6 +167,13 @@ def download_and_replace_update(update_url):
     try:
         update_file = "device_update.zip"
         extract_path = "/home/RPI-5/rasp-get/"  # Correct extraction path
+        env_file = os.path.join(extract_path, ".env")  # Path to .env file
+
+        # Step 1: Backup the existing .env file
+        if os.path.exists(env_file):
+            backup_env_file = env_file + ".backup"
+            shutil.copyfile(env_file, backup_env_file)
+            print(".env file has been backed up.")
 
         # Download the update file
         print(f"Downloading update from {update_url}...")
@@ -185,25 +193,28 @@ def download_and_replace_update(update_url):
                 print(response.text)  # Print the HTML response to inspect it
                 return
 
-            # Write the content to the file
+            # Step 2: Write the content to the file
             with open(update_file, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)
             
-            # Check the file type after downloading
+            # Step 3: Check if the file is a valid zip file
             if zipfile.is_zipfile(update_file):
                 print("File is a valid zip file. Extracting and replacing files...")
 
-                # Ensure the extract_path exists
-                if not os.path.exists(extract_path):
-                    os.makedirs(extract_path)
-
-                # Extract and replace the old files
+                # Step 4: Extract the files
                 with zipfile.ZipFile(update_file, 'r') as zip_ref:
                     zip_ref.extractall(extract_path)
 
-                # Clean up the zip file
+                # Step 5: Restore the backed-up .env file
+                if os.path.exists(backup_env_file):
+                    shutil.copyfile(backup_env_file, env_file)
+                    print(".env file has been restored from backup.")
+                    os.remove(backup_env_file)  # Clean up the backup
+                    print("Backup .env file removed.")
+
+                # Step 6: Clean up the zip file
                 os.remove(update_file)
                 print("Update completed successfully.")
             else:
