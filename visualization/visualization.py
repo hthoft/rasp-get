@@ -168,7 +168,13 @@ def download_and_replace_update(update_url):
 
         # Download the update file
         print(f"Downloading update from {update_url}...")
-        response = requests.get(update_url, stream=True)
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Content-Type': 'application/x-www-form-urlencoded',  # Indicating form-encoded data
+            'Accept': 'application/json'  # Expecting JSON response
+        }
+        response = requests.get(update_url, headers=headers, stream=True)
 
         if response.status_code == 200:
             content_type = response.headers.get('Content-Type')
