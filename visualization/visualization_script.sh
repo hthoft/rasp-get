@@ -6,6 +6,24 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# Ask the user to select the device type
+echo "Select the device type:"
+echo "1) RPI-5"
+echo "2) RPI-4B"
+read -p "Enter the number corresponding to your device (1 or 2): " device_choice
+
+# Set the directory and device name based on the user's choice
+if [[ "$device_choice" == "1" ]]; then
+    DEVICE_NAME="RPI-5"
+elif [[ "$device_choice" == "2" ]]; then
+    DEVICE_NAME="RPI-4B"
+else
+    echo "Invalid selection. Please choose either 1 or 2."
+    exit 1
+fi
+
+echo "You selected $DEVICE_NAME."
+
 echo "Starting the Raspberry Pi setup..."
 
 # Step 1: Update System and Install Dependencies
@@ -49,7 +67,7 @@ sleep 2  # Delay
 echo "Step 5: Setting custom splash screen..."
 
 # Copy the splash image (replace with the path to your splash.png)
-splash_image_path="/home/RPI-5/rasp-get/splash.png"
+splash_image_path="/home/$DEVICE_NAME/rasp-get/splash.png"
 if [[ -f "$splash_image_path" ]]; then
     sudo cp "$splash_image_path" /usr/share/plymouth/themes/pix/splash.png
     echo "Copied splash.png to Plymouth theme folder"
@@ -104,16 +122,15 @@ echo "Step 9: Cloning rasp-get repository and setting up environment variables..
 cat <<EOT >> .env
 API_KEY=eba2db587a73af3e49c82f07e2205570ad2acee28f15ad37d2d3d0e73dbc5047
 CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
-DEVICE_SN=56958923
+DEVICE_SN=46278663
 DISPLAY_NAME=Maprova
 LOCATION_ID=0
-LOCATION_NAME=Hal_6_1
+LOCATION_NAME=Hal_Primo_2
 CURRENT_VERSION=1.1.0
 EOT
 sleep 2  # Delay 
 
-mv .env /home/RPI-5/
-
+mv .env /home/$DEVICE_NAME/
 
 # Step 13: Setup Kiosk Mode and Auto Start
 echo "Step 13: Setting up Kiosk mode and script autostart..."
@@ -131,7 +148,7 @@ sleep 2  # Delay
 # Step 14: Creating a systemd service for starting X on boot
 echo "Step 14: Creating a systemd service to run startx on boot..."
 
-bashrc_file="/home/RPI-5/.bashrc"
+bashrc_file="/home/$DEVICE_NAME/.bashrc"
 if ! grep -q "startx -- -nocursor" "$bashrc_file"; then
     echo -e "\n# Start X when logging in on tty1\nif [ -z \"\$DISPLAY\" ] && [ \"\$(tty)\" = \"/dev/tty1\" ]; then\n    startx -- -nocursor\nfi" | sudo tee -a "$bashrc_file"
     echo "startx added to .bashrc"
@@ -140,7 +157,7 @@ else
 fi
 
 # Ensure permissions are correct for .bashrc
-chown RPI-5:RPI-5 "$bashrc_file"
+chown $DEVICE_NAME:$DEVICE_NAME "$bashrc_file"
 chmod 644 "$bashrc_file"
 
 sleep 2  # Delay
