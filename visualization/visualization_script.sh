@@ -104,13 +104,16 @@ echo "Step 9: Cloning rasp-get repository and setting up environment variables..
 cat <<EOT >> .env
 API_KEY=eba2db587a73af3e49c82f07e2205570ad2acee28f15ad37d2d3d0e73dbc5047
 CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
-DEVICE_SN=98844435
+DEVICE_SN=56958923
 DISPLAY_NAME=Maprova
 LOCATION_ID=0
-LOCATION_NAME=Tegnestuen_2
+LOCATION_NAME=Hal_6_1
 CURRENT_VERSION=1.1.0
 EOT
 sleep 2  # Delay 
+
+mv .env /home/RPI-5/
+
 
 # Step 13: Setup Kiosk Mode and Auto Start
 echo "Step 13: Setting up Kiosk mode and script autostart..."
