@@ -24,6 +24,12 @@ fi
 
 echo "You selected $DEVICE_NAME."
 
+# Ask the user for the device serial number
+read -p "Enter the device serial number (DEVICE_SN): " DEVICE_SN
+
+# Ask the user for the location name
+read -p "Enter the location name (LOCATION_NAME): " LOCATION_NAME
+
 echo "Starting the Raspberry Pi setup..."
 
 # Step 1: Update System and Install Dependencies
@@ -122,10 +128,10 @@ echo "Step 9: Cloning rasp-get repository and setting up environment variables..
 cat <<EOT >> .env
 API_KEY=eba2db587a73af3e49c82f07e2205570ad2acee28f15ad37d2d3d0e73dbc5047
 CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
-DEVICE_SN=46278663
+DEVICE_SN=$DEVICE_SN
 DISPLAY_NAME=Maprova
 LOCATION_ID=0
-LOCATION_NAME=Hal_Primo_2
+LOCATION_NAME=$LOCATION_NAME
 CURRENT_VERSION=1.1.0
 EOT
 sleep 2  # Delay 
