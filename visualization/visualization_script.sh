@@ -141,15 +141,23 @@ mv .env /home/$DEVICE_NAME/
 # Step 13: Setup Kiosk Mode and Auto Start
 echo "Step 13: Setting up Kiosk mode and script autostart..."
 
-# Add autostart for openbox
+# Add autostart for openbox using heredoc for multiline echo
 autostart_file="/etc/xdg/openbox/autostart"
 if ! grep -q "chromium-browser" "$autostart_file"; then
-    echo "xset s off\nxset s noblank\nxset -dpms\nsetxkbmap -option terminate:ctrl_alt_bksp\ncd rasp-get/visualization/\npython3 visualization.py &\nsleep 5\nchromium-browser --kiosk http://localhost:5000/visualization &" | sudo tee -a "$autostart_file"
+    sudo tee -a "$autostart_file" > /dev/null <<EOT
+xset s off
+xset s noblank
+xset -dpms
+setxkbmap -option terminate:ctrl_alt_bksp
+cd rasp-get/visualization/
+python3 visualization.py & chromium-browser --kiosk http://localhost:5000/visualization
+EOT
     echo "Added Kiosk mode setup to openbox autostart"
 else
     echo "Kiosk mode already set in openbox autostart"
 fi
 sleep 2  # Delay
+
 
 # Replace all instances of RPI-5 with RPI-4B in visualization.py if device is RPI-4B
 if [[ "$DEVICE_NAME" == "RPI-4B" ]]; then
