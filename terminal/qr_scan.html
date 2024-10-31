@@ -170,7 +170,6 @@
         <div class="row m-0">
           <div class="col-8">
             <div class="mt-5" id="current-time"></div>
-            <div id="scan-result" class="text-success fw-bold"></div>
           </div>
           <div class="col-4 d-flex mt-5 justify-content-center">
             <div class="fade-cycle">
@@ -185,6 +184,12 @@
     <script src="js/socket.io.js"></script>
     <script src="js/sweetalert.js"></script>
     <script>
+      function formatDateTime2() {
+        const now = new Date();
+
+        return 
+        ;
+
       function formatDateTime() {
         const now = new Date();
         const dateOptions = {
@@ -250,33 +255,27 @@
               // Open SweetAlert and set alertOpen to true
               alertOpen = true;
               Swal.fire({
-                icon: "success",
-                title: "Registrering gennemført!",
-                text: `Velkommen! ID: ${scanBuffer}\nTidspunkt: ${formatDateTime()}`,
-                showConfirmButton: false,
-                timer: 3000, // Auto-close after 3 seconds
-                timerProgressBar: true,
-                customClass: {
-                  popup: "animated fadeInDown",
-                },
-                color: "#333",
-                background: "#f0f0f0",
-                backdrop: `
-                  rgba(0,0,123,0.4)
-                  url("https://i.gifer.com/ZZ5H.gif")
-                  left top
-                  no-repeat
-                `,
-              }).then(() => {
-                // Reset the buffer and allow new inputs after SweetAlert closes
-                scanBuffer = "";
-                alertOpen = false;
-              });
+  icon: "success",
+  title: "Registrering gennemført!",
+  html: `
+    <h2 style="margin-bottom: 0.5rem;">Hans Thoft Rasmussen</h2>
+    <h4 style="margin-bottom: 0.5rem;">Du er nu mødt ind:</h4>
+    <h5 style="font-weight: 300;">${formatDateTime()}</h5>
+  `,
+  showConfirmButton: false,
+  timer: 3000, // Auto-close after 3 seconds
+  timerProgressBar: true,
+  customClass: {
+    popup: "animated fadeInDown",
+  },
+  color: "#333",
+}).then(() => {
+  // Reset the buffer and allow new inputs after SweetAlert closes
+  scanBuffer = "";
+  alertOpen = false;
+});
 
-              // Display scan result in the container
-              document.getElementById(
-                "scan-result"
-              ).textContent = `ID Scanned: ${scanBuffer}`;
+
             }, scanDelay);
           } else {
             console.warn(`Invalid character ignored: ${event.key}`); // Optional security log
