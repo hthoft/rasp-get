@@ -28,7 +28,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: space-around;
+        justify-content: center;
         text-align: center;
       }
 
@@ -124,16 +124,15 @@
     </div>
 
     <div id="container">
-      <div id="welcome-message">Velkommen!</div>
-      <div id="scan-prompt">
-        Scan din QR eller RFID for at registrere kom/gå tidspunkt.
+      <div class="row">
+        <!-- Left Column (col-8) -->
+        <div id="welcome-message">Velkommen!</div>
+        <div id="scan-prompt">
+          Scan din QR eller RFID for at registrere kom/gå tidspunkt.
+        </div>
+        <div class="mt-4" id="current-time"></div>
+        <div id="scan-result" class="text-success fw-bold"></div>
       </div>
-      <div id="current-time">Tid:</div>
-      <div
-        id="scan-result"
-        class="text-success fw-bold"
-        style="font-size: 1.5rem"
-      ></div>
     </div>
 
     <script src="js/bootstrap.bundle.min.js"></script>
@@ -143,62 +142,91 @@
     <script>
       function formatDateTime() {
         const now = new Date();
-        const options = {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
+        const dateOptions = {
+          weekday: "long", // Day name (e.g., Monday)
+          day: "numeric", // Day of the month (e.g., 1, 2, 3)
+          month: "long", // Month name (e.g., January)
+          year: "numeric", // Year (e.g., 2024)
         };
-        return now.toLocaleTimeString("da-DK", options);
+        const timeOptions = {
+          hour: "2-digit", // Hour in 2-digit format
+          minute: "2-digit", // Minute in 2-digit format
+          second: "2-digit", // Second in 2-digit format
+        };
+
+        let dateString = now.toLocaleDateString("da-DK", dateOptions);
+        dateString = dateString.charAt(0).toUpperCase() + dateString.slice(1); // Capitalize the first letter
+
+        const timeString = now.toLocaleTimeString("da-DK", timeOptions);
+
+        return `<span style="font-weight: 300; font-size: 2rem;">${dateString}</span><br><span style="font-size: 4rem">${timeString}</span>`;
       }
 
       // Update current time every second
       setInterval(() => {
-        document.getElementById("current-time").textContent =
-          "Tid: " + formatDateTime();
+        document.getElementById("current-time").innerHTML = formatDateTime();
       }, 1000);
 
       let scanBuffer = ""; // Buffer to collect scan input
       let scanTimeout; // Timeout variable for delay
+      let alertOpen = false; // Flag to track if SweetAlert is open
 
       // Delay time in milliseconds (adjust as necessary)
       const scanDelay = 100; // Short delay to identify end of scan
 
       // Listen for keydown events to capture scanner input
       window.addEventListener("keydown", (event) => {
+        if (alertOpen) return; // Ignore inputs while alert is open
+
         console.log(`Key pressed: ${event.key}`); // Debugging line to check key presses
 
         // Ignore non-character keys like "Shift" or "Control"
         if (event.key.length === 1) {
-          scanBuffer += event.key; // Append only character keys
+          // Validate and accept only alphanumeric characters
+          if (/^[a-zA-Z0-9]$/.test(event.key)) {
+            scanBuffer += event.key; // Append only valid characters
 
-          // Clear any existing timeout
-          clearTimeout(scanTimeout);
+            // Clear any existing timeout
+            clearTimeout(scanTimeout);
 
-          // Set a new timeout to process the scan after the specified delay
-          scanTimeout = setTimeout(() => {
-            console.log(`Scan result: ${scanBuffer}`); // Debugging line to check scan result
+            // Set a new timeout to process the scan after the specified delay
+            scanTimeout = setTimeout(() => {
+              console.log(`Scan result: ${scanBuffer}`); // Debugging line to check scan result
 
-            // Show SweetAlert with scan result and timestamp
-            Swal.fire({
-              icon: "success",
-              title: "Registrering gennemført!",
-              text: `Velkommen! ID: ${scanBuffer}\nTidspunkt: ${formatDateTime()}`,
-              showConfirmButton: true,
-              confirmButtonText: "OK",
-              customClass: {
-                popup: "animated fadeInDown",
-              },
-              color: "#ddd",
-            });
+              // Open SweetAlert and set alertOpen to true
+              alertOpen = true;
+              Swal.fire({
+                icon: "success",
+                title: "Registrering gennemført!",
+                text: `Velkommen! ID: ${scanBuffer}\nTidspunkt: ${formatDateTime()}`,
+                showConfirmButton: false,
+                timer: 3000, // Auto-close after 3 seconds
+                timerProgressBar: true,
+                customClass: {
+                  popup: "animated fadeInDown",
+                },
+                color: "#333",
+                background: "#f0f0f0",
+                backdrop: `
+                  rgba(0,0,123,0.4)
+                  url("https://i.gifer.com/ZZ5H.gif")
+                  left top
+                  no-repeat
+                `,
+              }).then(() => {
+                // Reset the buffer and allow new inputs after SweetAlert closes
+                scanBuffer = "";
+                alertOpen = false;
+              });
 
-            // Display scan result in the container
-            document.getElementById(
-              "scan-result"
-            ).textContent = `ID Scanned: ${scanBuffer}`;
-
-            // Clear the buffer after showing the result
-            scanBuffer = "";
-          }, scanDelay);
+              // Display scan result in the container
+              document.getElementById(
+                "scan-result"
+              ).textContent = `ID Scanned: ${scanBuffer}`;
+            }, scanDelay);
+          } else {
+            console.warn(`Invalid character ignored: ${event.key}`); // Optional security log
+          }
         }
       });
     </script>
