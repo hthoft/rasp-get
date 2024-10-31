@@ -130,16 +130,18 @@
     </div>
 
     <div id="container">
-      <div id="welcome-message">Velkommen!</div>
-      <div id="scan-prompt">
-        Scan din QR eller RFID for at registrere dit kom/gå tidspunkt.
+      <div class="content-container">
+        <div id="welcome-message">Velkommen!</div>
+        <div id="scan-prompt">
+          Scan din QR eller RFID for at registrere kom/gå tidspunkt.
+        </div>
+        <div id="current-time">Tid:</div>
+        <div
+          id="scan-result"
+          class="text-success fw-bold"
+          style="font-size: 1.5rem"
+        ></div>
       </div>
-      <div id="current-time">Tid:</div>
-      <div
-        id="scan-result"
-        class="text-success fw-bold"
-        style="font-size: 1.5rem"
-      ></div>
     </div>
 
     <script src="js/bootstrap.bundle.min.js"></script>
@@ -163,35 +165,24 @@
           "Tid: " + formatDateTime();
       }, 1000);
 
-      let scanBuffer = ""; // Buffer to collect scan input
-
-      // Listen for keypress events to capture scanner input
+      // Simulate QR or RFID input on scanner keypress
       window.addEventListener("keypress", (event) => {
-        // Check if Enter key is pressed to trigger scan completion
-        if (event.key === "Enter") {
-          // Show SweetAlert with scan result and timestamp
-          Swal.fire({
-            icon: "success",
-            title: "Registrering gennemført!",
-            text: `Velkommen! ID: ${scanBuffer}\nTidspunkt: ${formatDateTime()}`,
-            showConfirmButton: true,
-            confirmButtonText: "OK",
-            customClass: {
-              popup: "animated fadeInDown",
-            },
-          });
+        const scanResult = event.key; // Read scanned character as input
+        document.getElementById(
+          "scan-result"
+        ).textContent = `ID Scanned: ${scanResult}`;
 
-          // Display scan result in the container
-          document.getElementById(
-            "scan-result"
-          ).textContent = `ID Scanned: ${scanBuffer}`;
-
-          // Clear the buffer after showing the result
-          scanBuffer = "";
-        } else {
-          // Append each character to the buffer
-          scanBuffer += event.key;
-        }
+        // Show SweetAlert with scan result and timestamp
+        Swal.fire({
+          icon: "success",
+          title: "Registrering gennemført!",
+          text: `Velkommen! ID: ${scanResult}\nTidspunkt: ${formatDateTime()}`,
+          showConfirmButton: true,
+          confirmButtonText: "OK",
+          customClass: {
+            popup: "animated fadeInDown",
+          },
+        });
       });
     </script>
   </body>
