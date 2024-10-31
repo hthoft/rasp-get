@@ -23,7 +23,6 @@
         width: 800px;
         height: 480px;
         background-image: url("assets/maprova-bg.png");
-        background-size: cover;
         color: white;
         display: flex;
         flex-direction: column;
@@ -167,23 +166,40 @@
           Scan din <b>QR-kode</b> eller <b>RFID-brik</b> for at registrere
           tidspunktet.
         </div>
-        <div class="row m-0">
-          <div class="col-8">
             <div class="mt-5" id="current-time"></div>
-          </div>
-          <div class="col-4 d-flex mt-5 justify-content-center">
-            <div class="fade-cycle">
-              <img src="assets/qrcode-scan-custom.png" alt="QR Code Scan" class="fade-image">
-              <img src="assets/access-point-custom.png" alt="Access Point" class="fade-image">
-            </div>
-          </div>
-                </div>
     </div>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/jquery-3.6.0.min.js"></script>
     <script src="js/socket.io.js"></script>
     <script src="js/sweetalert.js"></script>
     <script>
+function formatDateTime2() {
+  const now = new Date();
+        const dateOptions = {
+          weekday: "long", // Day name (e.g., Monday)
+          day: "numeric", // Day of the month (e.g., 1, 2, 3)
+          month: "long", // Month name (e.g., January)
+          year: "numeric", // Year (e.g., 2024)
+        };
+        const timeOptions = {
+          hour: "2-digit", // Hour in 2-digit format
+          minute: "2-digit", // Minute in 2-digit format
+          second: "2-digit", // Second in 2-digit format
+        };
+  let dateString = now.toLocaleDateString("da-DK", dateOptions);
+        dateString = dateString.charAt(0).toUpperCase() + dateString.slice(1); // Capitalize the first letter
+
+          // Extract individual time components
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+
+        // Format the time string manually with ":"
+        const timeString = `${hours}:${minutes}:${seconds}`;
+  return `${dateString} - ${timeString}`;
+}
+
+
       function formatDateTime() {
         const now = new Date();
         const dateOptions = {
@@ -210,8 +226,8 @@
         const timeString = `${hours}:${minutes}:${seconds}`;
 
         return `
-  <span style="font-weight: 300; font-size: 2.2rem; display: block; line-height: 1;">${dateString}</span>
-  <span style="font-size: 6.5rem; display: block; line-height: 1.2;">${timeString}</span>
+  <span style="font-weight: 300; font-size: 2.5rem; display: block; line-height: 1;">${dateString}</span>
+  <span style="font-size: 8rem; display: block; line-height: 1;">${timeString}</span>
 `;
       }
 
@@ -250,19 +266,20 @@
               alertOpen = true;
               Swal.fire({
   icon: "success",
-  title: "Registrering gennemført!",
+  title: "Tidsregistrering gennemført!",
   html: `
-    <h2 style="margin-bottom: 0.5rem;">Hans Thoft Rasmussen</h2>
-    <h4 style="margin-bottom: 0.5rem;">Du er nu mødt ind:</h4>
-    <h5 style="font-weight: 300;">${formatDateTime()}</h5>
+    <h1 class="text-success" style="margin-bottom: 0.5rem;">Hans Thoft Rasmussen</h1>
+    <h4 style="margin-bottom: 0.5rem;">Ankomst:</h4>
+    <h4 class="mb-5" style="font-weight: 300;">${formatDateTime2()}</h4>
   `,
   showConfirmButton: false,
-  timer: 3000, // Auto-close after 3 seconds
+  width: 800,
+  timer: 5000, // Auto-close after 3 seconds
   timerProgressBar: true,
   customClass: {
     popup: "animated fadeInDown",
   },
-  color: "#333",
+  color: "#ddd",
 }).then(() => {
   // Reset the buffer and allow new inputs after SweetAlert closes
   scanBuffer = "";
