@@ -3,105 +3,196 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QR Code Scan</title>
-
-    <!-- Include html5-qrcode library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
-
+    <title>Kom&Gå Terminal</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/sweetalert-dark.css" rel="stylesheet" />
     <style>
-      #reader {
-        width: 300px;
-        margin: 20px auto;
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #container {
+        width: 800px;
+        height: 480px;
+        background-image: url("maprova-bg.png");
+        background-size: cover;
+        padding: 20px;
+        color: white;
+      }
+
+      .content-container {
+        display: flex;
+        height: 100%;
+      }
+
+      .left-col {
+        flex: 0 0 40%;
+        padding-right: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-right: 2px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .right-col {
+        flex: 0 0 60%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #current-time {
+        font-size: 2.5rem;
+        font-weight: bolder;
+      }
+
+      #topBar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 40px;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 10;
+        color: white;
+        padding: 5px 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .icon-container {
+        position: absolute;
+        left: 10px;
+        display: flex;
+        gap: 10px;
+      }
+
+      #clock {
+        color: white;
+        font-size: 1.5rem;
       }
     </style>
   </head>
   <body>
-    <h1>Scan QR Code</h1>
-
-    <!-- QR Scanner container -->
-    <div id="reader"></div>
-
-    <!-- Text input for manual input of QR codes -->
-    <input type="text" id="qr-input" placeholder="Enter scanned QR code" />
-    <button onclick="validateQR()">Validate QR</button>
-
-    <!-- Validation result -->
-    <div id="result"></div>
-
-    <!-- Display the decoded QR and time difference -->
-    <div id="decoded-info">
-      <p>Decoded QR: <span id="decoded-qr"></span></p>
-      <p>Time Difference: <span id="time-difference"></span> seconds</p>
+    <div id="topBar" class="d-flex justify-content-between align-items-center">
+      <div class="icon-container">
+        <div id="usbIcon" class="icon" title="USB Status">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="#f94f5f"
+          >
+            <path
+              d="M15,7V11H16V13H13V5H15L12,1L9,5H11V13H8V10.93C8.7,10.56 9.2,9.85 9.2,9C9.2,7.78 8.21,6.8 7,6.8C5.78,6.8 4.8,7.78 4.8,9C4.8,9.85 5.3,10.56 6,10.93V13A2,2 0 0,0 8,15H11V18.05C10.29,18.41 9.8,19.15 9.8,20A2.2,2.2 0 0,0 12,22.2A2.2,2.2 0 0,0 14.2,20C14.2,19.15 13.71,18.41 13,18.05V15H16A2,2 0 0,0 18,13V11H19V7H15Z"
+            />
+          </svg>
+        </div>
+        <div id="wifiIcon" class="icon" title="WiFi Status">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="#f94f5f"
+          >
+            <path
+              d="M12,21L15.6,16.2C14.6,15.45 13.35,15 12,15C10.65,15 9.4,15.45 8.4,16.2L12,21M12,3C7.95,3 4.21,4.34 1.2,6.6L3,9C5.5,7.12 8.62,6 12,6C15.38,6 18.5,7.12 21,9L22.8,6.6C19.79,4.34 16.05,3 12,3M12,9C9.3,9 6.81,9.89 4.8,11.4L6.6,13.8C8.1,12.67 9.97,12 12,12C14.03,12 15.9,12.67 17.4,13.8L19.2,11.4C17.19,9.89 14.7,9 12,9Z"
+            />
+          </svg>
+        </div>
+        <div id="serverIcon" class="icon" title="Server Status">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="#f94f5f"
+          >
+            <path
+              d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
+            />
+          </svg>
+        </div>
+      </div>
+      <div id="clock" class="text-center fw-light w-100">MAPROVA TERMINAL</div>
     </div>
 
+    <div id="container">
+      <div class="content-container">
+        <!-- Left Column -->
+        <div class="left-col">
+          <h1 class="fw-bolder" style="font-weight: bolder; font-size: 3rem">
+            Velkommen!
+          </h1>
+          <p style="font-size: 1.5rem">
+            Scan QR eller RFID for at registrere kom/gå tidspunkt.
+          </p>
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-col pt-5">
+          <div id="current-time" class="text-white">Tid:</div>
+          <div
+            id="scan-result"
+            class="text-success fw-bold mt-4"
+            style="font-size: 1.5rem"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/socket.io.js"></script>
+    <script src="js/sweetalert.js"></script>
     <script>
-      // Function to decode and compare the QR code with the current time
-      function validateQR(qrCode) {
-        const qrCodeValue = qrCode || document.getElementById("qr-input").value;
-
-        try {
-          // Decode the QR code (assuming it's a timestamp obfuscated in reverse hex format)
-          const decodedTimestamp = decodeQR(qrCodeValue);
-          const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
-
-          // Calculate time difference
-          const timeDifference = Math.abs(currentTime - decodedTimestamp);
-          document.getElementById("decoded-qr").textContent = decodedTimestamp; // Display decoded QR
-          document.getElementById("time-difference").textContent =
-            timeDifference; // Display time difference
-
-          // Allow ±30 seconds time window for validation
-          if (timeDifference <= 30) {
-            document.getElementById("result").textContent = "QR code is valid";
-          } else {
-            document.getElementById("result").textContent =
-              "QR code is invalid or expired";
-          }
-        } catch (error) {
-          document.getElementById("result").textContent =
-            "Error decoding or validating QR code";
-        }
+      function formatDateTime() {
+        const now = new Date();
+        const options = {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        };
+        return now.toLocaleTimeString("da-DK", options);
       }
 
-      // Simulate decoding the QR code (reverse hex example)
-      function decodeQR(qrCode) {
-        const reversedHex = qrCode.split("").reverse().join(""); // Reverse back
-        const timestamp = parseInt(reversedHex, 16); // Convert hex to integer
-        if (isNaN(timestamp)) {
-          throw new Error("Invalid QR code format");
-        }
-        return timestamp; // Return the original timestamp
-      }
+      // Update current time every second
+      setInterval(() => {
+        document.getElementById("current-time").textContent =
+          "Tid: " + formatDateTime();
+      }, 1000);
 
-      // Initialize QR scanner
-      function onScanSuccess(decodedText, decodedResult) {
-        // Pass the decoded QR text to the validation function
-        document.getElementById("qr-input").value = decodedText;
-        validateQR(decodedText);
-      }
+      // Simulate QR or RFID input on scanner keypress
+      window.addEventListener("keypress", (event) => {
+        const scanResult = event.key; // Read scanned character as input
+        document.getElementById(
+          "scan-result"
+        ).textContent = `ID Scanned: ${scanResult}`;
 
-      function onScanFailure(error) {
-        // Handle scan failure (optional)
-        console.warn(`QR code scan failed: ${error}`);
-      }
-
-      // Initialize the scanner with the element 'reader'
-      const html5QrCode = new Html5Qrcode("reader");
-
-      // Start scanning (with the default camera or rear camera)
-      html5QrCode
-        .start(
-          { facingMode: "environment" }, // Use rear camera
-          {
-            fps: 10, // Set the scan rate (frames per second)
-            qrbox: { width: 250, height: 250 }, // Size of QR scan box
+        // Show SweetAlert with scan result and timestamp
+        Swal.fire({
+          icon: "success",
+          title: "Registrering gennemført!",
+          text: `Velkommen! ID: ${scanResult}\nTidspunkt: ${formatDateTime()}`,
+          showConfirmButton: true,
+          confirmButtonText: "OK",
+          customClass: {
+            popup: "animated fadeInDown",
           },
-          onScanSuccess,
-          onScanFailure
-        )
-        .catch((err) => {
-          console.error(`Unable to start the QR scanner: ${err}`);
         });
+      });
     </script>
   </body>
 </html>
