@@ -27,8 +27,6 @@
         color: white;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
         text-align: center;
       }
 
@@ -64,6 +62,10 @@
         align-items: center;
       }
 
+      #container-content {
+        margin-top: 95px;
+      }
+
       .icon-container {
         position: absolute;
         left: 10px;
@@ -75,6 +77,41 @@
         color: white;
         font-size: 1.5rem;
       }
+
+      .fade-cycle {
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+
+.fade-image {
+  position: absolute;
+  top: 0;
+  left: 30px;
+  width: 60%;
+  height: auto;
+  opacity: 0;
+  transition: opacity 2s ease-in-out;
+  animation: fadeCycle 8s infinite;
+}
+
+.fade-image:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.fade-image:nth-child(2) {
+  animation-delay: 4s;
+}
+
+@keyframes fadeCycle {
+  0% { opacity: 0; }        /* Image 1 is hidden for its cycle */
+  25% { opacity: 1; }   /* Image 1 fades in for its cycle */
+  55%, 100% { opacity: 0; } /* Image 1 is hidden after its cycle */
+}
+
+
+
+
     </style>
   </head>
   <body>
@@ -124,15 +161,25 @@
     </div>
 
     <div id="container">
-      <!-- Left Column (col-8) -->
-      <div id="scan-prompt">
-        Scan din <b>QR-kode</b> eller <b>RFID-brik</b> for at registrere
-        tidspunktet.
-      </div>
-      <div class="mt-5" id="current-time"></div>
-      <div id="scan-result" class="text-success fw-bold"></div>
+      <div id="container-content">
+        <!-- Left Column (col-8) -->
+        <div id="scan-prompt">
+          Scan din <b>QR-kode</b> eller <b>RFID-brik</b> for at registrere
+          tidspunktet.
+        </div>
+        <div class="row m-0">
+          <div class="col-8">
+            <div class="mt-5" id="current-time"></div>
+            <div id="scan-result" class="text-success fw-bold"></div>
+          </div>
+          <div class="col-4 d-flex mt-5 justify-content-center">
+            <div class="fade-cycle">
+              <img src="assets/qrcode-scan-custom.png" alt="QR Code Scan" class="fade-image">
+              <img src="assets/access-point-custom.png" alt="Access Point" class="fade-image">
+            </div>
+          </div>
+                </div>
     </div>
-
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/jquery-3.6.0.min.js"></script>
     <script src="js/socket.io.js"></script>
@@ -158,8 +205,8 @@
         const timeString = now.toLocaleTimeString("da-DK", timeOptions);
 
         return `
-  <span style="font-weight: 300; font-size: 3rem; display: block; line-height: 1;">${dateString}</span>
-  <span style="font-size: 6rem; display: block; line-height: 1.8;">${timeString}</span>
+  <span style="font-weight: 300; font-size: 2.2rem; display: block; line-height: 1;">${dateString}</span>
+  <span style="font-size: 6.5rem; display: block; line-height: 1.2;">${timeString}</span>
 `;
       }
 
