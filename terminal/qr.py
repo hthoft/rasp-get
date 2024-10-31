@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     # Get the current directory and specify the path to qr_display.html
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    html_file = os.path.join(current_dir, 'qr_display.html')
+    html_file = os.path.join(current_dir, 'qr_scan.html')
 
     # Create a WebView window to open the local HTML file
     webview.create_window('QR Code Display', html_file, fullscreen=True)
