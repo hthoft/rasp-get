@@ -12,7 +12,7 @@ def index():
     """
     Serve the qr_display.html file.
     """
-    return render_template('qr_display.html')
+    return render_template('qr_scan.html')
 
 # ============== Flask and Webview Initialization ==============
 def run_flask():
