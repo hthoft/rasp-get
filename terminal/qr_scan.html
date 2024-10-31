@@ -144,10 +144,6 @@
     <script src="js/socket.io.js"></script>
     <script src="js/sweetalert.js"></script>
     <script>
-      // Connect to the Flask-SocketIO server
-      const socket = io("http://127.0.0.1:5000");
-
-      // Update the time every second
       function formatDateTime() {
         const now = new Date();
         const options = {
@@ -157,26 +153,42 @@
         };
         return now.toLocaleTimeString("da-DK", options);
       }
+
+      // Update current time every second
       setInterval(() => {
         document.getElementById("current-time").textContent =
           "Tid: " + formatDateTime();
       }, 1000);
 
-      // Listen for the scan_success event from the server
-      socket.on("scan_success", (data) => {
-        const scanId = data.scan_id;
-        Swal.fire({
-          icon: "success",
-          title: "Registrering gennemført!",
-          text: `Velkommen! ID: ${scanId}\nTidspunkt: ${formatDateTime()}`,
-          showConfirmButton: true,
-          confirmButtonText: "OK",
-        });
+      let scanBuffer = ""; // Buffer to collect scan input
 
-        // Update the displayed scan result
-        document.getElementById(
-          "scan-result"
-        ).textContent = `ID Scanned: ${scanId}`;
+      // Listen for keypress events to capture scanner input
+      window.addEventListener("keypress", (event) => {
+        // Check if Enter key is pressed to trigger scan completion
+        if (event.key === "Enter") {
+          // Show SweetAlert with scan result and timestamp
+          Swal.fire({
+            icon: "success",
+            title: "Registrering gennemført!",
+            text: `Velkommen! ID: ${scanBuffer}\nTidspunkt: ${formatDateTime()}`,
+            showConfirmButton: true,
+            confirmButtonText: "OK",
+            customClass: {
+              popup: "animated fadeInDown",
+            },
+          });
+
+          // Display scan result in the container
+          document.getElementById(
+            "scan-result"
+          ).textContent = `ID Scanned: ${scanBuffer}`;
+
+          // Clear the buffer after showing the result
+          scanBuffer = "";
+        } else {
+          // Append each character to the buffer
+          scanBuffer += event.key;
+        }
       });
     </script>
   </body>
