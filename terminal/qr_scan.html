@@ -63,7 +63,7 @@
       }
 
       #container-content {
-        margin-top: 95px;
+        margin-top: 120px;
       }
 
       .icon-container {
@@ -202,7 +202,13 @@
         let dateString = now.toLocaleDateString("da-DK", dateOptions);
         dateString = dateString.charAt(0).toUpperCase() + dateString.slice(1); // Capitalize the first letter
 
-        const timeString = now.toLocaleTimeString("da-DK", timeOptions);
+          // Extract individual time components
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+
+        // Format the time string manually with ":"
+        const timeString = `${hours}:${minutes}:${seconds}`;
 
         return `
   <span style="font-weight: 300; font-size: 2.2rem; display: block; line-height: 1;">${dateString}</span>
