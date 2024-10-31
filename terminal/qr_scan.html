@@ -158,32 +158,47 @@
       }, 1000);
 
       let scanBuffer = ""; // Buffer to collect scan input
+      let scanTimeout; // Timeout variable for delay
 
-      // Listen for keypress events to capture scanner input
-      window.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-          // Show SweetAlert with scan result and timestamp
-          Swal.fire({
-            icon: "success",
-            title: "Registrering gennemført!",
-            text: `Velkommen! ID: ${scanBuffer}\nTidspunkt: ${formatDateTime()}`,
-            showConfirmButton: true,
-            confirmButtonText: "OK",
-            customClass: {
-              popup: "animated fadeInDown",
-            },
-          });
+      // Delay time in milliseconds (adjust as necessary)
+      const scanDelay = 100; // Short delay to identify end of scan
 
-          // Display scan result in the container
-          document.getElementById(
-            "scan-result"
-          ).textContent = `ID Scanned: ${scanBuffer}`;
+      // Listen for keydown events to capture scanner input
+      window.addEventListener("keydown", (event) => {
+        console.log(`Key pressed: ${event.key}`); // Debugging line to check key presses
 
-          // Clear the buffer after showing the result
-          scanBuffer = "";
-        } else {
-          // Append each character to the buffer
-          scanBuffer += event.key;
+        // Ignore non-character keys like "Shift" or "Control"
+        if (event.key.length === 1) {
+          scanBuffer += event.key; // Append only character keys
+
+          // Clear any existing timeout
+          clearTimeout(scanTimeout);
+
+          // Set a new timeout to process the scan after the specified delay
+          scanTimeout = setTimeout(() => {
+            console.log(`Scan result: ${scanBuffer}`); // Debugging line to check scan result
+
+            // Show SweetAlert with scan result and timestamp
+            Swal.fire({
+              icon: "success",
+              title: "Registrering gennemført!",
+              text: `Velkommen! ID: ${scanBuffer}\nTidspunkt: ${formatDateTime()}`,
+              showConfirmButton: true,
+              confirmButtonText: "OK",
+              customClass: {
+                popup: "animated fadeInDown",
+              },
+              color: "#ddd",
+            });
+
+            // Display scan result in the container
+            document.getElementById(
+              "scan-result"
+            ).textContent = `ID Scanned: ${scanBuffer}`;
+
+            // Clear the buffer after showing the result
+            scanBuffer = "";
+          }, scanDelay);
         }
       });
     </script>
