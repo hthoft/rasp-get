@@ -21,7 +21,6 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 # Specify the full path to the .env file
 env_path = "/home/RPI-5/.env"
-env_path = "C:\\Users\\Hans Thoft Rasmussen\\Documents\\GitHub\\rasp-get\\.env"
 
 # Load the environment variables from the specified .env file
 load_dotenv(dotenv_path=env_path)
