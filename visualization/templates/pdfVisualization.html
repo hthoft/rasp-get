@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visualization Page</title>
+    <link
+      href="{{ url_for('static', filename='css/visualization.min.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/sweetalert-dark.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/view_style.css') }}"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css"
+    />
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        background: url("/static/images/maprova-bg.png") no-repeat center center
+          fixed;
+        background-size: cover;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+      }
+
+      /* topbar styles */
+      .topbar {
+        background: linear-gradient(to right, #79ff7d, #04cf5c);
+        margin: 0;
+        position: fixed;
+        width: 100%;
+        text-align: center;
+        padding: 20px 0rem;
+        height: 55px;
+        font-family: "Titillium Web", sans-serif;
+        top: 0;
+        left: 0;
+        z-index: 10;
+      }
+
+      .topbar img {
+        width: 150px;
+        height: auto;
+      }
+
+      /* Icon container on the left */
+      .icon-container {
+        display: flex;
+        gap: 15px;
+        margin-left: 20px;
+      }
+
+      /* Styling for individual icons */
+      .icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 35px;
+        height: 35px;
+      }
+
+      /* Center the logo */
+      .topbar img {
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div
+      class="topbar shadow-lg d-flex justify-content-between align-items-center mb-5"
+    >
+      <!-- Icon container on the left -->
+      <div class="icon-container d-flex gap-3 ms-3">
+        <!-- USB icon -->
+        <div
+          id="usbIcon"
+          class="icon mdi mdi-server fs-6"
+          title="USB Status"
+        ></div>
+
+        <!-- WiFi icon -->
+        <div
+          id="wifiIcon"
+          class="icon mdi mdi-wifi fs-6"
+          title="WiFi Status"
+        ></div>
+
+        <!-- Server icon -->
+        <div
+          id="serverIcon"
+          class="icon mdi mdi-thermometer fs-6"
+          title="Server Status"
+        ></div>
+
+        <!-- CPU percentage -->
+        <div
+          class="icon mdi mdi-raspberry-pi fs-6"
+          title="CPU Usage"
+          id="cpuClass"
+        >
+          <span class="ms-2" id="cpuUsage">0%</span>
+        </div>
+      </div>
+
+      <!-- Centered logo -->
+      <a class="flex-grow-1 text-center">
+        <img
+          src="{{ url_for('static', filename='images/dark-logo.png') }}"
+          alt="Logo"
+          style="max-width: 100%; height: auto"
+        />
+      </a>
+
+      <!-- Settings button on the right -->
+      <button
+        id="settingsButton"
+        class="mdi mdi-cog"
+        onclick="editPDFSettings()"
+        style="
+          font-size: 24px;
+          background: none;
+          border: none;
+          color: black;
+          cursor: pointer;
+          margin-right: 20px;
+        "
+      ></button>
+    </div>
+
+    <script>
+      // Function to set USB icon color
+
+      function setUsbIconColor(color) {
+        const usbIcon = document.querySelector("#usbIcon");
+        usbIcon.style.color = color; // Set the icon color directly
+      }
+
+      // Function to set WiFi icon color
+      function setWifiIconColor(color) {
+        const wifiIcon = document.querySelector("#wifiIcon");
+        wifiIcon.style.color = color; // Set the icon color directly
+      }
+
+      // Function to set Server icon color
+      function setServerIconColor(color) {
+        const serverIcon = document.querySelector("#serverIcon");
+        serverIcon.style.color = color; // Set the icon color directly
+      }
+
+      // Function to set Server icon heatmap color for CPU temperature
+      function setCpuTempHeatmap(temp) {
+        const serverIcon = document.querySelector("#serverIcon");
+
+        // Define temperature range and corresponding colors
+        if (temp < 40) {
+          serverIcon.style.color = "blue"; // Cold temperature
+        } else if (temp >= 40 && temp <= 60) {
+          serverIcon.style.color = "green"; // Moderate temperature
+        } else if (temp > 60 && temp <= 80) {
+          serverIcon.style.color = "yellow"; // Warm temperature
+        } else {
+          serverIcon.style.color = "red"; // Hot temperature
+        }
+
+        // Optionally add temperature value as percentage
+        serverIcon.title = `CPU Temp: ${temp}°C`;
+      }
+
+      // Function to periodically fetch system info and update the icons
+      function updateSystemInfo() {
+        fetch("/api/system_info")
+          .then((response) => response.json())
+          .then((data) => {
+            const {
+              ssid,
+              network_state,
+              push_status,
+              cpu_temp,
+              memory_usage,
+              cpu_usage,
+            } = data;
+
+            // Set WiFi icon color based on network state
+            if (network_state === "Connected") {
+              setWifiIconColor("green"); // Green for connected
+            } else {
+              setWifiIconColor("red"); // Red for disconnected
+            }
+
+            // Set USB icon color based on push status
+            if (push_status === true) {
+              setUsbIconColor("green"); // Green for active
+            } else {
+              setUsbIconColor("red"); // Red for inactive
+            }
+
+            // Set Server icon heatmap color based on CPU temperature
+            setCpuTempHeatmap(cpu_temp);
+
+            // Update CPU usage percentage
+            document.querySelector("#cpuUsage").textContent = `${cpu_usage}%`;
+
+            // Set the color of CPU usage percentage based on the value
+            const cpuClass = document.querySelector("#cpuClass");
+            if (cpu_usage < 50) {
+              cpuClass.style.color = "green"; // Low usage
+            } else if (cpu_usage >= 50 && cpu_usage < 80) {
+              cpuClass.style.color = "yellow"; // Moderate usage
+            } else {
+              cpuClass.style.color = "red"; // High usage
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching system info:", error);
+          });
+      }
+
+      // Call updateSystemInfo every 10 seconds
+      setInterval(updateSystemInfo, 30000);
+
+      // Initial call to fetch and update system info
+      updateSystemInfo();
+    </script>
+
+    <div id="visualizations" class="mt-5"></div>
+
+    <div id="breakingNewsBar" class="breaking-news-bar">
+      <div class="news-icon-container">
+        <div
+          class="news-icon d-flex align-items-center justify-content-center fw-bolder"
+          id="newsIcon"
+        ></div>
+      </div>
+      <div class="news-content-container">
+        <div class="news-time fw-bold" id="newsTime"></div>
+        <div id="systemInfo"></div>
+        <div class="update-time fw-bold" id="updateTimer">
+          Opdaterer om 60 sekunder
+        </div>
+      </div>
+      <div class="news-content fw-bold" id="newsContent"></div>
+    </div>
+
+    <iframe
+      id="pdfIframe"
+      src=""
+      style="width: 100%; height: 100vh; border: none"
+    ></iframe>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/socket.io.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sweetalert.js') }}"></script>
+    <script>
+      // Default values for zoom and offsets
+      const defaultZoom = 200;
+      const defaultLeftOffset = 70;
+      const defaultTopOffset = 60;
+
+      // Get stored values from localStorage or use defaults
+      const zoom = localStorage.getItem("pdfZoom") || defaultZoom;
+      const leftOffset =
+        localStorage.getItem("pdfLeftOffset") || defaultLeftOffset;
+      const topOffset =
+        localStorage.getItem("pdfTopOffset") || defaultTopOffset;
+
+      // Set initial PDF file path (fetch latest PDF from server)
+      let currentPdfFile = null; // Will be updated by fetchLatestPDF()
+      const iframe = document.getElementById("pdfIframe");
+
+      // Function to fetch the latest PDF path from the server
+      async function fetchLatestPDF() {
+        try {
+          const response = await fetch("/get_latest_pdf"); // Flask or PHP endpoint
+          if (!response.ok) {
+            throw new Error(`Failed to fetch PDF: ${response.statusText}`);
+          }
+          const data = await response.json();
+          if (data.pdfPath) {
+            return data.pdfPath;
+          } else {
+            throw new Error("No PDF path returned from server.");
+          }
+        } catch (error) {
+          console.error("Error fetching the latest PDF:", error);
+          return null;
+        }
+      }
+
+      // Function to update the iframe with the new PDF file
+      async function checkForNewPDF() {
+        const newPdfFile = await fetchLatestPDF();
+        if (newPdfFile && newPdfFile !== currentPdfFile) {
+          // Update iframe only if the new PDF is different from the current one
+          currentPdfFile = newPdfFile;
+          iframe.src = `${currentPdfFile}#toolbar=0&zoom=${zoom},${leftOffset},${topOffset}&scrollbar=0`;
+          console.log("PDF updated to the latest version:", currentPdfFile);
+        } else {
+          console.log("No new PDF found or already up-to-date.");
+        }
+      }
+
+      // Initialize the iframe with the current PDF file
+      (async function initializePDF() {
+        currentPdfFile = await fetchLatestPDF();
+        if (currentPdfFile) {
+          iframe.src = `${currentPdfFile}#toolbar=0&zoom=${zoom},${leftOffset},${topOffset}&scrollbar=0`;
+        } else {
+          console.error("No PDF available during initialization.");
+        }
+      })();
+
+      // Countdown timer and refresh logic
+      let countdown = 60; // Refresh every 60 seconds
+      const updateTimerElement = document.getElementById("updateTimer");
+
+      function updateCountdown() {
+        countdown--;
+        updateTimerElement.textContent = `Opdaterer om ${countdown} sekunder`;
+
+        if (countdown === 0) {
+          checkForNewPDF();
+          countdown = 60; // Reset countdown
+        }
+      }
+
+      setInterval(updateCountdown, 1000); // Update countdown every second
+
+      // Function to edit PDF settings via SweetAlert
+      function editPDFSettings() {
+        Swal.fire({
+          title: "Rediger PDF Indstillinger",
+          html: `<div class="d-flex flex-column">
+            <p class="text-light">Indtast zoomniveau og offset for PDF-visning:</p>
+                <label class="text-light" for="swal-zoom">Zoom Level:</label>
+                <input id="swal-zoom" class="swal2-input" type="number" value="${zoom}">
+                <label class="text-light" for="swal-left-offset">Left Offset:</label>
+                <input id="swal-left-offset" class="swal2-input" type="number" value="${leftOffset}">
+                <label class="text-light" for="swal-top-offset">Top Offset:</label>
+                <input id="swal-top-offset" class="swal2-input" type="number" value="${topOffset}">
+                </div>
+            `,
+          focusConfirm: false,
+          preConfirm: () => {
+            return {
+              zoom: document.getElementById("swal-zoom").value,
+              leftOffset: document.getElementById("swal-left-offset").value,
+              topOffset: document.getElementById("swal-top-offset").value,
+            };
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const newSettings = result.value;
+            // Save the new settings to localStorage
+            localStorage.setItem("pdfZoom", newSettings.zoom);
+            localStorage.setItem("pdfLeftOffset", newSettings.leftOffset);
+            localStorage.setItem("pdfTopOffset", newSettings.topOffset);
+
+            // Reload the iframe with the new settings
+            iframe.src = `${currentPdfFile}#toolbar=0&zoom=${newSettings.zoom},${newSettings.leftOffset},${newSettings.topOffset}&scrollbar=0`;
+            Swal.fire({
+              title: "Indstillinger opdateret",
+              text: "PDF-indstillinger blev opdateret.",
+              icon: "success",
+              onClose: () => {
+                window.location.reload(); // Reload the page
+              },
+            });
+          }
+        });
+      }
+    </script>
+
+    <script>
+      var socket = io.connect("http://127.0.0.1:5000");
+
+      document.addEventListener("DOMContentLoaded", function () {
+        let messageQueue = [];
+        let displayTimeout;
+
+        const newsIcon = document.getElementById("newsIcon");
+        const newsContent = document.getElementById("newsContent");
+        const newsTime = document.getElementById("newsTime");
+        const breakingNewsBar = document.getElementById("breakingNewsBar");
+
+        // Estimate the maximum number of characters that can fit in the message display area
+        function estimateMaxChars(sampleText, fontSize, fontFamily) {
+          const containerWidth = window.innerWidth - 200;
+          const span = document.createElement("span");
+          document.body.appendChild(span);
+          span.style.fontSize = fontSize;
+          span.style.fontFamily = fontFamily;
+          span.style.visibility = "hidden";
+          span.textContent = sampleText;
+          const sampleTextWidth = span.offsetWidth;
+          const maxChars = Math.floor(
+            (containerWidth / sampleTextWidth) * sampleText.length
+          );
+          document.body.removeChild(span);
+          return maxChars;
+        }
+
+        const maxMessageLength = estimateMaxChars(
+          "Sample Text",
+          "60px",
+          "Arial"
+        );
+
+        function updateDateTime() {
+          const now = new Date();
+          const options = {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          };
+          let formattedDate = now.toLocaleDateString("da-DK", options);
+          const formattedTime = now.toLocaleTimeString("da-DK", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          formattedDate =
+            formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+          newsTime.textContent = `${formattedDate} - ${formattedTime}`;
+        }
+
+        function splitMessage(message, color, icon) {
+          let parts = [];
+          while (message.length > 0) {
+            let end = Math.min(message.length, maxMessageLength);
+            // Adjust the end index to avoid splitting in the middle of a word
+            end =
+              end < message.length && message[end] !== " "
+                ? message.lastIndexOf(" ", end) + 1
+                : end;
+            let part = message.slice(0, end).trim();
+            // Include the icon along with each message part
+            parts.push({
+              icon: icon,
+              message: part + (end < message.length ? " ..." : ""),
+              color: color,
+            });
+            message = message.slice(end);
+          }
+          return parts;
+        }
+
+        function prepareMessages(messages) {
+          messages.forEach((item) => {
+            if (item.message.length > maxMessageLength) {
+              // Pass the icon along with the message and color
+              splitMessage(item.message, item.color, item.icon).forEach(
+                (part) => messageQueue.push(part)
+              );
+            } else {
+              messageQueue.push(item);
+            }
+          });
+        }
+
+        function showMessage() {
+          if (messageQueue.length === 0) {
+            return;
+          }
+
+          const { icon, message, color } = messageQueue.shift();
+          newsIcon.innerHTML = `<span class="mdi mdi-${icon}"></span>`;
+          newsContent.textContent = message;
+          newsIcon.style.backgroundColor = color;
+          breakingNewsBar.style.backgroundColor = color;
+
+          breakingNewsBar.style.bottom = "0px";
+          newsIcon.style.opacity = "1";
+          newsTime.style.paddingLeft = "125px";
+
+          if (messageQueue.length === 0) {
+            setTimeout(() => {
+              breakingNewsBar.style.bottom = "-100px";
+              newsIcon.style.opacity = "0";
+              newsTime.style.paddingLeft = "15px";
+              displayTimeout = setTimeout(loadData, 10000); // Restart the cycle
+            }, 5000);
+          } else {
+            displayTimeout = setTimeout(showMessage, 7000); // Show the next message
+          }
+        }
+
+        function loadData() {
+          fetch("http://127.0.0.1:5000/api/get_messages")
+            .then((res) => res.json())
+            .then((data) => {
+              const messages = data.map((item) => ({
+                icon: item.message_icon,
+                message: item.message_text,
+                color: item.message_color,
+              }));
+              prepareMessages(messages);
+              showMessage(); // Start showing messages after preparation
+            })
+            .catch((err) => console.error(err));
+        }
+
+        loadData();
+        setInterval(updateDateTime, 1000);
+      });
+
+      // Define a SweetAlert mixin with your desired settings for the base toast
+      const toast = Swal.mixin({
+        toast: true,
+        position: "bottom-start",
+        background: "#343a40", // Dark color
+        color: "#ffffff", // White text color
+        showConfirmButton: false, // No buttons
+        timerProgressBar: true, // Show a timer progress bar
+        showCloseButton: false, // No close button
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        timer: false, // Timer will be added dynamically
+      });
+
+      // Function to display "Henter opdatering.." with a spinner
+      function showUpdateDownloadToast() {
+        toast.fire({
+          title: "Henter opdatering..",
+          text: "Opdateringen downloades, vent venligst.",
+          icon: "info", // Show spinner-like icon
+          didOpen: () => {
+            Swal.showLoading(); // This will show a spinner
+          },
+        });
+      }
+
+      // Function to display "Genstarter om 30 sek" with a progress bar
+      function showRebootCountdownToast() {
+        let timerInterval;
+
+        toast.fire({
+          title: "Genstarter om 30 sek",
+          html: "Opdateringen er fuldført, genstartes snart.",
+          icon: "success", // Success icon for completion
+          timer: 30000, // 30-second countdown
+          timerProgressBar: true, // Enable the progress bar
+          didOpen: () => {
+            const content = Swal.getContent();
+            const $ = content.querySelector.bind(content);
+
+            // Update the content with countdown
+            timerInterval = setInterval(() => {
+              const timeLeft = Math.round(Swal.getTimerLeft() / 1000);
+              Swal.update({
+                html: `Genstarter om ${timeLeft} sekunder.`,
+              });
+            }, 1000);
+          },
+          willClose: () => {
+            clearInterval(timerInterval); // Clear the interval on close
+          },
+        });
+      }
+
+      // Socket event handling for update status
+      socket.on("update_status", function (data) {
+        if (data.status === "downloading") {
+          showUpdateDownloadToast(); // Show the spinner toast
+        } else if (data.status === "success") {
+          Swal.close(); // Close any active alerts (like the spinner)
+          showRebootCountdownToast(); // Show the countdown toast
+        } else if (data.status === "error") {
+          Swal.fire({
+            toast: true,
+            position: "bottom-start",
+            background: "#ff4444", // Red color for error
+            color: "#ffffff",
+            title: "Fejl",
+            text: data.message, // Show the error message
+            icon: "error",
+            showConfirmButton: false,
+            timer: 5000, // Auto close after 5 seconds
+          });
+        }
+      });
+
+      // Socket connection and disconnection events
+      socket.on("disconnect", function () {
+        // Set topbar background to red linear gradient on disconnect
+        document.querySelector(".topbar").style.background =
+          "linear-gradient(to right, #ff4d4d, #ff0000)";
+        toast.fire({
+          title: "Advarsel",
+          text: "Forbindelsen til serveren er afbrudt. Genindlæs siden.",
+          icon: "warning",
+        });
+      });
+
+      socket.on("connect", function () {
+        // Set topbar background to green linear gradient on reconnect
+        document.querySelector(".topbar").style.background =
+          "linear-gradient(to right, #79ff7d, #04cf5c)";
+        Swal.close(); // Close any active alert on reconnect
+        Swal.fire({
+          toast: true,
+          position: "bottom-start",
+          background: "#343a40", // Dark color
+          color: "#ffffff", // White text color
+          title: "Forbindelsen til serveren er genoprettet.",
+          icon: "success",
+          timer: 3000, // Close automatically after 3 seconds
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,3 +1,5 @@
 
 .env
 script.sh
+cache/messages_cache.json
+cache/departments_cache.json

@@ -1,7 +1,7 @@
 import requests
 from requests.exceptions import ConnectionError, Timeout, RequestException
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, send_from_directory
 from flask_cors import CORS
 import threading
 import os
@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 # ============== Environment and Global Variables ==============
 # Load environment variables from .env file
 # Specify the full path to the .env file
-env_path = '/home/RPI-5/.env'
+env_path = "C:\\Users\\Hans Thoft Rasmussen\\Documents\\GitHub\\rasp-get\\.env"
 
 # Load the environment variables from the specified .env file
 load_dotenv(dotenv_path=env_path)
@@ -28,6 +28,7 @@ load_dotenv(dotenv_path=env_path)
 # Access the API key, customer ID, and device serial number
 api_key = os.getenv('API_KEY')
 customer_id = os.getenv('CUSTOMER_ID')
+customer_hash = os.getenv('CUSTOMER_HASH')
 device_sn = os.getenv('DEVICE_SN')
 current_version = os.getenv('CURRENT_VERSION')
 
@@ -249,7 +250,7 @@ def download_and_replace_update(update_url):
         print(f"Error during update: {e}")
 
 
-
+local_pdf_path = "static/current_workload.pdf"
 
 # ============== Routes ==============
 @app.route('/')
@@ -259,11 +260,18 @@ def index():
 
 @app.route('/visualization')
 def visualization():
-    """
+    """z
     Serve the visualization.html file from the templates directory.
     """
     return render_template('visualization.html')
 
+
+@app.route('/pdfVisualization')
+def pdfVisualization():
+    """
+    Serve the pdfVisualization.html file from the templates directory.
+    """
+    return render_template('pdfVisualization.html')
 
 
 
@@ -279,6 +287,42 @@ def reboot_system():
         print(f"Error occurred while rebooting: {e}")
         return jsonify({"status": "error", "message": "Failed to reboot the system", "details": str(e)}), 500
     
+
+@app.route('/get_latest_pdf', methods=['GET'])
+def get_latest_pdf():
+    """
+    Find and return the latest PDF file from the static/data directory.
+    """
+    try:
+        fetch_and_update_latest_pdf()
+        pdf_directory = os.path.join(app.static_folder, "data")
+        pdf_files = [f for f in os.listdir(pdf_directory) if f.startswith("workload-") and f.endswith(".pdf")]
+
+        if not pdf_files:
+            return jsonify({"error": "No PDF file found"}), 404
+
+        # Sort files by modification time
+        pdf_files.sort(key=lambda x: os.path.getmtime(os.path.join(pdf_directory, x)), reverse=True)
+        latest_pdf = pdf_files[0]
+
+        # Provide the relative URL for the PDF file
+        pdf_url = f"/static/data/{latest_pdf}"
+        return jsonify({"pdfPath": pdf_url}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/update_pdf', methods=['GET'])
+def update_pdf():
+    """
+    Endpoint to fetch the latest PDF from the server and update it locally.
+    """
+    result = fetch_and_update_latest_pdf()
+    if "error" in result:
+        return jsonify(result), 500
+    return jsonify(result), 200
+
 
 @app.route('/api/get_departments', methods=['GET'])
 def get_departments():
@@ -344,6 +388,8 @@ def get_job_tasks():
 
     except RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    
+
 @app.route('/api/get_messages', methods=['GET'])
 def get_messages():
     """
@@ -423,6 +469,87 @@ def get_system_info():
     })
 
 # ============== Device Status and Data Fetching ==============
+
+def fetch_and_update_latest_pdf():
+    """
+    Fetch the latest PDF from the server and update it locally if necessary.
+    """
+    # Define directories and API URL
+    pdf_directory = os.path.join(app.static_folder, "data")
+    remote_api_url = (
+        f"https://portal.maprova.dk/actions/getLatestPDF.php"
+        f"?apiKey={api_key}&customerID={customer_id}&customerHash={customer_hash}"
+    )
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/91.0.4472.124 Safari/537.36"
+        )
+    }
+
+    # Ensure the directory exists
+    if not os.path.exists(pdf_directory):
+        os.makedirs(pdf_directory)
+
+    try:
+        # Fetch the latest PDF metadata from the remote server
+        response = requests.get(remote_api_url, headers=headers, timeout=10)
+
+        if response.status_code != 200:
+            return {"error": f"Failed to fetch PDF metadata: {response.status_code}"}
+
+        pdf_metadata = response.json()
+        if "pdfPath" not in pdf_metadata:
+            return {"error": "No valid PDF path returned by the server."}
+
+        # Ensure the PDF URL is absolute
+        remote_pdf_url = pdf_metadata["pdfPath"]
+        if not remote_pdf_url.startswith("http"):
+            remote_pdf_url = f"https://portal.maprova.dk{remote_pdf_url}"
+
+        remote_pdf_name = os.path.basename(remote_pdf_url)
+
+        # Check if the file already exists locally
+        local_pdfs = [
+            f
+            for f in os.listdir(pdf_directory)
+            if f.startswith("workload-") and f.endswith(".pdf")
+        ]
+        local_pdfs.sort(
+            key=lambda x: os.path.getmtime(os.path.join(pdf_directory, x)), reverse=True
+        )
+        local_latest_pdf = local_pdfs[0] if local_pdfs else None
+
+        if local_latest_pdf and remote_pdf_name == local_latest_pdf:
+            return {"message": "No updates needed. The latest PDF is already downloaded."}
+
+        # Download the new PDF
+        pdf_response = requests.get(remote_pdf_url, stream=True, timeout=10)
+        if pdf_response.status_code == 200:
+            # Save the new PDF
+            remote_pdf_path = os.path.join(pdf_directory, remote_pdf_name)
+            with open(remote_pdf_path, "wb") as pdf_file:
+                for chunk in pdf_response.iter_content(chunk_size=1024):
+                    pdf_file.write(chunk)
+
+            # Remove the old PDFs
+            if local_latest_pdf:
+                os.remove(os.path.join(pdf_directory, local_latest_pdf))
+
+            return {"message": f"PDF updated successfully: {remote_pdf_name}"}
+        else:
+            return {"error": f"Failed to download PDF from remote server: {pdf_response.status_code}"}
+
+    except requests.ConnectionError:
+        return {"error": "Failed to connect to the remote server."}
+    except requests.Timeout:
+        return {"error": "Request to the remote server timed out."}
+    except Exception as e:
+        return {"error": f"An unexpected error occurred: {str(e)}"}
+
+ 
 
 def filter_irrelevant_fields(data):
     """
@@ -720,13 +847,11 @@ def start_device_status_pushing():
     socketio.start_background_task(target=fetch_and_push_device_status)
 
 
-def start_update_checking():
-    socketio.start_background_task(target=check_for_updates)
+# def start_update_checking():
+#     socketio.start_background_task(target=check_for_updates)
 
 if __name__ == '__main__':
 
-    # Start the device status pushing thread
-    start_update_checking()
 
     start_device_status_pushing()
     socketio.run(app, host='127.0.0.1', port=5000, allow_unsafe_werkzeug=True)
