@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 # Specify the full path to the .env file
 env_path = "/home/RPI-5/.env"
+env_path = "C:\\Users\\Hans Thoft Rasmussen\\Documents\\GitHub\\rasp-get\\.env"
 
 # Load the environment variables from the specified .env file
 load_dotenv(dotenv_path=env_path)
@@ -624,7 +625,7 @@ def fetch_and_push_device_status():
                         print ("Data pushed successfully")
                         device_data = response.json()  # Get the device data
                         print (device_data)
-                        handle_reboot_flags(device_data)  # Handle reboot if necessary
+                        handle_reboot_flags(device_data, device_sn)  # Handle reboot if necessary
                         
                         data_push_status = True  # Flag successful push
                         success = True  # Set success to True to break out of the retry loop
