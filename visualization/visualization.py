@@ -591,6 +591,11 @@ def fetch_and_push_device_status():
         # Load the cached device data  
         cached_device_data = load_cached_data(departments_cache_file)
 
+        now = datetime.now()
+        if now.hour == 2 and now.minute == 0 and 0 <= now.second <= 20:
+            print("Scheduled reboot triggered between 02:00:00 and 02:00:20...")
+            os.system("sudo reboot")
+
         while retry_count < max_retries and not success:
             try:
                 # Use a session and close it after each request to force DNS lookup refresh
@@ -616,7 +621,9 @@ def fetch_and_push_device_status():
                     response = session.get(url, params=payload, headers=headers, timeout=10)
 
                     if response.status_code == 200:
+                        print ("Data pushed successfully")
                         device_data = response.json()  # Get the device data
+                        print (device_data)
                         handle_reboot_flags(device_data)  # Handle reboot if necessary
                         
                         data_push_status = True  # Flag successful push
@@ -675,25 +682,19 @@ def update_department_cache(device_data):
     save_cached_data(departments_cache_file, departments_cache)
 
 
-def handle_reboot_flags(device_data):
+def handle_reboot_flags(device_data, device_sn):
     """
     Handle reboot based on the reboot flag from device data.
     """
-    reboot_flag = int(device_data.get('reboot_flag', 0))
+    reboot_flag = device_data.get('reboot', False)
 
-    if reboot_flag == 2:
-        print("Reboot flag is set to 2. Rebooting system...")
-        update_reboot_flag(device_sn, 1)
+    if reboot_flag is True:  # Check if reboot is required
+        print("Reboot flag is set. Rebooting system...")
+        update_reboot_flag(device_sn, 0)  # Update the reboot flag on the server
         reboot_system()
+    else:
+        print("No reboot required. Reboot flag is not set.")
 
-    elif reboot_flag == 1:
-        print("Reboot flag is set to 1. Confirming the reboot...")
-        update_reboot_flag(device_sn, 0)
-
-    elif reboot_flag == 3:
-        print("Reboot flag is set to 3. Shutting down for update and rebooting...")
-        update_reboot_flag(device_sn, 1)
-        run_update_script()
 
 
 def update_reboot_flag(device_sn, new_flag):
