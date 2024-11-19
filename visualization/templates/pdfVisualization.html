@@ -506,15 +506,25 @@
           fetch("http://127.0.0.1:5000/api/get_messages")
             .then((res) => res.json())
             .then((data) => {
+              if (data.length === 0) {
+                console.log("No messages found. Retrying in 10 seconds...");
+                setTimeout(loadData, 60000); // Retry after 10 seconds
+                return;
+              }
+
               const messages = data.map((item) => ({
                 icon: item.message_icon,
                 message: item.message_text,
                 color: item.message_color,
               }));
+
               prepareMessages(messages);
               showMessage(); // Start showing messages after preparation
             })
-            .catch((err) => console.error(err));
+            .catch((err) => {
+              console.error("Error loading messages:", err);
+              setTimeout(loadData, 60000); // Retry after 10 seconds on error
+            });
         }
 
         loadData();
