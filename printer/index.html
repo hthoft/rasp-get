@@ -848,7 +848,7 @@
               const job_title = selectedEntity?.job?.job_title;
               const project_title = selectedEntity?.project?.project_title;
               const project_color = selectedEntity?.project?.project_color;
-              const project_id = selectedEntity?.project?.id;
+              const project_id = selectedEntity?.project?.project_id;
 
               if (!job_id || !job_title) {
                 console.error("Job ID or title is missing.");
@@ -1202,6 +1202,10 @@
                 "data-project-title",
                 project.project_title
               );
+              projectItem.setAttribute(
+                "data-project-real-id",
+                project.project_id
+              );
 
               projectItem.textContent = `${project.project_id} - ${project.project_title}`;
 
@@ -1223,6 +1227,7 @@
           event.stopPropagation();
           const projectId = this.dataset.projectId;
           const projectTitle = this.dataset.projectTitle;
+          const project_id = this.dataset.projectRealId;
 
           fetchJobsForProject(projectId);
 
