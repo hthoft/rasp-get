@@ -967,5 +967,5 @@ if __name__ == '__main__':
     html_file = os.path.join(current_dir, 'index.html')
 
     # Create a webview window to open the local HTML file
-    webview.create_window('Maprova Projects', html_file, fullscreen=False)
+    webview.create_window('Maprova Projects', html_file, fullscreen=True)
     webview.start()

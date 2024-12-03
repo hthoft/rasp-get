@@ -565,6 +565,7 @@
                 job_id: data.job_id,
                 job_title: data.job_title,
                 project_title: data.project_title,
+                project_id: data.project_id,
                 print_count: 1,
               }),
             })
@@ -847,6 +848,7 @@
               const job_title = selectedEntity?.job?.job_title;
               const project_title = selectedEntity?.project?.project_title;
               const project_color = selectedEntity?.project?.project_color;
+              const project_id = selectedEntity?.project?.id;
 
               if (!job_id || !job_title) {
                 console.error("Job ID or title is missing.");
@@ -885,6 +887,7 @@
                   job_id: job_id,
                   job_title: job_title,
                   project_title: project_title,
+                  project_id: project_id,
                   print_count: print_count,
                 }),
               })
