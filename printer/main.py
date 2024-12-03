@@ -19,7 +19,7 @@ import uuid
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-env_path = "/home/RPI-5/.env"
+env_path = "/home/RPI-5/rasp-get/.env"
 
 # Load the environment variables from the specified .env file
 load_dotenv(dotenv_path=env_path)
@@ -367,7 +367,7 @@ def handle_print(job_id, job_title, project_title, project_id, print_count):
         obfuscated_job_id = custom_encode(int(job_id)) 
         # Generate QR code with job_id and job_title
         data = f"{obfuscated_job_id}"  # Use job ID for the QR code data
-        logo_path = "dark-logo-white.png"
+        logo_path = "assets/dark-logo-white.png"
         #output_path = f"qrcode_{job_id}.png"
         output_path = f"/tmp/qrcode_{job_id}.png"
         author = f"Label Printer + {printer_sn}"
