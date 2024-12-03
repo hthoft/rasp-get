@@ -126,9 +126,9 @@ sleep 2  # Delay
 # Step 9: Clone rasp-get repository and create .env file
 echo "Step 9: Cloning rasp-get repository and setting up environment variables..."
 cat <<EOT >> .env
-API_KEY=1597393928e805d294ec51e81c2c9e783b1cbc078061e6fa2c82e002fa8fd0eb	
-CUSTOMER_ID=29a9177ba8252fc35b3e570b159bdd8764ee0f6fc93dfbdfb98c769e225ef402
-CUSTOMER_HASH=aG1r
+API_KEY=eba2db587a73af3e49c82f07e2205570ad2acee28f15ad37d2d3d0e73dbc5047	
+CUSTOMER_ID=8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
+CUSTOMER_HASH=Ym1ieWc
 DEVICE_SN=$DEVICE_SN
 DISPLAY_NAME=Maprova
 LOCATION_ID=0
