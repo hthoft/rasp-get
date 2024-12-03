@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 env_path = "/home/RPI-5/rasp-get/.env"
-env_path = "C:\\Users\\Hans Thoft Rasmussen\\Documents\\GitHub\\rasp-get\\.env"
+#env_path = "C:\\Users\\Hans Thoft Rasmussen\\Documents\\GitHub\\rasp-get\\.env"
 
 # Load the environment variables from the specified .env file
 load_dotenv(dotenv_path=env_path)
@@ -54,7 +54,6 @@ cached_jobs = {}
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
 
-# ============== Update System ==============  
 
 def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="metadata.json"):
     """
@@ -78,11 +77,14 @@ def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="met
     }
 
     # Load existing metadata
+    metadata = {}
     if os.path.exists(metadata_file):
         with open(metadata_file, "r") as f:
-            metadata = json.load(f)
-    else:
-        metadata = {}
+            try:
+                metadata = json.load(f)
+            except json.JSONDecodeError:
+                print("Corrupt metadata file detected. Re-downloading all files.")
+                metadata = {}
 
     # Track if any changes were made
     changes_made = False
@@ -90,8 +92,9 @@ def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="met
     # Function to download and save a file
     def download_file(file_url, local_path, relative_path):
         nonlocal changes_made
-        # Add If-None-Match and If-Modified-Since headers if available
         file_headers = headers.copy()
+
+        # Add If-None-Match and If-Modified-Since headers if available
         if relative_path in metadata:
             if "etag" in metadata[relative_path]:
                 file_headers["If-None-Match"] = metadata[relative_path]["etag"]
@@ -104,7 +107,7 @@ def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="met
             # Save the file
             with open(local_path, "wb") as f:
                 f.write(response.content)
-                print(f"Downloaded: {file_url} -> {local_path}")
+            print(f"Downloaded: {file_url} -> {local_path}")
 
             # Update metadata and mark changes
             metadata[relative_path] = {
@@ -119,45 +122,6 @@ def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="met
         else:
             print(f"Failed to download: {file_url} (Status code: {response.status_code})")
 
-    # Validate local files against metadata
-    def validate_local_files():
-        nonlocal changes_made
-        metadata_keys = list(metadata.keys())
-        for relative_path in metadata_keys:
-            local_path = os.path.join(local_base_path, relative_path)
-            # If file is missing locally, remove it from metadata
-            if not os.path.exists(local_path):
-                print(f"File missing locally, removing metadata: {relative_path}")
-                metadata.pop(relative_path, None)
-                changes_made = True
-
-    # Restore files that are listed in `files_and_dirs` but missing locally
-    def restore_deleted_files():
-        nonlocal changes_made
-        for relative_path in files_and_dirs:
-            local_path = os.path.join(local_base_path, relative_path)
-            if not os.path.exists(local_path):  # File missing locally
-                print(f"File missing locally, restoring: {local_path}")
-                file_url = f"{base_url}{relative_path}"
-                download_file(file_url, local_path, relative_path)
-
-    # Remove files that are no longer on the server
-    def remove_missing_files():
-        nonlocal changes_made
-        local_files = set(metadata.keys())
-        server_files = set(files_and_dirs)
-
-        # Identify files in metadata but not in server file list
-        files_to_remove = local_files - server_files
-
-        for file in files_to_remove:
-            local_path = os.path.join(local_base_path, file)
-            if os.path.exists(local_path):
-                os.remove(local_path)
-                print(f"Removed missing file: {local_path}")
-            metadata.pop(file, None)
-            changes_made = True
-
     # Ensure local directory structure exists
     for relative_path in files_and_dirs:
         local_file_path = os.path.join(local_base_path, relative_path)
@@ -165,22 +129,23 @@ def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="met
         if not os.path.exists(local_dir):
             os.makedirs(local_dir)
 
-    # Step 1: Validate local files and metadata
-    validate_local_files()
+    # Step 1: Validate and clean up local files
+    for relative_path in list(metadata.keys()):
+        local_path = os.path.join(local_base_path, relative_path)
+        if relative_path not in files_and_dirs or not os.path.exists(local_path):
+            print(f"Removing outdated file or metadata: {local_path}")
+            metadata.pop(relative_path, None)
+            if os.path.exists(local_path):
+                os.remove(local_path)
+            changes_made = True
 
-    # Step 2: Restore locally missing files
-    restore_deleted_files()
-
-    # Step 3: Download or update changed files
+    # Step 2: Synchronize files
     for relative_path in files_and_dirs:
-        local_file_path = os.path.join(local_base_path, relative_path)
+        local_path = os.path.join(local_base_path, relative_path)
         file_url = f"{base_url}{relative_path}"
-        download_file(file_url, local_file_path, relative_path)
+        download_file(file_url, local_path, relative_path)
 
-    # Step 4: Remove local files that no longer exist on the server
-    remove_missing_files()
-
-    # Save updated metadata
+    # Step 3: Save updated metadata
     with open(metadata_file, "w") as f:
         json.dump(metadata, f, indent=4)
 
@@ -189,11 +154,14 @@ def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="met
         return "No changes have been made."
     else:
         return "Synchronization completed successfully."
-    
+
 
 def syncCall():
+    """
+    Initiates the synchronization process by providing the necessary parameters.
+    """
     # Get the customer hash from the environment
-    customer_hash = os.getenv('CUSTOMER_HASH')
+    customer_hash = os.getenv("CUSTOMER_HASH")
 
     # Validate that the customer_hash exists
     if not customer_hash:
@@ -202,10 +170,6 @@ def syncCall():
 
     # Define the base URL with the customer hash
     base_url = f"https://updates.maprova.dk/printer/{customer_hash}/"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-
 
     # Local path to save files
     local_base_path = "./printer"
@@ -234,7 +198,6 @@ def syncCall():
         "js/sweetalert.js",
         "index.html",
     ]
-
 
     # Call the sync function
     status = sync_files(base_url, local_base_path, files_and_dirs)
