@@ -1,0 +1,86 @@
+{
+    "assets/cog.png": {
+        "etag": "\"2265-6285b6cb311b3\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/config.gif": {
+        "etag": "\"7c2d-6285b6cb39683\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/dark-logo-white.png": {
+        "etag": "\"654f-6285b6cb47914\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/dark-logo.png": {
+        "etag": "\"4c8f-6285b6cb5099c\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/disconnect.gif": {
+        "etag": "\"1a20bd-6285b6cb7920d\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/maprova-bg.png": {
+        "etag": "\"808b-6285b6cb674e5\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/printer-pos-cancel-outline.svg": {
+        "etag": "\"21c-6285b6cb82a65\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/printer-pos-check-outline.svg": {
+        "etag": "\"162-6285b6cb9a936\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/qrcode_with_logo.png": {
+        "etag": "\"13283-6285b6cbbf70f\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/qrcode-plus.svg": {
+        "etag": "\"131-6285b6cb9e7b6\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/qrcode-remove.svg": {
+        "etag": "\"11c-6285b6cbaed6f\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "assets/splash.png": {
+        "etag": "\"d673-6285b6cbcd1d0\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "css/bootstrap.min.css": {
+        "etag": "W/\"44a7d-6285b6cc16d82\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:52 GMT"
+    },
+    "css/sweetalert-dark.css": {
+        "etag": "W/\"753c-6285b6cc0c972\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:51 GMT"
+    },
+    "css/view_style.css": {
+        "etag": "W/\"106d-6285b6cc238a3\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:52 GMT"
+    },
+    "css/visualization.min.css": {
+        "etag": "W/\"6b4df-6285b6cc3cee4\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:52 GMT"
+    },
+    "js/bootstrap.bundle.min.js": {
+        "etag": "W/\"1e543-6285b6cc90ea6\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:52 GMT"
+    },
+    "js/jquery-3.6.0.min.js": {
+        "etag": "W/\"29053-6285b6cc86a96\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:52 GMT"
+    },
+    "js/socket.io.js": {
+        "etag": "W/\"1c78d-6285b6ccb9ee8\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:52 GMT"
+    },
+    "js/sweetalert.js": {
+        "etag": "W/\"177e6-6285b6ccde109\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:52 GMT"
+    },
+    "index.html": {
+        "etag": "W/\"bf8f-6285b6caf54a9\"",
+        "last_modified": "Tue, 03 Dec 2024 10:49:50 GMT"
+    }
+}

@@ -19,7 +19,11 @@ import uuid
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+env_path = "/home/RPI-5/.env"
+
+# Load the environment variables from the specified .env file
+load_dotenv(dotenv_path=env_path)
+
 
 # Access the API key, customer ID, and printer serial number
 api_key = os.getenv('API_KEY')
@@ -48,6 +52,192 @@ cached_jobs = {}
 # Create cache directory if it doesn't exist
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
+
+# ============== Update System ==============  
+
+def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="metadata.json"):
+    """
+    Synchronize files between a server and a local directory.
+
+    Args:
+        base_url (str): Base URL of the hosted directory.
+        local_base_path (str): Local directory to save the files.
+        files_and_dirs (list): List of files and directories to synchronize.
+        metadata_filename (str): Filename for the metadata file (default: 'metadata.json').
+
+    Returns:
+        str: Status message indicating the result of the synchronization.
+    """
+    # Path to the metadata file
+    metadata_file = os.path.join(local_base_path, metadata_filename)
+
+    # Headers with a User-Agent
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+
+    # Load existing metadata
+    if os.path.exists(metadata_file):
+        with open(metadata_file, "r") as f:
+            metadata = json.load(f)
+    else:
+        metadata = {}
+
+    # Track if any changes were made
+    changes_made = False
+
+    # Function to download and save a file
+    def download_file(file_url, local_path, relative_path):
+        nonlocal changes_made
+        # Add If-None-Match and If-Modified-Since headers if available
+        file_headers = headers.copy()
+        if relative_path in metadata:
+            if "etag" in metadata[relative_path]:
+                file_headers["If-None-Match"] = metadata[relative_path]["etag"]
+            if "last_modified" in metadata[relative_path]:
+                file_headers["If-Modified-Since"] = metadata[relative_path]["last_modified"]
+
+        # Make the request
+        response = requests.get(file_url, headers=file_headers)
+        if response.status_code == 200:
+            # Save the file
+            with open(local_path, "wb") as f:
+                f.write(response.content)
+                print(f"Downloaded: {file_url} -> {local_path}")
+
+            # Update metadata and mark changes
+            metadata[relative_path] = {
+                "etag": response.headers.get("ETag"),
+                "last_modified": response.headers.get("Last-Modified"),
+            }
+            changes_made = True
+        elif response.status_code == 304:
+            print(f"No changes for: {file_url}")
+        elif response.status_code == 404:
+            print(f"File not found on server: {file_url}")
+        else:
+            print(f"Failed to download: {file_url} (Status code: {response.status_code})")
+
+    # Validate local files against metadata
+    def validate_local_files():
+        nonlocal changes_made
+        metadata_keys = list(metadata.keys())
+        for relative_path in metadata_keys:
+            local_path = os.path.join(local_base_path, relative_path)
+            # If file is missing locally, remove it from metadata
+            if not os.path.exists(local_path):
+                print(f"File missing locally, removing metadata: {relative_path}")
+                metadata.pop(relative_path, None)
+                changes_made = True
+
+    # Restore files that are listed in `files_and_dirs` but missing locally
+    def restore_deleted_files():
+        nonlocal changes_made
+        for relative_path in files_and_dirs:
+            local_path = os.path.join(local_base_path, relative_path)
+            if not os.path.exists(local_path):  # File missing locally
+                print(f"File missing locally, restoring: {local_path}")
+                file_url = f"{base_url}{relative_path}"
+                download_file(file_url, local_path, relative_path)
+
+    # Remove files that are no longer on the server
+    def remove_missing_files():
+        nonlocal changes_made
+        local_files = set(metadata.keys())
+        server_files = set(files_and_dirs)
+
+        # Identify files in metadata but not in server file list
+        files_to_remove = local_files - server_files
+
+        for file in files_to_remove:
+            local_path = os.path.join(local_base_path, file)
+            if os.path.exists(local_path):
+                os.remove(local_path)
+                print(f"Removed missing file: {local_path}")
+            metadata.pop(file, None)
+            changes_made = True
+
+    # Ensure local directory structure exists
+    for relative_path in files_and_dirs:
+        local_file_path = os.path.join(local_base_path, relative_path)
+        local_dir = os.path.dirname(local_file_path)
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+
+    # Step 1: Validate local files and metadata
+    validate_local_files()
+
+    # Step 2: Restore locally missing files
+    restore_deleted_files()
+
+    # Step 3: Download or update changed files
+    for relative_path in files_and_dirs:
+        local_file_path = os.path.join(local_base_path, relative_path)
+        file_url = f"{base_url}{relative_path}"
+        download_file(file_url, local_file_path, relative_path)
+
+    # Step 4: Remove local files that no longer exist on the server
+    remove_missing_files()
+
+    # Save updated metadata
+    with open(metadata_file, "w") as f:
+        json.dump(metadata, f, indent=4)
+
+    # Final message
+    if not changes_made:
+        return "No changes have been made."
+    else:
+        return "Synchronization completed successfully."
+    
+
+def syncCall():
+    # Get the customer hash from the environment
+    customer_hash = os.getenv('CUSTOMER_HASH')
+
+    # Validate that the customer_hash exists
+    if not customer_hash:
+        print("Customer hash is not set in the environment variables.")
+        return
+
+    # Define the base URL with the customer hash
+    base_url = f"https://updates.maprova.dk/printer/{customer_hash}/"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+
+
+    # Local path to save files
+    local_base_path = "./printer"
+
+    # List of files and directories to sync
+    files_and_dirs = [
+        "assets/cog.png",
+        "assets/config.gif",
+        "assets/dark-logo-white.png",
+        "assets/dark-logo.png",
+        "assets/disconnect.gif",
+        "assets/maprova-bg.png",
+        "assets/printer-pos-cancel-outline.svg",
+        "assets/printer-pos-check-outline.svg",
+        "assets/qrcode_with_logo.png",
+        "assets/qrcode-plus.svg",
+        "assets/qrcode-remove.svg",
+        "assets/splash.png",
+        "css/bootstrap.min.css",
+        "css/sweetalert-dark.css",
+        "css/view_style.css",
+        "css/visualization.min.css",
+        "js/bootstrap.bundle.min.js",
+        "js/jquery-3.6.0.min.js",
+        "js/socket.io.js",
+        "js/sweetalert.js",
+        "index.html",
+    ]
+
+
+    # Call the sync function
+    status = sync_files(base_url, local_base_path, files_and_dirs)
+    print(status)
 
 def update_printer_count(printer_sn, value):
     url = f"https://portal.maprova.dk/api/updatePrinterCount.php?apiKey={api_key}&customerID={customer_id}&printer_sn={printer_sn}&value={value}"
@@ -236,6 +426,7 @@ def load_cached_data(filename):
 # Check if network is available
 def is_network_connected():
     try:
+        return True
         output = subprocess.check_output(["iwgetid", "-r"]).decode().strip()
         return output != ""  # True if connected
     except Exception:
@@ -761,6 +952,7 @@ def start_flask():
 
 if __name__ == '__main__':
     # Start Flask in a separate thread
+    syncCall()
     flask_thread = threading.Thread(target=start_flask)
     flask_thread.daemon = True
     flask_thread.start()
@@ -775,5 +967,5 @@ if __name__ == '__main__':
     html_file = os.path.join(current_dir, 'index.html')
 
     # Create a webview window to open the local HTML file
-    webview.create_window('Maprova Projects', html_file, fullscreen=True)
+    webview.create_window('Maprova Projects', html_file, fullscreen=False)
     webview.start()

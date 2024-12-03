@@ -1,0 +1,54 @@
+{
+    "static/css/bootstrap.min.css": {
+        "etag": "W/\"44a7d-627e46f5bb6b2\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:14 GMT"
+    },
+    "static/css/sweetalert-dark.css": {
+        "etag": "W/\"753c-627e46f58efc0\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:14 GMT"
+    },
+    "static/css/view_style.css": {
+        "etag": "W/\"fac-627e46f5abcb1\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:14 GMT"
+    },
+    "static/css/visualization.min.css": {
+        "etag": "W/\"6b4df-627e46f60276c\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:14 GMT"
+    },
+    "static/images/dark-logo.png": {
+        "etag": "\"4c8f-627e46f65384f\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:15 GMT"
+    },
+    "static/images/maprova-bg.png": {
+        "etag": "\"808b-627e46f65384f\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:15 GMT"
+    },
+    "static/js/bootstrap.bundle.min.js": {
+        "etag": "W/\"1e543-627e46f6b9922\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:15 GMT"
+    },
+    "static/js/jquery-3.6.0.min.js": {
+        "etag": "W/\"29053-627e46f6b665a\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:15 GMT"
+    },
+    "static/js/socket.io.js": {
+        "etag": "W/\"1c78d-627e46f6fd32c\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:15 GMT"
+    },
+    "static/js/sweetalert.js": {
+        "etag": "W/\"177e6-627e46f70485c\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:15 GMT"
+    },
+    "static/js/view_script.js": {
+        "etag": "W/\"6c56-627e46f71ea55\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:16 GMT"
+    },
+    "templates/pdfVisualization.html": {
+        "etag": "W/\"5628-627e46fe8dbca\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:23 GMT"
+    },
+    "templates/visualization.html": {
+        "etag": "W/\"3ed1-627e46fe833d2\"",
+        "last_modified": "Wed, 27 Nov 2024 12:52:23 GMT"
+    }
+}

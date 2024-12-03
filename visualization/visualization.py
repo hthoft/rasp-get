@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 # Specify the full path to the .env file
 env_path = "/home/RPI-5/.env"
+env_path = "C:\\Users\\Hans Thoft Rasmussen\\Documents\\GitHub\\rasp-get\\.env"
 
 # Load the environment variables from the specified .env file
 load_dotenv(dotenv_path=env_path)
@@ -54,22 +55,75 @@ cached_messages = {}
 if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
 
-# Save data to cache
+# Max cache size in bytes (e.g., 10 MB)
+MAX_CACHE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+# Check if cache size exceeds the maximum allowed size
+def is_cache_too_large():
+    """
+    Check if the total size of all cache files exceeds the defined maximum size.
+    """
+    total_size = 0
+    for filename in [projects_cache_file, jobs_cache_file, departments_cache_file, message_cache_file]:
+        if os.path.exists(filename):
+            total_size += os.path.getsize(filename)
+    return total_size > MAX_CACHE_SIZE
+
+
+def clean_up_cache():
+    """
+    Remove the least recently used (LRU) cache entries when the total cache size exceeds the limit.
+    """
+    global cached_projects, cached_jobs, departments_cache, cached_messages
+
+    print("Cache size exceeded. Cleaning up cache...")
+
+    # Prioritize cache cleanup (start with the least critical data)
+    cached_jobs.clear()  # Clear jobs cache first
+    save_cached_data(jobs_cache_file, cached_jobs)
+
+    # If still too large, clear other caches
+    if is_cache_too_large():
+        cached_projects = {}
+        save_cached_data(projects_cache_file, cached_projects)
+
+    if is_cache_too_large():
+        departments_cache = {}
+        save_cached_data(departments_cache_file, departments_cache)
+
+    if is_cache_too_large():
+        cached_messages = {}
+        save_cached_data(message_cache_file, cached_messages)
+
+
 def save_cached_data(filename, data):
-    with open(filename, 'w') as f:
-        json.dump(data, f)
+    """
+    Save data to a cache file while ensuring size limits.
+    """
+    try:
+        with open(filename, 'w') as f:
+            json.dump(data, f)
+    except Exception as e:
+        print(f"Error saving cache to {filename}: {e}")
 
 
-# Load data from cache
 def load_cached_data(filename):
-    if os.path.exists(filename):
-        with open(filename, 'r') as f:
-            return json.load(f)
+    """
+    Load data from a cache file, returning an empty dictionary if not found or invalid.
+    """
+    try:
+        if os.path.exists(filename):
+            with open(filename, 'r') as f:
+                return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON from cache file {filename}: {e}")
     return {}
 
 
-# Load all caches on startup
 def load_all_caches():
+    """
+    Load all cache files into memory. Perform cleanup if cache size exceeds limits.
+    """
     global cached_projects, cached_jobs, departments_cache, cached_messages
 
     # Load project cache
@@ -84,9 +138,15 @@ def load_all_caches():
     # Load messages cache
     cached_messages = load_cached_data(message_cache_file)
 
+    # Perform cleanup if cache size exceeds the limit
+    if is_cache_too_large():
+        clean_up_cache()
 
-# Save all caches when needed
+
 def save_all_caches():
+    """
+    Save all in-memory cache data to their respective files.
+    """
     # Save project cache
     save_cached_data(projects_cache_file, cached_projects)
 
@@ -104,150 +164,187 @@ def save_all_caches():
 load_all_caches()
 
 
+
 # ============== SocketIO Events ==============
 
 
 
 # ============== Update System ==============  
-def update_env_version(new_version):
-    env_file = '/home/RPI-5/.env'
-    
-    # Command to update CURRENT_VERSION using sed
-    command = f"sudo sed -i 's/^CURRENT_VERSION=.*/CURRENT_VERSION={new_version}/' {env_file}"
 
-    try:
-        # Execute the command
-        subprocess.run(command, shell=True, check=True)
-        print(f".env file updated with new version: {new_version}")
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to update .env file: {e}")
+def sync_files(base_url, local_base_path, files_and_dirs, metadata_filename="metadata.json"):
+    """
+    Synchronize files between a server and a local directory.
 
+    Args:
+        base_url (str): Base URL of the hosted directory.
+        local_base_path (str): Local directory to save the files.
+        files_and_dirs (list): List of files and directories to synchronize.
+        metadata_filename (str): Filename for the metadata file (default: 'metadata.json').
 
-# Main function to check for updates
-def check_for_updates():
-    global current_version
+    Returns:
+        str: Status message indicating the result of the synchronization.
+    """
+    # Path to the metadata file
+    metadata_file = os.path.join(local_base_path, metadata_filename)
 
-    while True:
-        try:
-            # Update check URL
-            url = f"https://updates.maprova.dk/checkForUpdate.php?apiKey={api_key}&customerID={customer_id}&systemType=device&currentVersion={current_version}"
+    # Headers with a User-Agent
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
 
-            # POST data containing the api_key
-            data = {
-                'api_key': api_key
-            }
+    # Load existing metadata
+    if os.path.exists(metadata_file):
+        with open(metadata_file, "r") as f:
+            metadata = json.load(f)
+    else:
+        metadata = {}
 
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Content-Type': 'application/x-www-form-urlencoded',  # Indicating form-encoded data
-                'Accept': 'application/json'  # Expecting JSON response
-            }
+    # Track if any changes were made
+    changes_made = False
 
-            # Make the POST request
-            response = requests.post(url, headers=headers, data=data)
+    # Function to download and save a file
+    def download_file(file_url, local_path, relative_path):
+        nonlocal changes_made
+        # Add If-None-Match and If-Modified-Since headers if available
+        file_headers = headers.copy()
+        if relative_path in metadata:
+            if "etag" in metadata[relative_path]:
+                file_headers["If-None-Match"] = metadata[relative_path]["etag"]
+            if "last_modified" in metadata[relative_path]:
+                file_headers["If-Modified-Since"] = metadata[relative_path]["last_modified"]
 
-            if response.status_code == 200:
-                data = response.json()
-
-                if data.get('success'):
-                    new_version = data['latestVersion']
-                    print(f"New update available: {new_version}")
-
-                    # Notify frontend via SocketIO
-                    socketio.emit('update_status', {'message': 'Henter opdatering..', 'status': 'downloading'})
-
-                    # Download the update file and replace old files
-                    if download_and_replace_update(data['updateFile']):
-                        # Update the CURRENT_VERSION in the .env file
-                        update_env_version(new_version)
-
-                        # Load the new version into the current environment
-                        load_dotenv(dotenv_path='/home/RPI-5/.env')
-                        current_version = os.getenv('CURRENT_VERSION')
-                        print(f"Current version updated to: {current_version}")
-                        socketio.emit('update_status', {'message': 'Opdatering fuldført', 'status': 'success'})
-
-                        # Schedule a reboot in 30 seconds
-                        print("Rebooting system in 30 seconds...")
-                        time.sleep(30)
-                        reboot_system()
-
-                else:
-                    print("Already on the latest version.")
-            else:
-                # Print error response and status code
-                print(f"Error checking for updates. Status code: {response.status_code}")
-                print(f"Response content: {response.text}")  # Print the response content to inspect
-
-        except Exception as e:
-            print(f"Error while checking for updates: {e}")
-
-        # Check again in 1 hour
-        time.sleep(30)
-
-
-import zipfile
-
-def download_and_replace_update(update_url):
-    try:
-        update_file = "device_update.zip"
-        extract_path = "/home/RPI-5/rasp-get/"  # Correct extraction path
-
-        # Download the update file
-        print(f"Downloading update from {update_url}...")
-
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Content-Type': 'application/x-www-form-urlencoded',  # Indicating form-encoded data
-            'Accept': 'application/json'  # Expecting JSON response
-        }
-        response = requests.get(update_url, headers=headers, stream=True)
-
+        # Make the request
+        response = requests.get(file_url, headers=file_headers)
         if response.status_code == 200:
-            content_type = response.headers.get('Content-Type')
-            if 'text/html' in content_type:
-                # It's an HTML page, likely an error or login page
-                print("Error: Received an HTML document instead of a zip file.")
-                print(response.text)  # Print the HTML response to inspect it
-                return
+            # Save the file
+            with open(local_path, "wb") as f:
+                f.write(response.content)
+                print(f"Downloaded: {file_url} -> {local_path}")
 
-            # Write the content to the file
-            with open(update_file, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-            
-            # Check the file type after downloading
-            if zipfile.is_zipfile(update_file):
-                print("File is a valid zip file. Extracting and replacing files...")
-
-                # Ensure the extract_path exists
-                if not os.path.exists(extract_path):
-                    os.makedirs(extract_path)
-
-                # Extract and replace the old files
-                with zipfile.ZipFile(update_file, 'r') as zip_ref:
-                    zip_ref.extractall(extract_path)
-
-                # Clean up the zip file
-                os.remove(update_file)
-                print("Update completed successfully.")
-                return True
-            else:
-                socketio.emit('update_status', {'message': 'Error: The downloaded file is not a valid zip file.', 'status': 'error'})
-
-                print("Error: The downloaded file is not a valid zip file.")
-
+            # Update metadata and mark changes
+            metadata[relative_path] = {
+                "etag": response.headers.get("ETag"),
+                "last_modified": response.headers.get("Last-Modified"),
+            }
+            changes_made = True
+        elif response.status_code == 304:
+            print(f"No changes for: {file_url}")
+        elif response.status_code == 404:
+            print(f"File not found on server: {file_url}")
         else:
-            socketio.emit('update_status', {'message': f'Failed to download the update. Status code: {response.status_code}', 'status': 'error'})
+            print(f"Failed to download: {file_url} (Status code: {response.status_code})")
 
-            print(f"Failed to download the update file. Status code: {response.status_code}")
-            print(response.text)  # Print the error response for debugging
+    # Validate local files against metadata
+    def validate_local_files():
+        nonlocal changes_made
+        metadata_keys = list(metadata.keys())
+        for relative_path in metadata_keys:
+            local_path = os.path.join(local_base_path, relative_path)
+            # If file is missing locally, remove it from metadata
+            if not os.path.exists(local_path):
+                print(f"File missing locally, removing metadata: {relative_path}")
+                metadata.pop(relative_path, None)
+                changes_made = True
 
-    except Exception as e:
-        socketio.emit('update_status', {'message': f'Error during update: {e}', 'status': 'error'})
+    # Restore files that are listed in `files_and_dirs` but missing locally
+    def restore_deleted_files():
+        nonlocal changes_made
+        for relative_path in files_and_dirs:
+            local_path = os.path.join(local_base_path, relative_path)
+            if not os.path.exists(local_path):  # File missing locally
+                print(f"File missing locally, restoring: {local_path}")
+                file_url = f"{base_url}{relative_path}"
+                download_file(file_url, local_path, relative_path)
 
-        print(f"Error during update: {e}")
+    # Remove files that are no longer on the server
+    def remove_missing_files():
+        nonlocal changes_made
+        local_files = set(metadata.keys())
+        server_files = set(files_and_dirs)
+
+        # Identify files in metadata but not in server file list
+        files_to_remove = local_files - server_files
+
+        for file in files_to_remove:
+            local_path = os.path.join(local_base_path, file)
+            if os.path.exists(local_path):
+                os.remove(local_path)
+                print(f"Removed missing file: {local_path}")
+            metadata.pop(file, None)
+            changes_made = True
+
+    # Ensure local directory structure exists
+    for relative_path in files_and_dirs:
+        local_file_path = os.path.join(local_base_path, relative_path)
+        local_dir = os.path.dirname(local_file_path)
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+
+    # Step 1: Validate local files and metadata
+    validate_local_files()
+
+    # Step 2: Restore locally missing files
+    restore_deleted_files()
+
+    # Step 3: Download or update changed files
+    for relative_path in files_and_dirs:
+        local_file_path = os.path.join(local_base_path, relative_path)
+        file_url = f"{base_url}{relative_path}"
+        download_file(file_url, local_file_path, relative_path)
+
+    # Step 4: Remove local files that no longer exist on the server
+    remove_missing_files()
+
+    # Save updated metadata
+    with open(metadata_file, "w") as f:
+        json.dump(metadata, f, indent=4)
+
+    # Final message
+    if not changes_made:
+        return "No changes have been made."
+    else:
+        return "Synchronization completed successfully."
+    
+
+def syncCall():
+    # Get the customer hash from the environment
+    customer_hash = os.getenv('CUSTOMER_HASH')
+
+    # Validate that the customer_hash exists
+    if not customer_hash:
+        print("Customer hash is not set in the environment variables.")
+        return
+
+    # Define the base URL with the customer hash
+    base_url = f"https://updates.maprova.dk/visualization/{customer_hash}/"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+
+
+    # Local path to save files
+    local_base_path = "./visualization"
+
+    # List of files and directories to sync
+    files_and_dirs = [
+        "static/css/bootstrap.min.css",
+        "static/css/sweetalert-dark.css",
+        "static/css/view_style.css",
+        "static/css/visualization.min.css",
+        "static/images/dark-logo.png",
+        "static/images/maprova-bg.png",
+        "static/js/bootstrap.bundle.min.js",
+        "static/js/jquery-3.6.0.min.js",
+        "static/js/socket.io.js",
+        "static/js/sweetalert.js",
+        "static/js/view_script.js",
+        "templates/pdfVisualization.html",
+        "templates/visualization.html",
+    ]
+
+    # Call the sync function
+    status = sync_files(base_url, local_base_path, files_and_dirs)
+    print(status)
 
 
 local_pdf_path = "static/current_workload.pdf"
@@ -335,7 +432,7 @@ def get_departments():
 @app.route('/api/get_job_tasks', methods=['GET'])
 def get_job_tasks():
     """
-    Fetch job tasks from the external API based on department_id, with caching.
+    Fetch job tasks from the external API based on department_id, with in-memory caching.
     """
     department_id = request.args.get('department_id')
 
@@ -364,20 +461,17 @@ def get_job_tasks():
         if response.status_code == 200:
             job_tasks = response.json()
 
-            # If there's cached data for the department, compare it with the new data
-            if department_id in cached_jobs:
-                cached_data = cached_jobs[department_id]
-                if not data_changed(job_tasks, cached_data):
-                    
-                    return jsonify(cached_data), 200
-
-            # If data has changed, or if there's no cached data, update the cache
-            print(f"Data has changed or no cached data for department {department_id}. Updating cache.")
+            # Cache the new data in memory
+            print(f"Caching new data for department {department_id}")
             cached_jobs[department_id] = job_tasks
-            save_cached_data(jobs_cache_file, cached_jobs)  # Save to disk
 
             return jsonify(job_tasks), 200
         else:
+                    # If there's cached data for the department, return it
+            if department_id in cached_jobs:
+                cached_data = cached_jobs[department_id]
+                print(f"Serving cached data for department {department_id}")
+                return jsonify(cached_data), 200
             return jsonify({"error": f"Failed to fetch job tasks, status code: {response.status_code}"}), response.status_code
 
     except ConnectionError:
@@ -388,6 +482,7 @@ def get_job_tasks():
 
     except RequestException as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
     
 
 @app.route('/api/get_messages', methods=['GET'])
@@ -852,6 +947,7 @@ def start_device_status_pushing():
 #     socketio.start_background_task(target=check_for_updates)
 
 if __name__ == '__main__':
+    syncCall()
 
 
     start_device_status_pushing()
