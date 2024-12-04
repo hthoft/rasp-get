@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 env_path = "/home/RPI-5/rasp-get/.env"
-#env_path = "C:\\Users\\Hans Thoft Rasmussen\\Documents\\GitHub\\rasp-get\\.env"
+env_path = "C:\\Users\\Hans Thoft Rasmussen\\Documents\\GitHub\\rasp-get\\.env"
 
 # Load the environment variables from the specified .env file
 load_dotenv(dotenv_path=env_path)
@@ -172,7 +172,7 @@ def syncCall():
     base_url = f"https://updates.maprova.dk/printer/{customer_hash}/"
 
     # Local path to save files
-    local_base_path = "./printer"
+    local_base_path = "./"
 
     # List of files and directories to sync
     files_and_dirs = [
